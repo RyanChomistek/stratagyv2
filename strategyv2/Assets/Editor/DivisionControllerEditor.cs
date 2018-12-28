@@ -20,5 +20,23 @@ public class DivisionControllerEditor : Editor
             soldiers[0].Count = 5;
             myTarget.AttachedDivision.TransferSoldiers(soldiers);
         }
+
+        if (GUILayout.Button("print subordinates"))
+        {
+            var subStr = SerializeSubordinates(myTarget.AttachedDivision);
+            Debug.Log(subStr);
+        }
+    }
+
+    private string SerializeSubordinates(Division division)
+    {
+        string str = division.ToString();
+
+        foreach(var sub in division.Subordinates)
+        {
+            str += SerializeSubordinates(sub.Value);
+        }
+
+        return str;
     }
 }

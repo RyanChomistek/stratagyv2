@@ -31,6 +31,7 @@ public class FindDivision : Order
         //if it isnt null go find em
         if (VisibleTarget != null)
         {
+            RememberedTarget = new RememberedDivision(VisibleTarget);
             distanceToFinish = (VisibleTarget.Controller.transform.position - currLoc).magnitude;
         }
 

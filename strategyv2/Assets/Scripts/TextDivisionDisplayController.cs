@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class TextDivisionDisplayController : MonoBehaviour
 {
-    DivisionController AttachedDivisionController;
+    BaseDivisionController AttachedDivisionController;
     public Text TextBox;
     public Button Selector;
     int AttachmentToken;
@@ -18,7 +18,7 @@ public class TextDivisionDisplayController : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        AttachedDivisionController = transform.parent.GetComponent<DivisionController>();
+        AttachedDivisionController = transform.parent.GetComponent<BaseDivisionController>();
         AttachedDivisionController.AttachedDivision.AddRefreshDelegate(OnDivisionChange);
     }
 	

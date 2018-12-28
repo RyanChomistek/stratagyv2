@@ -2,24 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DivisionController : MonoBehaviour {
-    public Division AttachedDivision;
+public class DivisionController : BaseDivisionController {
+    
     public GameObject DivisionPrefab;
 
     [SerializeField]
-    private List<DivisionController> VisibleControllers = new List<DivisionController>();
+    public List<DivisionController> VisibleControllers = new List<DivisionController>();
 
+    [SerializeField]
+    private SphereCollider SightCollider;
     void Awake () {
         AttachedDivision = new Division(this);
         var soldiers = new List<Soldier>() { new Soldier() };
         soldiers[0].Count = 5;
         AttachedDivision.TransferSoldiers(soldiers);
+        
     }
 	
 	void Update () {
         AttachedDivision.DoOrders();
         RefreshVisibleDivisions();
         AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
+        AttachedDivision.RecalculateAggrigateValues();
+        SightCollider.radius = AttachedDivision.MaxSightDistance;
+        var generalDivision = LocalPlayerController.Instance.GeneralDivision;
+        
+        if (generalDivision == this || generalDivision.VisibleControllers.Contains(this))
+        {
+            Display(true);
+        }
+        else
+        {
+            Display(false);
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        foreach (var kvp in AttachedDivision.RememberedDivisions)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(kvp.Value.Position, 1);
+        }
     }
 
     public virtual DivisionController CreateChild(List<Soldier> soldiersForChild)
@@ -76,5 +100,11 @@ public class DivisionController : MonoBehaviour {
         }
 
         AttachedDivision.RefreshVisibleDivisions(VisibleControllers);
+    }
+
+    public override void SelectDivision()
+    {
+        base.SelectDivision();
+        LocalPlayerController.Instance.Select(this);
     }
 }

@@ -8,7 +8,7 @@ public class Division {
     protected static int DivisionCounter = 0;
     public int DivisionId;
     public string Name;
-
+    [HideInInspector]
     public RememberedDivision Commander;
     public List<Soldier> Soldiers;
     public Dictionary<int, RememberedDivision> Subordinates = new Dictionary<int, RememberedDivision>();
@@ -21,9 +21,9 @@ public class Division {
     public float MaxSightDistance = 0;
 
     public Dictionary<int, Division> VisibleDivisions = new Dictionary<int, Division>();
-    public List<Division> DebugVisibleDivisions = new List<Division>();
+    //public List<Division> DebugVisibleDivisions = new List<Division>();
     public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
-    public List<RememberedDivision> DebugRememberedDivisions = new List<RememberedDivision>();
+    //public List<RememberedDivision> DebugRememberedDivisions = new List<RememberedDivision>();
     public DivisionController Controller;
 
     public delegate void RefreshDelegate(Division division);
@@ -192,9 +192,36 @@ public class Division {
         OnChange();
     }
 
+    public void FindAndRemoveSubordinateById(int divisionId)
+    {
+        if(Subordinates.ContainsKey(divisionId))
+        {
+            Division other = Subordinates[divisionId];
+            //promote the guys under him
+            foreach (var subordinate in other.Subordinates)
+            {
+                subordinate.Value.Commander = new RememberedDivision(this);
+                AddSubordinate(subordinate.Value);
+                subordinate.Value.OnChange();
+            }
+
+            Subordinates.Remove(divisionId);
+        }
+        else
+        {
+            foreach(var sub in Subordinates)
+            {
+                sub.Value.FindAndRemoveSubordinateById(divisionId);
+            }
+        }
+    }
+
     public void AbsorbDivision(Division other)
     {
         TransferSoldiers(other.Soldiers);
+        FindAndRemoveSubordinateById(other.DivisionId);
+        //find other in my subordinates
+        /*
         //kick him out of his commanders subordinate list
         RememberedDivision parent = other.Commander;
 
@@ -202,17 +229,10 @@ public class Division {
         {
             parent.RemoveSubordinate(new RememberedDivision(other));
         }
+        */
 
-        //add all of others subordinates
-        foreach(var subordinate in other.Subordinates)
-        {
-            subordinate.Value.Commander = new RememberedDivision(this);
-            AddSubordinate(subordinate.Value);
-            subordinate.Value.OnChange();
-        }
-
+        RememberedDivisions[other.DivisionId].HasBeenDestroyed = true;
         GameObject.Destroy(other.Controller.gameObject);
-        //GameManager.instance.RefreshAllDivisons();
         OnChange();
     }
 
@@ -258,6 +278,19 @@ public class Division {
 
     #endregion
 
+    public void RecalculateAggrigateValues()
+    {
+        MaxSightDistance = 0;
+        int cnt = 0;
+        foreach(Soldier soldier in Soldiers)
+        {
+            MaxSightDistance += soldier.Count * soldier.SightDistance;
+            cnt += soldier.Count;
+        }
+
+        MaxSightDistance = MaxSightDistance / cnt;
+    }
+
     public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)
     {
         VisibleDivisions.Clear();
@@ -272,10 +305,42 @@ public class Division {
         foreach(var key in VisibleDivisions.Keys)
         {
             RememberedDivisions[key] = new RememberedDivision(VisibleDivisions[key]);
+            foreach(var kvp in RememberedDivisions[key].RememberedDivisions)
+            {
+                int divisionId = kvp.Key;
+                RememberedDivision otherDiv = kvp.Value;
+
+                if(RememberedDivisions.ContainsKey(divisionId))
+                {
+                    var currentDiv = RememberedDivisions[divisionId];
+                    var latestDiv = otherDiv.TimeStamp > currentDiv.TimeStamp ? otherDiv : currentDiv;
+                    RememberedDivisions[divisionId] = latestDiv;
+                }
+            }
         }
 
-        DebugRememberedDivisions = RememberedDivisions.Values.ToList();
-        DebugVisibleDivisions = VisibleDivisions.Values.ToList();
+        RefreshSubordinates(RememberedDivisions);
+        //DebugRememberedDivisions = RememberedDivisions.Values.ToList();
+        //DebugVisibleDivisions = VisibleDivisions.Values.ToList();
+    }
+
+    public void RefreshSubordinates(Dictionary<int, RememberedDivision> divisions)
+    {
+        var divisionIds = Subordinates.Keys.ToList();
+        for (int i = 0; i < divisionIds.Count; i++)
+        {
+            int divisionId = divisionIds[i];
+            if(divisions.ContainsKey(divisionId))
+            {
+                Subordinates[divisionId] = divisions[divisionId];
+            }
+            else
+            {
+                divisions.Add(divisionId, Subordinates[divisionId]);
+            }
+
+            Subordinates[divisionId].RefreshSubordinates(divisions);
+        }
     }
 
     public bool FindVisibleDivision(int divisionID, out Division division)
@@ -331,5 +396,10 @@ public class Division {
         messenger.AttachedDivision.ReceiveOrder(new SendMessage(messenger.AttachedDivision, new RememberedDivision(this), orders, to));
         //messenger.ReceiveOrder(new FindDivision(messenger, this, messenger));
         // messenger.ReceiveOrder
+    }
+
+    public override string ToString()
+    {
+        return $"({DivisionId}, {Controller})";
     }
 }

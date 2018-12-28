@@ -17,6 +17,8 @@ public class LocalPlayerController : MonoBehaviour {
     public delegate void responseToUIRemembered(RememberedDivision division);
     responseToUIRemembered UIResponseRememberedDivision;
 
+    Dictionary<int, RememberedDivisionController> RememberedDivisionControllers = new Dictionary<int, RememberedDivisionController>();
+    public GameObject RememberedDivisionControllerPrefab;
     // Use this for initialization
     void Start () {
         Instance = this;
@@ -24,8 +26,27 @@ public class LocalPlayerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+        DisplayRememberedDivisions();
+    }
+
+    public void DisplayRememberedDivisions()
+    {
+        foreach(var kvp in GeneralDivision.AttachedDivision.RememberedDivisions)
+        {
+            if(RememberedDivisionControllers.ContainsKey(kvp.Key))
+            {
+                RememberedDivisionControllers[kvp.Key].transform.position = kvp.Value.Position;
+                RememberedDivisionControllers[kvp.Key].AttachedDivision = kvp.Value;
+            }
+            else
+            {
+                var remDiv = Instantiate(RememberedDivisionControllerPrefab);
+                remDiv.GetComponent<BaseDivisionController>().AttachedDivision = kvp.Value;
+                remDiv.transform.position = kvp.Value.Position;
+                RememberedDivisionControllers.Add(kvp.Key, remDiv.GetComponent<RememberedDivisionController>());
+            }
+        }
+    }
 
     public void Select(DivisionController divisionController)
     {
@@ -39,6 +60,7 @@ public class LocalPlayerController : MonoBehaviour {
             {
                 order.CommanderSendingOrder = new RememberedDivision(GeneralDivision.AttachedDivision);
             }
+
             OrderDisplayManager.instance.AddOrderSet(orders);
         }
         else
@@ -47,17 +69,8 @@ public class LocalPlayerController : MonoBehaviour {
         }
     }
 
-    public void Select(RememberedDivision divisionController)
+    public void Select(RememberedDivisionController divisionController)
     {
-        if (!UIwaitingForSelection)
-        {
-            //bing up order ui
-            OrderDisplayManager.instance.ClearOrders();
-            OrderDisplayManager.instance.AddOrderSet(divisionController.PossibleOrders);
-        }
-        else
-        {
-            UIResponseRememberedDivision(divisionController);
-        }
+        Select(divisionController.AttachedDivision.Controller);
     }
 }

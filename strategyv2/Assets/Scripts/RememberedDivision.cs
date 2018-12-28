@@ -5,17 +5,21 @@ using UnityEngine;
 [System.Serializable]
 public class RememberedDivision : Division
 {
+    public float TimeStamp;
     public Vector3 Position;
     public Vector3 Velocity;
-    
+    public bool HasBeenDestroyed;
+
     public RememberedDivision(RememberedDivision commander, List<Order> orders,
     List<Soldier> soldiers, List<Order> possibleOrders, Dictionary<int, RememberedDivision> subordinates,
     Dictionary<int, RememberedDivision> rememberedDivisions,
-    Vector3 position, Vector3 velocity)
+    Vector3 position, Vector3 velocity, bool hasBeenDestroyed)
         : base(commander, orders, soldiers, possibleOrders, subordinates, rememberedDivisions)
     {
         this.Position = position;
         this.Velocity = velocity;
+        TimeStamp = Time.time;
+        HasBeenDestroyed = hasBeenDestroyed;
     }
 
     public RememberedDivision(Division division, Vector3 position, Vector3 velocity)
@@ -23,6 +27,8 @@ public class RememberedDivision : Division
     {
         this.Position = position;
         this.Velocity = velocity;
+        TimeStamp = Time.time;
+        HasBeenDestroyed = false;
     }
 
     public RememberedDivision(Division division)
@@ -30,6 +36,8 @@ public class RememberedDivision : Division
     {
         this.Position = division.Controller.transform.position;
         this.Velocity = division.Controller.GetComponent<Rigidbody>().velocity;
+        TimeStamp = Time.time;
+        HasBeenDestroyed = false;
     }
 
     /*
@@ -54,5 +62,10 @@ public class RememberedDivision : Division
 
         //send order to the next commander
         pathToDivision[0].Controller.SendMessenger(pathToDivision[1], order);
+    }
+
+    public override string ToString()
+    {
+        return $"({DivisionId}, {Controller}, {HasBeenDestroyed})";
     }
 }
