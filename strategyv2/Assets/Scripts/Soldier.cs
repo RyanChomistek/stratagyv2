@@ -13,6 +13,10 @@ public class Soldier
     public float SightDistance = 1;
     public SoldierType Type = SoldierType.Melee;
 
+    public Soldier()
+    {
+    }
+
     public Soldier(int count, float speed, float hitStrength, float range, float sightDistance, SoldierType type)
     {
         this.Count = count;

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -20,17 +21,20 @@ public class Division {
     public float MaxSightDistance = 0;
 
     public Dictionary<int, Division> VisibleDivisions = new Dictionary<int, Division>();
+    public List<Division> DebugVisibleDivisions = new List<Division>();
     public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
-
+    public List<RememberedDivision> DebugRememberedDivisions = new List<RememberedDivision>();
     public DivisionController Controller;
 
     public delegate void RefreshDelegate(Division division);
     private RefreshDelegate refresh;
     //Dictionary<int,RefreshDelegate> OnChangeRefresh = new Dictionary<int, RefreshDelegate>();
 
+    #region constructors
+
     public Division(RememberedDivision commander, List<Order> orders,
     List<Soldier> soldiers, List<Order> possibleOrders, Dictionary<int, RememberedDivision> subordinates,
-    Dictionary<int, Division> visibleDivisions, Dictionary<int, RememberedDivision> rememberedDivisions,
+    Dictionary<int, RememberedDivision> rememberedDivisions,
     DivisionController controller = null)
     {
         this.Commander = commander;
@@ -39,9 +43,8 @@ public class Division {
         this.Subordinates = new Dictionary<int, RememberedDivision>(subordinates);
         this.OrderQueue = new List<Order>(orders);
         this.Soldiers = new List<Soldier>(soldiers);
-
-        this.VisibleDivisions = new Dictionary<int, Division>(visibleDivisions);
-        this.RememberedDivisions = new Dictionary<int, RememberedDivision>(rememberedDivisions);
+        
+        this.RememberedDivisions = new Dictionary<int, RememberedDivision> (rememberedDivisions);
 
         this.DivisionId = DivisionCounter;
         DivisionCounter++;
@@ -57,11 +60,10 @@ public class Division {
         this.Commander = division.Commander;
 
         this.PossibleOrders = new List<Order>(division.PossibleOrders);
-        this.Subordinates = new Dictionary<int, RememberedDivision>();
+        this.Subordinates = new Dictionary<int, RememberedDivision>(division.Subordinates);
         this.OrderQueue = new List<Order>();
         this.Soldiers = new List<Soldier>();
-
-        this.VisibleDivisions = new Dictionary<int, Division>(division.VisibleDivisions);
+        
         this.RememberedDivisions = new Dictionary<int, RememberedDivision>(division.RememberedDivisions);
 
         this.DivisionId = division.DivisionId;
@@ -80,8 +82,7 @@ public class Division {
         this.Subordinates = new Dictionary<int, RememberedDivision>();
         this.OrderQueue = new List<Order>();
         this.Soldiers = new List<Soldier>();
-
-        this.VisibleDivisions = new Dictionary<int, Division>();
+        
         this.RememberedDivisions = new Dictionary<int, RememberedDivision>();
 
         this.DivisionId = DivisionCounter;
@@ -93,9 +94,14 @@ public class Division {
         SetupOrders();
     }
 
+    #endregion
+
+    #region order stuff
+
     public virtual void SetupOrders()
     {
         this.PossibleOrders.Add(new Move(this, null, new Vector3()));
+        this.PossibleOrders.Add(new SplitDivision(this, null));
     }
 
     public virtual void DoOrders()
@@ -147,6 +153,7 @@ public class Division {
     {
         OngoingOrder.Proceed();
     }
+
     public void ReceiveOrder(Order order)
     {
         OrderQueue.Add(order);
@@ -161,6 +168,10 @@ public class Division {
         }
         OnChange();
     }
+
+    #endregion
+
+    #region soldier transfer
 
     public void TransferSoldiers(List<Soldier> troops)
     {
@@ -227,12 +238,6 @@ public class Division {
         return soldiersSplit;
     }
 
-    public bool FindVisibleDivision(int divisionID, out Division division)
-    {
-        division = null;
-        return VisibleDivisions.TryGetValue(divisionID, out division);
-    }
-
     public virtual Division CreateChild(List<Soldier> soldiersForChild, DivisionController newController)
     {
         newController.transform.position = this.Controller.transform.position;
@@ -242,10 +247,41 @@ public class Division {
         {
             Soldiers = soldiersForChild
         };
+
         AddSubordinate(new RememberedDivision(newDivision));
+        newDivision.Commander = new RememberedDivision(this);
         OnChange();
         newDivision.OnChange();
+        newController.AttachedDivision = newDivision;
         return newDivision;
+    }
+
+    #endregion
+
+    public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)
+    {
+        VisibleDivisions.Clear();
+        foreach(var controller in visibleControllers)
+        {
+            VisibleDivisions.Add(controller.AttachedDivision.DivisionId, controller.AttachedDivision);
+        }
+    }
+
+    public void RefreshRememberedDivisionsFromVisibleDivisions()
+    {
+        foreach(var key in VisibleDivisions.Keys)
+        {
+            RememberedDivisions[key] = new RememberedDivision(VisibleDivisions[key]);
+        }
+
+        DebugRememberedDivisions = RememberedDivisions.Values.ToList();
+        DebugVisibleDivisions = VisibleDivisions.Values.ToList();
+    }
+
+    public bool FindVisibleDivision(int divisionID, out Division division)
+    {
+        division = null;
+        return VisibleDivisions.TryGetValue(divisionID, out division);
     }
 
     public List<RememberedDivision> FindDivisionInSubordinates(RememberedDivision start, RememberedDivision end, List<RememberedDivision> prev_)
@@ -278,6 +314,7 @@ public class Division {
         return soldier;
     }
 
+    //ONLY CALL ON DIVISIONS NOT REMEMBERED DIVISOIONS
     public void SendMessenger(RememberedDivision to, Order order)
     {
         //create a new division

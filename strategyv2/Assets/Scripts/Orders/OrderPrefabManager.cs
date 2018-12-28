@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum OrderPrefabType
+{
+    Split
+}
+
 [System.Serializable]
 public struct PrefabStorage
 {
     [SerializeField]
-    public GameObject prefab;
+    public GameObject Prefab;
     [SerializeField]
-    public string identifier;
+    public OrderPrefabType Type;
 }
 
 
@@ -16,16 +21,15 @@ public class OrderPrefabManager : MonoBehaviour {
 
     public static OrderPrefabManager instance;
     [SerializeField]
-    private List<PrefabStorage> prefabsInput;
-    public Dictionary<string, GameObject> prefabs;
-    public GameObject mainCanvas;
+    private List<PrefabStorage> _prefabsInput;
+    public Dictionary<OrderPrefabType, GameObject> prefabs;
     void Awake()
     {
         instance = this;
-        prefabs = new Dictionary<string, GameObject>();
-        foreach(var prefab in prefabsInput)
+        prefabs = new Dictionary<OrderPrefabType, GameObject>();
+        foreach(var prefab in _prefabsInput)
         {
-            prefabs.Add(prefab.identifier, prefab.prefab);
+            prefabs.Add(prefab.Type, prefab.Prefab);
         }
     }
 }

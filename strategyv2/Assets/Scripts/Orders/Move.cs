@@ -59,14 +59,18 @@ public class Move : Order {
 
     public override void Proceed()
     {
-
+        Vector3 currLoc = Host.Controller.transform.position;
+        Vector3 dir = (finish - currLoc).normalized;
+        Vector3 moveVec = dir * Host.Speed;
+        //set start moving twords finish
+        Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
     }
 
     public override bool TestIfFinished()
     {
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;
-        if (distanceToFinish < .1f)
+        if (distanceToFinish < .5f)
         {
             return true;
         }

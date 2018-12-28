@@ -15,6 +15,7 @@ public class SplitDivision : Order {
 
     public override void Start()
     {
+        Debug.Log("start split");
         List<Soldier> soldiers = new List<Soldier>();
         //find soldiers
         foreach(Soldier soldier in Host.Soldiers)
@@ -38,11 +39,16 @@ public class SplitDivision : Order {
     public override void OnClickedInUI()
     {
         //bing up ui to split choose what units to split
-        GameObject splitMenu = OrderPrefabManager.Instantiate(OrderPrefabManager.instance.prefabs["DivisionSplitMenu"]);
-        splitMenu.transform.SetParent(OrderPrefabManager.instance.mainCanvas.transform, false);
-        splitMenu.GetComponent<DivisionSplitMenu>().Setup(Host);
+        //GameObject splitMenu = OrderPrefabManager.Instantiate(OrderPrefabManager.instance.prefabs[OrderPrefabType.Split]);
+        //splitMenu.transform.SetParent(OrderPrefabManager.instance.mainCanvas.transform, false);
+        //splitMenu.GetComponent<DivisionSplitMenu>().Setup(Host);
         //regester a func as a callback
         //send the order
+
+        OrderDisplayManager.instance.ClearOrders();
+        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, 
+            new List<Tuple<SoldierType, int>>()
+            { new Tuple<SoldierType, int> (SoldierType.Melee, 1)}));
     }
     public override void Proceed() { }
     public override bool TestIfFinished() { return IsFinishedSpliting; }

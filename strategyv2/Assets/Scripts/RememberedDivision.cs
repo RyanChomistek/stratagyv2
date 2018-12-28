@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class RememberedDivision : Division
 {
     public Vector3 Position;
@@ -9,9 +10,9 @@ public class RememberedDivision : Division
     
     public RememberedDivision(RememberedDivision commander, List<Order> orders,
     List<Soldier> soldiers, List<Order> possibleOrders, Dictionary<int, RememberedDivision> subordinates,
-    Dictionary<int, Division> visibleDivisions, Dictionary<int, RememberedDivision> rememberedDivisions,
+    Dictionary<int, RememberedDivision> rememberedDivisions,
     Vector3 position, Vector3 velocity)
-        : base(commander, orders, soldiers, possibleOrders, subordinates, visibleDivisions, rememberedDivisions)
+        : base(commander, orders, soldiers, possibleOrders, subordinates, rememberedDivisions)
     {
         this.Position = position;
         this.Velocity = velocity;
@@ -49,10 +50,9 @@ public class RememberedDivision : Division
             Debug.Log(order);
             Controller.AttachedDivision.ReceiveOrder(order);
             return;
-
         }
 
         //send order to the next commander
-        SendMessenger(pathToDivision[1], order);
+        pathToDivision[0].Controller.SendMessenger(pathToDivision[1], order);
     }
 }

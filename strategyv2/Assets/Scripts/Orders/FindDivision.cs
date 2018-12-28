@@ -35,7 +35,7 @@ public class FindDivision : Order
         }
 
         //when this is true then we have caught up to our target
-        if (distanceToFinish < .1f && !HasFoundTarget)
+        if (distanceToFinish < .5f && !HasFoundTarget)
         {
             HasFoundTarget = true;
             VisibleTarget = null;
