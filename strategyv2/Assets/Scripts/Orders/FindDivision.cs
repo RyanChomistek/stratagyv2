@@ -20,7 +20,7 @@ public class FindDivision : Order
     public override void Proceed()
     {
         Vector3 currLoc = Host.Controller.transform.position;
-        float distanceToFinish = (RememberedTarget.Position - currLoc).magnitude;
+        float distanceToFinish = (RememberedTarget.PredictedPosition - currLoc).magnitude;
 
         //if target is null look for it in the visible divisions
         if (VisibleTarget == null)
@@ -48,7 +48,7 @@ public class FindDivision : Order
     public void MoveToTarget()
     {
         Vector3 currLoc = Host.Controller.transform.position;
-        Vector3 dir = (RememberedTarget.Position - currLoc).normalized;
+        Vector3 dir = (RememberedTarget.PredictedPosition - currLoc).normalized;
         Vector3 moveVec = dir * Host.Speed;
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec;
     }

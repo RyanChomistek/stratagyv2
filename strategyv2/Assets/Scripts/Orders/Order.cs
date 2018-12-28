@@ -14,4 +14,9 @@ public class Order
     public virtual void OnClickedInUI() { }
     public virtual void Proceed() { }
     public virtual bool TestIfFinished() { return false; }
+    public virtual Vector3 GetPredictedPosition(RememberedDivision rememberedDivision)
+    {
+        var deltaTime = GameManager.Instance.GameTime - rememberedDivision.TimeStamp;
+        return rememberedDivision.Position + rememberedDivision.Velocity * deltaTime;
+    }
 }

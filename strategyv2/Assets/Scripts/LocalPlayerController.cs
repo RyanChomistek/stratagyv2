@@ -33,6 +33,18 @@ public class LocalPlayerController : MonoBehaviour {
     {
         foreach(var kvp in GeneralDivision.AttachedDivision.RememberedDivisions)
         {
+            if(kvp.Value.HasBeenDestroyed)
+            {
+                if (RememberedDivisionControllers.ContainsKey(kvp.Key))
+                {
+                    var controller = RememberedDivisionControllers[kvp.Key];
+                    RememberedDivisionControllers.Remove(kvp.Key);
+                    Destroy(controller.gameObject);
+                }
+
+                continue;
+            }
+
             if(RememberedDivisionControllers.ContainsKey(kvp.Key))
             {
                 RememberedDivisionControllers[kvp.Key].transform.position = kvp.Value.Position;

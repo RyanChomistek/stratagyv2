@@ -13,8 +13,8 @@ public class DivisionController : BaseDivisionController {
     private SphereCollider SightCollider;
     void Awake () {
         AttachedDivision = new Division(this);
-        var soldiers = new List<Soldier>() { new Soldier() };
-        soldiers[0].Count = 5;
+        var soldiers = new List<Soldier>() { new Soldier(), new Soldier(), new Soldier(), new Soldier(), new Soldier() };
+        //soldiers[0].Count = 5;
         AttachedDivision.TransferSoldiers(soldiers);
         
     }
@@ -39,11 +39,12 @@ public class DivisionController : BaseDivisionController {
 
     void OnDrawGizmosSelected()
     {
-        foreach (var kvp in AttachedDivision.RememberedDivisions)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(kvp.Value.Position, 1);
-        }
+        if(AttachedDivision != null && AttachedDivision.RememberedDivisions != null)
+            foreach (var kvp in AttachedDivision.RememberedDivisions)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawSphere(kvp.Value.Position, 1);
+            }
     }
 
     public virtual DivisionController CreateChild(List<Soldier> soldiersForChild)

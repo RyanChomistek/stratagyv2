@@ -6,6 +6,7 @@ using UnityEngine;
 public class Move : Order {
     public Vector3 finish;
     InputController.OnClick OnClickReturnDel;
+
     public Move(Division controller, RememberedDivision commanderSendingOrder, Vector3 finish)
     {
         this.CommanderSendingOrder = commanderSendingOrder;
@@ -75,5 +76,29 @@ public class Move : Order {
             return true;
         }
         return false;
+    }
+
+    public override Vector3 GetPredictedPosition(RememberedDivision rememberedDivision)
+    {
+        Vector3 lastKnownLoc = rememberedDivision.Position;
+        
+        Vector3 dir = (finish - lastKnownLoc).normalized;
+        Vector3 distance = (finish - lastKnownLoc);
+
+        float maxTime = distance.magnitude / Host.Speed;
+        var deltaTime = GameManager.Instance.GameTime - rememberedDivision.TimeStamp;
+
+        if(deltaTime > maxTime)
+        {
+            return finish;
+        }
+
+        Vector3 predPosition = dir * Host.Speed * deltaTime;
+        return predPosition;
+    }
+
+    public override string ToString()
+    {
+        return $"moving to {finish} at vel {Host.Controller.GetComponent<Rigidbody>().velocity}";
     }
 }

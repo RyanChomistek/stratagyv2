@@ -17,7 +17,6 @@ public class DivisionControllerEditor : Editor
         if (GUILayout.Button("Add Soldier"))
         {
             var soldiers = new List<Soldier>() { new Soldier() };
-            soldiers[0].Count = 5;
             myTarget.AttachedDivision.TransferSoldiers(soldiers);
         }
 

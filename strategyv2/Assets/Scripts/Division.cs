@@ -62,7 +62,7 @@ public class Division {
         this.PossibleOrders = new List<Order>(division.PossibleOrders);
         this.Subordinates = new Dictionary<int, RememberedDivision>(division.Subordinates);
         this.OrderQueue = new List<Order>();
-        this.Soldiers = new List<Soldier>();
+        this.Soldiers = new List<Soldier>(division.Soldiers);
         
         this.RememberedDivisions = new Dictionary<int, RememberedDivision>(division.RememberedDivisions);
 
@@ -70,10 +70,12 @@ public class Division {
 
         this.Name = "Division " + DivisionId;
         this.Controller = controller;
-        this.OngoingOrder = new EmptyOrder();
+        this.OngoingOrder = division.OngoingOrder;
         SetupOrders();
+        RecalculateAggrigateValues();
     }
 
+    //use for creating a new division from inside a new controller
     public Division(DivisionController controller = null)
     {
         this.Commander = null;
@@ -284,8 +286,8 @@ public class Division {
         int cnt = 0;
         foreach(Soldier soldier in Soldiers)
         {
-            MaxSightDistance += soldier.Count * soldier.SightDistance;
-            cnt += soldier.Count;
+            MaxSightDistance += soldier.SightDistance;
+            cnt++;
         }
 
         MaxSightDistance = MaxSightDistance / cnt;
@@ -376,6 +378,7 @@ public class Division {
     {
         Soldier soldier = Soldiers[Soldiers.Count - 1];
         Soldiers.Remove(soldier);
+        
         return soldier;
     }
 

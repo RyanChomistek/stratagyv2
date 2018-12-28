@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class RememberedDivisionController : BaseDivisionController
 {
+    RememberedDivision RememberedAttachedDivision { get { return (RememberedDivision)AttachedDivision; } }
     void Update()
     {
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
@@ -24,5 +25,11 @@ public class RememberedDivisionController : BaseDivisionController
     {
         base.SelectDivision();
         LocalPlayerController.Instance.Select(this);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(RememberedAttachedDivision.PredictedPosition, 1);
     }
 }

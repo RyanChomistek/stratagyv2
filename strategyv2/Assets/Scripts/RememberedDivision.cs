@@ -7,6 +7,12 @@ public class RememberedDivision : Division
 {
     public float TimeStamp;
     public Vector3 Position;
+    public Vector3 PredictedPosition {
+        get
+        {
+            return OngoingOrder.GetPredictedPosition(this);
+        }
+    }
     public Vector3 Velocity;
     public bool HasBeenDestroyed;
 
@@ -18,7 +24,7 @@ public class RememberedDivision : Division
     {
         this.Position = position;
         this.Velocity = velocity;
-        TimeStamp = Time.time;
+        TimeStamp = GameManager.Instance.GameTime;
         HasBeenDestroyed = hasBeenDestroyed;
     }
 
@@ -27,7 +33,7 @@ public class RememberedDivision : Division
     {
         this.Position = position;
         this.Velocity = velocity;
-        TimeStamp = Time.time;
+        TimeStamp = GameManager.Instance.GameTime;
         HasBeenDestroyed = false;
     }
 
@@ -36,7 +42,7 @@ public class RememberedDivision : Division
     {
         this.Position = division.Controller.transform.position;
         this.Velocity = division.Controller.GetComponent<Rigidbody>().velocity;
-        TimeStamp = Time.time;
+        TimeStamp = GameManager.Instance.GameTime;
         HasBeenDestroyed = false;
     }
 
