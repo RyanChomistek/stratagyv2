@@ -38,12 +38,6 @@ public class SplitDivision : Order {
     public override void End() { }
     public override void OnClickedInUI()
     {
-        //bing up ui to split choose what units to split
-        //GameObject splitMenu = OrderPrefabManager.Instantiate(OrderPrefabManager.instance.prefabs[OrderPrefabType.Split]);
-        //splitMenu.transform.SetParent(OrderPrefabManager.instance.mainCanvas.transform, false);
-        //splitMenu.GetComponent<DivisionSplitMenu>().Setup(Host);
-        //regester a func as a callback
-        //send the order
 
         OrderDisplayManager.instance.ClearOrders();
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, 

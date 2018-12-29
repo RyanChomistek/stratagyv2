@@ -32,8 +32,8 @@ public class TextDivisionDisplayController : MonoBehaviour
     {
         string str = "";
         str += division.Name + '\n';
-        str += "commander : " + (division.Commander == null ? "NONE" : division.Commander.Name);
-
+        str += "commander : " + (division.Commander == null ? "NONE" : division.Commander.Name) + "\n";
+        
         return str;
     }
 }

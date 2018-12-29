@@ -21,14 +21,11 @@ public class Division {
     public float MaxSightDistance = 0;
 
     public Dictionary<int, Division> VisibleDivisions = new Dictionary<int, Division>();
-    //public List<Division> DebugVisibleDivisions = new List<Division>();
     public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
-    //public List<RememberedDivision> DebugRememberedDivisions = new List<RememberedDivision>();
     public DivisionController Controller;
 
     public delegate void RefreshDelegate(Division division);
     private RefreshDelegate refresh;
-    //Dictionary<int,RefreshDelegate> OnChangeRefresh = new Dictionary<int, RefreshDelegate>();
 
     #region constructors
 
@@ -102,8 +99,11 @@ public class Division {
 
     public virtual void SetupOrders()
     {
+        PossibleOrders = new List<Order>();
         this.PossibleOrders.Add(new Move(this, null, new Vector3()));
         this.PossibleOrders.Add(new SplitDivision(this, null));
+        this.PossibleOrders.Add(new ScoutOrder(this, null, new Vector3()));
+        this.PossibleOrders.Add(new AttackOrder(this, null, null));
     }
 
     public virtual void DoOrders()
@@ -218,24 +218,18 @@ public class Division {
         }
     }
 
-    public void AbsorbDivision(Division other)
+    public void DestroyDivision(Division other)
     {
-        TransferSoldiers(other.Soldiers);
         FindAndRemoveSubordinateById(other.DivisionId);
-        //find other in my subordinates
-        /*
-        //kick him out of his commanders subordinate list
-        RememberedDivision parent = other.Commander;
-
-        if (parent != null)
-        {
-            parent.RemoveSubordinate(new RememberedDivision(other));
-        }
-        */
-
         RememberedDivisions[other.DivisionId].HasBeenDestroyed = true;
         GameObject.Destroy(other.Controller.gameObject);
         OnChange();
+    }
+
+    public void AbsorbDivision(Division other)
+    {
+        TransferSoldiers(other.Soldiers);
+        DestroyDivision(other);
     }
 
     public Dictionary<SoldierType, List<Soldier>> SplitSoldiersIntoTypes()
@@ -280,17 +274,51 @@ public class Division {
 
     #endregion
 
+    public bool TakeDamage(float damage, Division from)
+    {
+        for(int i = 0; i < Soldiers.Count; i++)
+        {
+            if(damage == 0)
+            {
+                break;
+            }
+
+            var soldier = Soldiers[i];
+            float damageToSoldier = Mathf.Min(damage,soldier.Health);
+            soldier.Health -= damageToSoldier;
+            damage -= damageToSoldier;
+
+            if(soldier.Health <= 0)
+            {
+                Soldiers.RemoveAt(i);
+                i--;
+            }
+        }
+
+        if(Soldiers.Count == 0)
+        {
+            from.DestroyDivision(this);
+            return true;
+        }
+
+        RecalculateAggrigateValues();
+        return false;
+    }
+
     public void RecalculateAggrigateValues()
     {
         MaxSightDistance = 0;
+        Speed = 0;
         int cnt = 0;
         foreach(Soldier soldier in Soldiers)
         {
             MaxSightDistance += soldier.SightDistance;
+            Speed += soldier.Speed;
             cnt++;
         }
 
-        MaxSightDistance = MaxSightDistance / cnt;
+        MaxSightDistance /= cnt;
+        Speed /= cnt;
     }
 
     public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)
@@ -322,8 +350,7 @@ public class Division {
         }
 
         RefreshSubordinates(RememberedDivisions);
-        //DebugRememberedDivisions = RememberedDivisions.Values.ToList();
-        //DebugVisibleDivisions = VisibleDivisions.Values.ToList();
+        RefreshOrdersRememberedDivisions(RememberedDivisions);
     }
 
     public void RefreshSubordinates(Dictionary<int, RememberedDivision> divisions)
@@ -343,6 +370,16 @@ public class Division {
 
             Subordinates[divisionId].RefreshSubordinates(divisions);
         }
+    }
+
+    public void RefreshOrdersRememberedDivisions(Dictionary<int, RememberedDivision> divisions)
+    {
+        foreach(var order in OrderQueue)
+        {
+            order.RefreshRememberedDivisions(divisions);
+        }
+
+        OngoingOrder.RefreshRememberedDivisions(divisions);
     }
 
     public bool FindVisibleDivision(int divisionID, out Division division)
@@ -382,23 +419,24 @@ public class Division {
         return soldier;
     }
 
+    public DivisionController CreateNewDivision()
+    {
+        List<Soldier> soldiersToGive = new List<Soldier>
+        {
+            PopSoldier()
+        };
+        return Controller.CreateChild(soldiersToGive);
+    }
+
     //ONLY CALL ON DIVISIONS NOT REMEMBERED DIVISOIONS
-    public void SendMessenger(RememberedDivision to, Order order)
+    public void SendMessenger(RememberedDivision to, List<Order> orders)
     {
         //create a new division
-        //todo make the messenger descesion smart
-        List<Soldier> soldiersToGive = new List<Soldier>();
-        soldiersToGive.Add(PopSoldier());
-        DivisionController messenger = Controller.CreateChild(soldiersToGive);
+        DivisionController messenger = CreateNewDivision();
 
-        //give it a move order to go to the division
-        List<Order> orders = new List<Order>();
-        orders.Add(order);
         //todo discover location of to
         messenger.AttachedDivision.ReceiveOrder(new FindDivision(messenger.AttachedDivision, new RememberedDivision(this), to));
         messenger.AttachedDivision.ReceiveOrder(new SendMessage(messenger.AttachedDivision, new RememberedDivision(this), orders, to));
-        //messenger.ReceiveOrder(new FindDivision(messenger, this, messenger));
-        // messenger.ReceiveOrder
     }
 
     public override string ToString()

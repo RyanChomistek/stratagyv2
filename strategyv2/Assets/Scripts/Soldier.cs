@@ -7,9 +7,11 @@
 public class Soldier
 {
     //public int Count = 0;
-    public float Speed = 1;
+    public float Speed = 10;
     public float HitStrength = 1;
-    public float Range = 1;
+    public float Health = 1;
+    public float MinRange = 0f;
+    public float MaxRange = 2;
     public float SightDistance = 4;
     public SoldierType Type = SoldierType.Melee;
 
@@ -19,21 +21,24 @@ public class Soldier
 
     public Soldier(Soldier other)
     {
-        //this.Count = other.Count;
         this.Speed = other.Speed;
         this.HitStrength = other.HitStrength;
-        this.Range = other.Range;
+        this.Health = other.Health;
+        this.MinRange = other.MinRange;
+        this.MaxRange = other.MaxRange;
         this.SightDistance = other.SightDistance;
         this.Type = other.Type;
     }
-
-    public Soldier(float speed, float hitStrength, float range, float sightDistance, SoldierType type)
+    /*
+    public Soldier(float speed, float hitStrength, float minRange, float maxRange, float sightDistance, SoldierType type)
     {
         //this.Count = count;
         this.Speed = speed;
         this.HitStrength = hitStrength;
-        this.Range = range;
+        this.MinRange = minRange;
+        this.MaxRange = maxRange;
         this.SightDistance = sightDistance;
         this.Type = type;
     }
+    */
 }

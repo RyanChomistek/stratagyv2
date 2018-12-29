@@ -9,12 +9,15 @@ public class FindDivision : Order
     public Division VisibleTarget;
     public RememberedDivision RememberedTarget;
 
-    public FindDivision(Division controller, RememberedDivision commanderSendingOrder, RememberedDivision rememberedTarget)
+    private float _thresholdDistance = .5f;
+
+    public FindDivision(Division controller, RememberedDivision commanderSendingOrder, RememberedDivision rememberedTarget, float thresholdDistance = .5f)
     {
         this.CommanderSendingOrder = commanderSendingOrder;
         this.Host = controller;
         this.RememberedTarget = rememberedTarget;
         this.VisibleTarget = null;
+        this._thresholdDistance = thresholdDistance;
     }
 
     public override void Proceed()
@@ -36,7 +39,7 @@ public class FindDivision : Order
         }
 
         //when this is true then we have caught up to our target
-        if (distanceToFinish < .5f && !HasFoundTarget)
+        if (distanceToFinish < _thresholdDistance && !HasFoundTarget)
         {
             HasFoundTarget = true;
             VisibleTarget = null;

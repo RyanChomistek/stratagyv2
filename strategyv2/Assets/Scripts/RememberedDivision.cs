@@ -46,28 +46,24 @@ public class RememberedDivision : Division
         HasBeenDestroyed = false;
     }
 
-    /*
-     * call this function to update this with another division
-     */
-    public void Update(DivisionController division)
+    public void SendOrderTo(RememberedDivision to, Order order)
     {
-    
+        SendOrdersTo(to, new List<Order>() { order });
     }
 
-    public void SendOrderTo(RememberedDivision to, Order order)
+    public void SendOrdersTo(RememberedDivision to, List<Order> orders)
     {
         //follow commander tree to get there
         List<RememberedDivision> pathToDivision = FindDivisionInSubordinates(this, to, new List<RememberedDivision>());
         //if path is only size one, were at where the order needs to go
         if (pathToDivision.Count == 1)
         {
-            Debug.Log(order);
-            Controller.AttachedDivision.ReceiveOrder(order);
+            Controller.AttachedDivision.ReceiveOrders(orders);
             return;
         }
 
         //send order to the next commander
-        pathToDivision[0].Controller.SendMessenger(pathToDivision[1], order);
+        pathToDivision[0].Controller.SendMessenger(pathToDivision[1], orders);
     }
 
     public override string ToString()

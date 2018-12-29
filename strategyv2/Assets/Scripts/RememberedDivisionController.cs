@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class RememberedDivisionController : BaseDivisionController
 {
-    RememberedDivision RememberedAttachedDivision { get { return (RememberedDivision)AttachedDivision; } }
+    public RememberedDivision RememberedAttachedDivision { get { return (RememberedDivision)AttachedDivision; } }
+
     void Update()
     {
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;

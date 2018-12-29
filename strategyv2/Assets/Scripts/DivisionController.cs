@@ -20,9 +20,10 @@ public class DivisionController : BaseDivisionController {
     }
 	
 	void Update () {
-        AttachedDivision.DoOrders();
         RefreshVisibleDivisions();
         AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
+
+        AttachedDivision.DoOrders();
         AttachedDivision.RecalculateAggrigateValues();
         SightCollider.radius = AttachedDivision.MaxSightDistance;
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
@@ -42,22 +43,28 @@ public class DivisionController : BaseDivisionController {
         if(AttachedDivision != null && AttachedDivision.RememberedDivisions != null)
             foreach (var kvp in AttachedDivision.RememberedDivisions)
             {
+                if(kvp.Value.HasBeenDestroyed)
+                {
+                    continue;
+                }
+
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawSphere(kvp.Value.Position, 1);
             }
     }
 
-    public virtual DivisionController CreateChild(List<Soldier> soldiersForChild)
+    public DivisionController CreateChild(List<Soldier> soldiersForChild)
     {
         GameObject newDivision = Instantiate(DivisionPrefab);
         DivisionController newController = newDivision.GetComponent<DivisionController>();
+        newController.Controller = Controller;
         AttachedDivision.CreateChild(soldiersForChild, newController);
         return newController;
     }
 
-    public void SendMessenger(RememberedDivision to, Order order)
+    public void SendMessenger(RememberedDivision to, List<Order> orders)
     {
-        AttachedDivision.SendMessenger(to, order);
+        AttachedDivision.SendMessenger(to, orders);
     }
 
     private void OnTriggerEnter(Collider other)

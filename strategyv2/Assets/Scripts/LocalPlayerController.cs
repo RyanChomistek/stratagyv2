@@ -2,22 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LocalPlayerController : MonoBehaviour {
+public class LocalPlayerController : PlayerController {
     public static LocalPlayerController Instance { get; set; }
     [SerializeField]
-    private DivisionController Selected;
-
-    public DivisionController GeneralDivision;
+    private BaseDivisionController Selected;
 
     [SerializeField]
     bool UIwaitingForSelection = false;
-    public delegate void responseToUI(DivisionController division);
-    responseToUI UIResponse;
+    public delegate void responseToUI(RememberedDivision division);
+    responseToUI UnitSelectCallback;
 
-    public delegate void responseToUIRemembered(RememberedDivision division);
-    responseToUIRemembered UIResponseRememberedDivision;
-
-    Dictionary<int, RememberedDivisionController> RememberedDivisionControllers = new Dictionary<int, RememberedDivisionController>();
+    private Dictionary<int, RememberedDivisionController> RememberedDivisionControllers = new Dictionary<int, RememberedDivisionController>();
     public GameObject RememberedDivisionControllerPrefab;
     // Use this for initialization
     void Start () {
@@ -54,21 +49,27 @@ public class LocalPlayerController : MonoBehaviour {
             {
                 var remDiv = Instantiate(RememberedDivisionControllerPrefab);
                 remDiv.GetComponent<BaseDivisionController>().AttachedDivision = kvp.Value;
+                remDiv.GetComponent<BaseDivisionController>().Controller = this;
                 remDiv.transform.position = kvp.Value.Position;
                 RememberedDivisionControllers.Add(kvp.Key, remDiv.GetComponent<RememberedDivisionController>());
             }
         }
     }
 
-    public void Select(DivisionController divisionController)
+    public void Select(RememberedDivision division)
     {
         if (!UIwaitingForSelection)
         {
-            Selected = divisionController;
+            if(division.Controller.Controller.TeamId != TeamId)
+            {
+                return;
+            }
+
+            Selected = division.Controller;
             //bing up order ui
             OrderDisplayManager.instance.ClearOrders();
             List<Order> orders = new List<Order>(Selected.AttachedDivision.PossibleOrders);
-            foreach(Order order in orders)
+            foreach (Order order in orders)
             {
                 order.CommanderSendingOrder = new RememberedDivision(GeneralDivision.AttachedDivision);
             }
@@ -77,12 +78,31 @@ public class LocalPlayerController : MonoBehaviour {
         }
         else
         {
-            UIResponse(divisionController);
+            UnitSelectCallback(division);
         }
     }
 
     public void Select(RememberedDivisionController divisionController)
     {
-        Select(divisionController.AttachedDivision.Controller);
+        Select(divisionController.RememberedAttachedDivision);
     }
+
+    public void Select(DivisionController divisionController)
+    {
+        Select(new RememberedDivision(divisionController.AttachedDivision));
+    }
+
+    public void RegisterUnitSelectCallback(responseToUI callback)
+    {
+        UnitSelectCallback += callback;
+        UIwaitingForSelection = true;
+    }
+
+    public void UnRegisterUnitSelectCallback(responseToUI callback)
+    {
+        UnitSelectCallback -= callback;
+        UIwaitingForSelection = false;
+    }
+
+    
 }

@@ -19,4 +19,5 @@ public class Order
         var deltaTime = GameManager.Instance.GameTime - rememberedDivision.TimeStamp;
         return rememberedDivision.Position + rememberedDivision.Velocity * deltaTime;
     }
+    public virtual void RefreshRememberedDivisions(Dictionary<int, RememberedDivision> divisions) { }
 }
