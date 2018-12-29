@@ -15,9 +15,9 @@ public class RememberedDivision : Division
     }
     public Vector3 Velocity;
     public bool HasBeenDestroyed;
-
+    /*
     public RememberedDivision(RememberedDivision commander, List<Order> orders,
-    List<Soldier> soldiers, List<Order> possibleOrders, Dictionary<int, RememberedDivision> subordinates,
+    List<Soldier> soldiers, List<Order> possibleOrders, HashSet<int> subordinates,
     Dictionary<int, RememberedDivision> rememberedDivisions,
     Vector3 position, Vector3 velocity, bool hasBeenDestroyed)
         : base(commander, orders, soldiers, possibleOrders, subordinates, rememberedDivisions)
@@ -27,6 +27,7 @@ public class RememberedDivision : Division
         TimeStamp = GameManager.Instance.GameTime;
         HasBeenDestroyed = hasBeenDestroyed;
     }
+    */
 
     public RememberedDivision(Division division, Vector3 position, Vector3 velocity)
         :base(division, division.Controller)
@@ -68,6 +69,6 @@ public class RememberedDivision : Division
 
     public override string ToString()
     {
-        return $"({DivisionId}, {Controller}, {HasBeenDestroyed})";
+        return $"({DivisionId}, {Commander}, {Controller}, {HasBeenDestroyed})";
     }
 }

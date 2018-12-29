@@ -40,7 +40,11 @@ public class LocalPlayerController : PlayerController {
                 continue;
             }
 
-            if(RememberedDivisionControllers.ContainsKey(kvp.Key))
+            if(kvp.Key == GeneralDivision.AttachedDivision.DivisionId)
+            {
+                continue;
+            }
+            else if(RememberedDivisionControllers.ContainsKey(kvp.Key))
             {
                 RememberedDivisionControllers[kvp.Key].transform.position = kvp.Value.Position;
                 RememberedDivisionControllers[kvp.Key].AttachedDivision = kvp.Value;

@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SplitDivision : Order {
 
-    List<Tuple<SoldierType, int>> SoldiersToSplit;
+    Dictionary<SoldierType, int> SoldiersToSplit;
     public bool IsFinishedSpliting;
-    public SplitDivision(Division divisionToSplit, List<Tuple<SoldierType, int>> soldiersToSplit)
+    public SplitDivision(Division divisionToSplit, Dictionary<SoldierType, int> soldiersToSplit)
     {
         this.Host = divisionToSplit;
         this.SoldiersToSplit = soldiersToSplit;
@@ -17,32 +18,35 @@ public class SplitDivision : Order {
     {
         Debug.Log("start split");
         List<Soldier> soldiers = new List<Soldier>();
-        //find soldiers
-        foreach(Soldier soldier in Host.Soldiers)
+
+        var soldiersSplitIntoTypes = Host.SplitSoldiersIntoTypes();
+
+        foreach (var soldierTypeWanted in SoldiersToSplit)
         {
-            foreach(var soldierTypeWanted in SoldiersToSplit)
-            {
-                if(soldier.Type == soldierTypeWanted.first)
-                {
-                    soldierTypeWanted.second--;
-                    soldiers.Add(soldier);
-                    continue;
-                }
-            }
+            var soldiersOfType = soldiersSplitIntoTypes[soldierTypeWanted.Key];
+            var soldiersTaken = soldiersOfType.Take(soldierTypeWanted.Value);
+            soldiers.AddRange(soldiersTaken);
+            soldiersTaken.ToList().ForEach(x => Host.Soldiers.Remove(x));
         }
 
         Host.Controller.CreateChild(soldiers);
         IsFinishedSpliting = true;
     }
+
     public override void Pause() { }
     public override void End() { }
     public override void OnClickedInUI()
     {
+        if(Host.Soldiers.Count <= 1)
+        {
+            return;
+        }
+
+        var soldiersWanted = new Dictionary<SoldierType, int>();
+        soldiersWanted.Add(SoldierType.Melee, 1);
 
         OrderDisplayManager.instance.ClearOrders();
-        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, 
-            new List<Tuple<SoldierType, int>>()
-            { new Tuple<SoldierType, int> (SoldierType.Melee, 1)}));
+        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, soldiersWanted));
     }
     public override void Proceed() { }
     public override bool TestIfFinished() { return IsFinishedSpliting; }

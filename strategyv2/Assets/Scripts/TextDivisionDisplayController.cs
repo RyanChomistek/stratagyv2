@@ -24,7 +24,7 @@ public class TextDivisionDisplayController : MonoBehaviour
 	
 	private void OnDivisionChange(Division division)
     {
-        Debug.Log("refresh " + GenerateText(division));
+        //Debug.Log("refresh " + GenerateText(division));
         TextBox.text = GenerateText(division);
     }
 
@@ -32,8 +32,11 @@ public class TextDivisionDisplayController : MonoBehaviour
     {
         string str = "";
         str += division.Name + '\n';
-        str += "commander : " + (division.Commander == null ? "NONE" : division.Commander.Name) + "\n";
-        
+        str += "commander : " + (division.Commander == -1 ? "NONE" : ""+division.Commander) + "\n";
+        str += $"hp :  {division.TotalHealth}\n";
+        str += $"dam :  {division.DamageOutput}\n";
+        str += $"num S :  {division.NumSoldiers}";
+
         return str;
     }
 }

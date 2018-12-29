@@ -8,17 +8,22 @@ public class Division {
     protected static int DivisionCounter = 0;
     public int DivisionId;
     public string Name;
-    [HideInInspector]
-    public RememberedDivision Commander;
+    public int Commander;
     public List<Soldier> Soldiers;
-    public Dictionary<int, RememberedDivision> Subordinates = new Dictionary<int, RememberedDivision>();
+    public HashSet<int> Subordinates = new HashSet<int>();
 
+    [HideInInspector]
     public List<Order> OrderQueue;
+    [HideInInspector]
     public List<Order> PossibleOrders;
+    [HideInInspector]
     public Order OngoingOrder = null;
 
     public float Speed = 10;
     public float MaxSightDistance = 0;
+    public float TotalHealth = 0;
+    public int NumSoldiers = 0;
+    public float DamageOutput = 0;
 
     public Dictionary<int, Division> VisibleDivisions = new Dictionary<int, Division>();
     public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
@@ -28,16 +33,16 @@ public class Division {
     private RefreshDelegate refresh;
 
     #region constructors
-
+    /*
     public Division(RememberedDivision commander, List<Order> orders,
-    List<Soldier> soldiers, List<Order> possibleOrders, Dictionary<int, RememberedDivision> subordinates,
+    List<Soldier> soldiers, List<Order> possibleOrders, HashSet<int> subordinates,
     Dictionary<int, RememberedDivision> rememberedDivisions,
     DivisionController controller = null)
     {
-        this.Commander = commander;
+        this.Commander = commander.DivisionId;
 
         this.PossibleOrders = new List<Order>(possibleOrders);
-        this.Subordinates = new Dictionary<int, RememberedDivision>(subordinates);
+        this.Subordinates = new HashSet<int>(subordinates);
         this.OrderQueue = new List<Order>(orders);
         this.Soldiers = new List<Soldier>(soldiers);
         
@@ -50,14 +55,15 @@ public class Division {
         this.Controller = controller;
         this.OngoingOrder = new EmptyOrder();
         SetupOrders();
+        OnChange();
     }
-
+    */
     public Division(Division division, DivisionController controller = null)
     {
         this.Commander = division.Commander;
 
         this.PossibleOrders = new List<Order>(division.PossibleOrders);
-        this.Subordinates = new Dictionary<int, RememberedDivision>(division.Subordinates);
+        this.Subordinates = new HashSet<int>(division.Subordinates);
         this.OrderQueue = new List<Order>();
         this.Soldiers = new List<Soldier>(division.Soldiers);
         
@@ -75,15 +81,21 @@ public class Division {
     //use for creating a new division from inside a new controller
     public Division(DivisionController controller = null)
     {
-        this.Commander = null;
+        this.Commander = -1;
 
         this.PossibleOrders = new List<Order>();
-        this.Subordinates = new Dictionary<int, RememberedDivision>();
+        this.Subordinates = new HashSet<int>();
         this.OrderQueue = new List<Order>();
         this.Soldiers = new List<Soldier>();
-        
-        this.RememberedDivisions = new Dictionary<int, RememberedDivision>();
 
+        this.RememberedDivisions = new Dictionary<int, RememberedDivision>();
+        SetupOrders();
+
+        Init(controller);
+    }
+
+    public void Init(DivisionController controller = null)
+    {
         this.DivisionId = DivisionCounter;
         DivisionCounter++;
 
@@ -145,10 +157,7 @@ public class Division {
 
     public void OnChange()
     {
-        if(refresh != null)
-        {
-            refresh(this);
-        }
+        refresh?.Invoke(this);
     }
 
     private void ContinueOrder()
@@ -184,7 +193,7 @@ public class Division {
 
     public void AddSubordinate(RememberedDivision division)
     {
-        Subordinates.Add(division.DivisionId, division);
+        Subordinates.Add(division.DivisionId);
         OnChange();
     }
 
@@ -196,24 +205,26 @@ public class Division {
 
     public void FindAndRemoveSubordinateById(int divisionId)
     {
-        if(Subordinates.ContainsKey(divisionId))
+        if(Subordinates.Contains(divisionId))
         {
-            Division other = Subordinates[divisionId];
+            Division other = RememberedDivisions[divisionId];
             //promote the guys under him
-            foreach (var subordinate in other.Subordinates)
+            foreach (var subordinateId in other.Subordinates)
             {
-                subordinate.Value.Commander = new RememberedDivision(this);
-                AddSubordinate(subordinate.Value);
-                subordinate.Value.OnChange();
+                var subordinate = RememberedDivisions[subordinateId];
+                subordinate.Commander = divisionId;
+                AddSubordinate(subordinate);
+                subordinate.OnChange();
             }
 
             Subordinates.Remove(divisionId);
         }
         else
         {
-            foreach(var sub in Subordinates)
+            foreach(var subordinateId in Subordinates)
             {
-                sub.Value.FindAndRemoveSubordinateById(divisionId);
+                var subordinate = RememberedDivisions[subordinateId];
+                subordinate.FindAndRemoveSubordinateById(divisionId);
             }
         }
     }
@@ -265,7 +276,7 @@ public class Division {
         };
 
         AddSubordinate(new RememberedDivision(newDivision));
-        newDivision.Commander = new RememberedDivision(this);
+        newDivision.Commander = DivisionId;
         OnChange();
         newDivision.OnChange();
         newController.AttachedDivision = newDivision;
@@ -309,16 +320,22 @@ public class Division {
     {
         MaxSightDistance = 0;
         Speed = 0;
+        TotalHealth = 0;
+        DamageOutput = 0;
         int cnt = 0;
         foreach(Soldier soldier in Soldiers)
         {
             MaxSightDistance += soldier.SightDistance;
             Speed += soldier.Speed;
+            TotalHealth += soldier.Health;
+            DamageOutput += soldier.HitStrength;
             cnt++;
         }
 
         MaxSightDistance /= cnt;
         Speed /= cnt;
+        NumSoldiers = cnt;
+        OnChange();
     }
 
     public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)
@@ -334,25 +351,83 @@ public class Division {
     {
         foreach(var key in VisibleDivisions.Keys)
         {
-            RememberedDivisions[key] = new RememberedDivision(VisibleDivisions[key]);
-            foreach(var kvp in RememberedDivisions[key].RememberedDivisions)
-            {
-                int divisionId = kvp.Key;
-                RememberedDivision otherDiv = kvp.Value;
+            UpdateRememberedDivision(new RememberedDivision(VisibleDivisions[key]));
 
-                if(RememberedDivisions.ContainsKey(divisionId))
+            //only share info with same team
+            if(VisibleDivisions[key].Controller.Controller.TeamId == Controller.Controller.TeamId)
+            {
+                foreach (var kvp in VisibleDivisions[key].RememberedDivisions)
                 {
-                    var currentDiv = RememberedDivisions[divisionId];
-                    var latestDiv = otherDiv.TimeStamp > currentDiv.TimeStamp ? otherDiv : currentDiv;
-                    RememberedDivisions[divisionId] = latestDiv;
+                    int divisionId = kvp.Key;
+                    RememberedDivision otherDiv = kvp.Value;
+                    UpdateRememberedDivision(otherDiv);
                 }
             }
         }
 
-        RefreshSubordinates(RememberedDivisions);
+        //RefreshSubordinates(RememberedDivisions);
         RefreshOrdersRememberedDivisions(RememberedDivisions);
     }
 
+    public void UpdateRememberedDivision(RememberedDivision otherDiv)
+    {
+        int divisionId = otherDiv.DivisionId;
+
+        if(divisionId == DivisionId)
+        {
+            return;
+        }
+
+        if (RememberedDivisions.ContainsKey(divisionId))
+        {
+            var ourDiv = RememberedDivisions[divisionId];
+            var latestDiv = otherDiv.TimeStamp > ourDiv.TimeStamp ? otherDiv : ourDiv;
+            RememberedDivisions[divisionId] = latestDiv;
+        }
+        else
+        {
+            RememberedDivisions.Add(divisionId, otherDiv); 
+        }
+
+        FixSubordinates(otherDiv);
+    }
+
+    private void FixSubordinates(RememberedDivision changedDivision)
+    {
+        Division commander;
+        
+        if(changedDivision.Commander == this.DivisionId)
+        {
+            commander = this;
+        }
+        else
+        {
+            if(RememberedDivisions.ContainsKey(changedDivision.Commander))
+            {
+                commander = RememberedDivisions[changedDivision.Commander];
+            }
+            else
+            {
+                //hes clueless so go ahead and put him directly under you
+                commander = this;
+                changedDivision.Controller.AttachedDivision.Commander = this.DivisionId;
+
+            }
+        }
+        
+        if(!commander.Subordinates.Contains(changedDivision.DivisionId))
+        {
+            commander.Subordinates.Add(changedDivision.DivisionId);
+            //Debug.Log(SerializeSubordinates(this));
+        }
+
+
+        //find commander
+        //FindDivisionInSubordinates(this, to, new List<RememberedDivision>());
+
+    }
+
+    /*
     public void RefreshSubordinates(Dictionary<int, RememberedDivision> divisions)
     {
         var divisionIds = Subordinates.Keys.ToList();
@@ -371,7 +446,7 @@ public class Division {
             Subordinates[divisionId].RefreshSubordinates(divisions);
         }
     }
-
+    */
     public void RefreshOrdersRememberedDivisions(Dictionary<int, RememberedDivision> divisions)
     {
         foreach(var order in OrderQueue)
@@ -398,9 +473,9 @@ public class Division {
             return prev;
         }
 
-        foreach (var divisionKVP in start.Subordinates)
+        foreach (int subordinateId in start.Subordinates)
         {
-            RememberedDivision division = divisionKVP.Value;
+            RememberedDivision division = RememberedDivisions[subordinateId];
             List<RememberedDivision> temp = FindDivisionInSubordinates(division, end, prev);
             if (temp != null)
             {
@@ -441,6 +516,19 @@ public class Division {
 
     public override string ToString()
     {
-        return $"({DivisionId}, {Controller})";
+        return $"({DivisionId}, {Commander}, {Controller})";
+    }
+
+    public string SerializeSubordinates(Division division, Division rootDivision)
+    {
+        string str = division.ToString();
+
+        foreach (var subordinateId in division.Subordinates)
+        {
+            var subordinate = rootDivision.RememberedDivisions[subordinateId];
+            str += SerializeSubordinates(subordinate, rootDivision);
+        }
+
+        return str;
     }
 }

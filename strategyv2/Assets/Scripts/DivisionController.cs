@@ -12,14 +12,22 @@ public class DivisionController : BaseDivisionController {
     [SerializeField]
     private SphereCollider SightCollider;
     void Awake () {
-        AttachedDivision = new Division(this);
-        var soldiers = new List<Soldier>() { new Soldier(), new Soldier(), new Soldier(), new Soldier(), new Soldier() };
+        //AttachedDivision = new Division(this);
+        //var soldiers = new List<Soldier>() { new Soldier(), new Soldier(), new Soldier(), new Soldier(), new Soldier() };
         //soldiers[0].Count = 5;
-        AttachedDivision.TransferSoldiers(soldiers);
-        
+        //AttachedDivision.TransferSoldiers(soldiers);
+        AttachedDivision.Init(this);
     }
-	
-	void Update () {
+
+    private void Start()
+    {
+        if (AttachedDivision.Commander == -1)
+        {
+            AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;
+        }
+    }
+
+    void Update () {
         RefreshVisibleDivisions();
         AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
 

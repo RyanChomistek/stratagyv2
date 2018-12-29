@@ -22,18 +22,26 @@ public class DivisionControllerEditor : Editor
 
         if (GUILayout.Button("print subordinates"))
         {
-            var subStr = SerializeSubordinates(myTarget.AttachedDivision);
+            var subStr = myTarget.AttachedDivision.SerializeSubordinates(myTarget.AttachedDivision, myTarget.AttachedDivision);
+            Debug.Log(subStr);
+        }
+
+        if (GUILayout.Button("print Remembered"))
+        {
+            var subStr = Serializeremembered(myTarget.AttachedDivision);
             Debug.Log(subStr);
         }
     }
 
-    private string SerializeSubordinates(Division division)
-    {
-        string str = division.ToString();
 
-        foreach(var sub in division.Subordinates)
+
+    private string Serializeremembered(Division division)
+    {
+        string str = "";
+
+        foreach (var remembered in division.RememberedDivisions)
         {
-            str += SerializeSubordinates(sub.Value);
+            str += remembered;
         }
 
         return str;
