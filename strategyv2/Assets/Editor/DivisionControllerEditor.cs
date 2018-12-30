@@ -31,6 +31,11 @@ public class DivisionControllerEditor : Editor
             var subStr = Serializeremembered(myTarget.AttachedDivision);
             Debug.Log(subStr);
         }
+
+        if (GUILayout.Button("Destroy"))
+        {
+            myTarget.AttachedDivision.DestroyDivision(myTarget.AttachedDivision);
+        }
     }
 
 

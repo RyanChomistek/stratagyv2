@@ -24,7 +24,7 @@ public class InputController : MonoBehaviour {
                 OnClickDel(mousePos);
         }
 	}
-
+    
     public void RegisterOnClickCallBack(OnClick callback)
     {
         Debug.Log("registering click");

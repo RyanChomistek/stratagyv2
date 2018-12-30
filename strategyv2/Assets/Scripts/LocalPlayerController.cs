@@ -75,10 +75,10 @@ public class LocalPlayerController : PlayerController {
             List<Order> orders = new List<Order>(Selected.AttachedDivision.PossibleOrders);
             foreach (Order order in orders)
             {
-                order.CommanderSendingOrder = new RememberedDivision(GeneralDivision.AttachedDivision);
+                order.CommanderSendingOrderId = GeneralDivision.AttachedDivision.DivisionId;
             }
 
-            OrderDisplayManager.instance.AddOrderSet(orders);
+            OrderDisplayManager.instance.AddOrderSet(orders, division);
         }
         else
         {

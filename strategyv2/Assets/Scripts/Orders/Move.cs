@@ -5,24 +5,22 @@ using UnityEngine;
 [System.Serializable]
 public class Move : Order {
     public Vector3 finish;
-    InputController.OnClick OnClickReturnDel;
+    InputController.OnClick UICallback;
 
-    public Move(Division controller, RememberedDivision commanderSendingOrder, Vector3 finish)
+    public Move(Division controller, int commanderSendingOrderId, Vector3 finish)
+        : base(controller, commanderSendingOrderId, "Move")
     {
-        this.CommanderSendingOrder = commanderSendingOrder;
-        this.Host = controller;
         this.finish = finish;
-        this.name = "Move";
-        OnClickReturnDel = OnClickReturn;
     }
 
-    public override void Start()
+    public override void Start(Division Host)
     {
         Debug.Log("move start " + Host.Name);
-        MoveToTarget();
+        MoveToTarget(Host);
+        base.Start(Host);
     }
 
-    public void MoveToTarget()
+    public void MoveToTarget(Division Host)
     {
         Vector3 currLoc = Host.Controller.transform.position;
         Vector3 dir = (finish - currLoc).normalized;
@@ -31,34 +29,35 @@ public class Move : Order {
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
     }
 
-    public override void Pause()
+    public override void Pause(Division Host)
     {
         Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
     }
 
-    public override void End()
+    public override void End(Division Host)
     {
         Debug.Log("move end");
         Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
     }
 
-    public override void OnClickedInUI()
+    public override void OnClickedInUI(Division Host)
     {
-        InputController.Instance.RegisterOnClickCallBack(OnClickReturnDel);
+        UICallback = mousePos => OnClickReturn(mousePos, Host);
+        InputController.Instance.RegisterOnClickCallBack(UICallback);
     }
 
-    public void OnClickReturn(Vector3 mousePos)
+    public void OnClickReturn(Vector3 mousePos, Division Host)
     {
         finish = new Vector3(mousePos.x, mousePos.y);
-        InputController.Instance.UnregisterOnClickCallBack(OnClickReturnDel);
+        InputController.Instance.UnregisterOnClickCallBack(UICallback);
         //clear ui
         OrderDisplayManager.instance.ClearOrders();
         //need to get 
-
-        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new Move(Host, CommanderSendingOrder, finish));
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new Move(Host, CommanderSendingOrder.DivisionId, finish));
     }
 
-    public override void Proceed()
+    public override void Proceed(Division Host)
     {
         Vector3 currLoc = Host.Controller.transform.position;
         Vector3 dir = (finish - currLoc).normalized;
@@ -67,7 +66,7 @@ public class Move : Order {
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
     }
 
-    public override bool TestIfFinished()
+    public override bool TestIfFinished(Division Host)
     {
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;
@@ -85,7 +84,7 @@ public class Move : Order {
         Vector3 dir = (finish - lastKnownLoc).normalized;
         Vector3 distance = (finish - lastKnownLoc);
 
-        float maxTime = distance.magnitude / Host.Speed;
+        float maxTime = distance.magnitude / rememberedDivision.Speed;
         var deltaTime = GameManager.Instance.GameTime - rememberedDivision.TimeStamp;
 
         if(deltaTime > maxTime)
@@ -93,12 +92,12 @@ public class Move : Order {
             return finish;
         }
 
-        Vector3 predPosition = dir * Host.Speed * deltaTime;
+        Vector3 predPosition = lastKnownLoc + dir * rememberedDivision.Speed * deltaTime;
         return predPosition;
     }
 
     public override string ToString()
     {
-        return $"moving to {finish} at vel {Host.Controller.GetComponent<Rigidbody>().velocity}";
+        return $"moving to {finish}";
     }
 }

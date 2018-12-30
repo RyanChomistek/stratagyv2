@@ -2,40 +2,39 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SendMessage : Order {
-    bool hasFoundTarget;
-    List<Order> message;
-    Division VisibleTarget;
-    public RememberedDivision RememberedTarget;
+public class SendMessage : TargetingOrder
+{
+    private bool _hasFoundTarget;
+    private List<Order> _message;
+    private Division _visibleTarget;
 
-    public SendMessage(Division controller, RememberedDivision commanderSendingOrder, List<Order> message, RememberedDivision target)
+    public SendMessage(Division controller, int commanderSendingOrderId, List<Order> message, int targetId)
+        : base(controller, commanderSendingOrderId, "Send Message", targetId)
     {
-        this.CommanderSendingOrder = commanderSendingOrder;
-        this.Host = controller;
-        this.RememberedTarget = target;
-        this.VisibleTarget = null;
-        this.message = message;
+        this._visibleTarget = null;
+        this._message = message;
     }
 
-    public override void Proceed()
+    public override void Proceed(Division Host)
     {
-        if(Host.FindVisibleDivision(RememberedTarget.DivisionId, out VisibleTarget))
+        if(Host.FindVisibleDivision(RememberedTargetId, out _visibleTarget))
         {
-            VisibleTarget.ReceiveOrders(message);
-            hasFoundTarget = true;
+            _visibleTarget.ReceiveOrders(_message);
+            _hasFoundTarget = true;
         }
     }
 
-    public override bool TestIfFinished()
+    public override bool TestIfFinished(Division Host)
     {
-        return hasFoundTarget;
+        return _hasFoundTarget;
     }
 
-    public override void End()
+    public override void End(Division Host)
     {
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
         Host.Controller.GetComponent<Rigidbody>().velocity = Vector3.zero;
         RememberedDivision commander = Host.RememberedDivisions[CommanderSendingOrder.DivisionId];
-        Host.ReceiveOrder(new FindDivision(Host, new RememberedDivision(VisibleTarget), commander));
-        Host.ReceiveOrder(new MergeDivisions(Host, commander));
+        Host.ReceiveOrder(new FindDivision(Host, _visibleTarget.DivisionId, commander.DivisionId));
+        Host.ReceiveOrder(new MergeDivisions(Host, commander.DivisionId, commander.DivisionId));
     }
 }

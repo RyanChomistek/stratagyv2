@@ -7,14 +7,16 @@ public class RememberedDivision : Division
 {
     public float TimeStamp;
     public Vector3 Position;
+    public Vector3 Velocity;
+    public bool HasBeenDestroyed;
+
     public Vector3 PredictedPosition {
         get
         {
             return OngoingOrder.GetPredictedPosition(this);
         }
     }
-    public Vector3 Velocity;
-    public bool HasBeenDestroyed;
+    
     /*
     public RememberedDivision(RememberedDivision commander, List<Order> orders,
     List<Soldier> soldiers, List<Order> possibleOrders, HashSet<int> subordinates,
@@ -27,7 +29,7 @@ public class RememberedDivision : Division
         TimeStamp = GameManager.Instance.GameTime;
         HasBeenDestroyed = hasBeenDestroyed;
     }
-    */
+    
 
     public RememberedDivision(Division division, Vector3 position, Vector3 velocity)
         :base(division, division.Controller)
@@ -37,6 +39,7 @@ public class RememberedDivision : Division
         TimeStamp = GameManager.Instance.GameTime;
         HasBeenDestroyed = false;
     }
+    */
 
     public RememberedDivision(Division division)
     : base(division, division.Controller)
@@ -69,6 +72,7 @@ public class RememberedDivision : Division
 
     public override string ToString()
     {
-        return $"({DivisionId}, {Commander}, {Controller}, {HasBeenDestroyed})";
+        //, {Controller}, {HasBeenDestroyed}, {Position}, {Velocity}
+        return $"({DivisionId}, {Commander}, {HasBeenDestroyed})";
     }
 }

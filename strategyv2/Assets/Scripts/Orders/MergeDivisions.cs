@@ -2,29 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MergeDivisions : Order {
-
-    RememberedDivision Target;
+public class MergeDivisions : Order
+{
+    int TargetId;
     bool FinishedMerging;
-    public MergeDivisions(Division controller, RememberedDivision target)
+
+    public MergeDivisions(Division controller, int commanderSendingOrderId, int targetId)
+        : base(controller, commanderSendingOrderId, "merge")
     {
-        this.Host = controller;
-        this.Target = target;
         this.FinishedMerging = false;
+        this.TargetId = targetId;
     }
 
-    public override void Start() { }
-    public override void Pause() { }
-    public override void End() { }
-    public override void OnClickedInUI() { }
-    public override void Proceed()
+    public override void Proceed(Division Host)
     {
         Division divisionToMergeWith;
-        if(Host.FindVisibleDivision(Target.DivisionId, out divisionToMergeWith))
+        if(Host.FindVisibleDivision(TargetId, out divisionToMergeWith))
         {
             divisionToMergeWith.AbsorbDivision(Host);
             FinishedMerging = true;
         }
     }
-    public override bool TestIfFinished() { return FinishedMerging; }
+
+    public override bool TestIfFinished(Division Host) { return FinishedMerging; }
 }

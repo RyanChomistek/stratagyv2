@@ -32,6 +32,7 @@ public class DivisionController : BaseDivisionController {
         AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
 
         AttachedDivision.DoOrders();
+        AttachedDivision.DoBackgroundOrders();
         AttachedDivision.RecalculateAggrigateValues();
         SightCollider.radius = AttachedDivision.MaxSightDistance;
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
@@ -49,16 +50,44 @@ public class DivisionController : BaseDivisionController {
     void OnDrawGizmosSelected()
     {
         if(AttachedDivision != null && AttachedDivision.RememberedDivisions != null)
+        {
             foreach (var kvp in AttachedDivision.RememberedDivisions)
             {
-                if(kvp.Value.HasBeenDestroyed)
+                if (kvp.Value.HasBeenDestroyed)
                 {
                     continue;
                 }
 
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawSphere(kvp.Value.Position, 1);
+
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(kvp.Value.Position, kvp.Value.PredictedPosition);
+
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(kvp.Value.PredictedPosition, 1);
             }
+
+            if(AttachedDivision.RememberedDivisions.ContainsKey(AttachedDivision.Commander))
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(transform.position, AttachedDivision.RememberedDivisions[AttachedDivision.Commander].Controller.transform.position);
+            }
+
+            foreach (int id in AttachedDivision.Subordinates)
+            {
+                if (AttachedDivision.RememberedDivisions.ContainsKey(id))
+                {
+                    var controller = AttachedDivision.RememberedDivisions[id].Controller;
+                    if(controller)
+                    {
+                        Gizmos.color = Color.red;
+                        Gizmos.DrawLine(transform.position, controller.transform.position);
+                    }
+                }
+            }
+        }
+
     }
 
     public DivisionController CreateChild(List<Soldier> soldiersForChild)

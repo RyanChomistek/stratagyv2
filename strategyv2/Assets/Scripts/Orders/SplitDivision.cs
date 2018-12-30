@@ -7,14 +7,14 @@ public class SplitDivision : Order {
 
     Dictionary<SoldierType, int> SoldiersToSplit;
     public bool IsFinishedSpliting;
-    public SplitDivision(Division divisionToSplit, Dictionary<SoldierType, int> soldiersToSplit)
+    public SplitDivision(Division divisionToSplit, int commanderSendingOrder, Dictionary<SoldierType, int> soldiersToSplit)
+        : base(divisionToSplit, commanderSendingOrder, "split")
     {
-        this.Host = divisionToSplit;
         this.SoldiersToSplit = soldiersToSplit;
         this.IsFinishedSpliting = false;
     }
 
-    public override void Start()
+    public override void Start(Division Host)
     {
         Debug.Log("start split");
         List<Soldier> soldiers = new List<Soldier>();
@@ -31,11 +31,12 @@ public class SplitDivision : Order {
 
         Host.Controller.CreateChild(soldiers);
         IsFinishedSpliting = true;
+        base.Start(Host);
     }
 
-    public override void Pause() { }
-    public override void End() { }
-    public override void OnClickedInUI()
+    public override void Pause(Division Host) { }
+    public override void End(Division Host) { }
+    public override void OnClickedInUI(Division Host)
     {
         if(Host.Soldiers.Count <= 1)
         {
@@ -46,8 +47,9 @@ public class SplitDivision : Order {
         soldiersWanted.Add(SoldierType.Melee, 1);
 
         OrderDisplayManager.instance.ClearOrders();
-        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, soldiersWanted));
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, CommanderSendingOrderId, soldiersWanted));
     }
-    public override void Proceed() { }
-    public override bool TestIfFinished() { return IsFinishedSpliting; }
+    public override void Proceed(Division Host) { }
+    public override bool TestIfFinished(Division Host) { return IsFinishedSpliting; }
 }
