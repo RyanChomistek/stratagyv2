@@ -5,17 +5,19 @@ using UnityEngine;
 [System.Serializable]
 public class Move : Order {
     public Vector3 finish;
+    private float _thresholdDistance;
     InputController.OnClick UICallback;
 
-    public Move(Division controller, int commanderSendingOrderId, Vector3 finish)
+    public Move(Division controller, int commanderSendingOrderId, Vector3 finish, float thresholdDistance = .5f)
         : base(controller, commanderSendingOrderId, "Move")
     {
         this.finish = finish;
+        this._thresholdDistance = thresholdDistance;
     }
 
     public override void Start(Division Host)
     {
-        Debug.Log("move start " + Host.Name);
+        //Debug.Log("move start " + Host.Name);
         MoveToTarget(Host);
         base.Start(Host);
     }
@@ -70,7 +72,7 @@ public class Move : Order {
     {
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;
-        if (distanceToFinish < .5f)
+        if (distanceToFinish < _thresholdDistance)
         {
             return true;
         }

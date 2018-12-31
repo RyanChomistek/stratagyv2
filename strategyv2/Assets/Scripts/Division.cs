@@ -97,6 +97,7 @@ public class Division {
         this.PossibleOrders.Add(new ScoutOrder(this, -1, new Vector3()));
         this.PossibleOrders.Add(new AttackOrder(this, -1, -1));
         this.PossibleOrders.Add(new HeartBeatOrder(this, -1, -1));
+        this.PossibleOrders.Add(new EngageOrder(this, -1, -1));
     }
 
     public virtual void DoOrders()
@@ -579,7 +580,7 @@ public class Division {
     {
         //create a new division
         DivisionController messenger = CreateNewDivision();
-
+        messenger.name = "messenger";
         //todo discover location of to
         messenger.AttachedDivision.ReceiveOrder(new FindDivision(messenger.AttachedDivision, DivisionId, to.DivisionId));
         messenger.AttachedDivision.ReceiveOrder(new SendMessage(messenger.AttachedDivision, DivisionId, orders, to.DivisionId));

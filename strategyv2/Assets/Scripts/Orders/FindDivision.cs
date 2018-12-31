@@ -2,19 +2,57 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FindDivision : TargetingOrder
+public class FindDivision : MultiOrder
 {
-    bool HasFoundTarget;
-    //holds the target division when it is in sight
-    //private Division VisibleTarget;
-    
+    private int RememberedTargetId;
+    private float _thresholdDistance;
 
     public FindDivision(Division controller, int commanderSendingOrderId, int rememberedTargetId, float thresholdDistance = .5f)
-        : base(controller, commanderSendingOrderId, "find division", rememberedTargetId, thresholdDistance)
+        : base(controller, commanderSendingOrderId, "find division", new List<Order>())
     {
-        //this.VisibleTarget = null;
+        this.RememberedTargetId = rememberedTargetId;
+        this._thresholdDistance = thresholdDistance;
+
+        AddMoveToTarget(controller);
     }
-    
+
+    private void AddMoveToTarget(Division Host)
+    {
+        RememberedDivision rememberedTarget;
+        if (TryGetRememberedDivisionFromHost(Host, RememberedTargetId, out rememberedTarget))
+        {
+            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.Position));
+        }
+        else
+        {
+            //add wait order to wait until we find the remembered division
+            this.SubOrders.Add(new WaitOrder(Host, CommanderSendingOrderId, .1f));
+        }
+    }
+
+    protected override void StartNextOrder(Division Host)
+    {
+        base.StartNextOrder(Host);
+        AddMoveToTarget(Host);
+    }
+
+    public override bool TestIfFinished(Division Host)
+    {
+        Division visibleTarget;
+        if(Host.FindVisibleDivision(RememberedTargetId, out visibleTarget))
+        {
+            Vector3 currLoc = Host.Controller.transform.position;
+            float distanceToFinish = (visibleTarget.Controller.transform.position - currLoc).magnitude;
+            if (distanceToFinish < _thresholdDistance)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /*
     public override bool TestIfFinished(Division Host)
     {
         //find division does all of its work in end
@@ -40,8 +78,8 @@ public class FindDivision : TargetingOrder
 
 
     }
-    
-    
+    */
+
     /*
     public override void Proceed(Division Host)
     {

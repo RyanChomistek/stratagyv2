@@ -50,13 +50,6 @@ public class AttackOrder : TargetingOrder
         return IsFinished;
     }
 
-    /*
-    public override void RefreshRememberedDivisions(Dictionary<int, RememberedDivision> divisions)
-    {
-        RememberedTarget = divisions[RememberedTarget.DivisionId];
-    }
-    */
-
     public override void OnClickedInUI(Division Host)
     {
         //InputController.Instance.RegisterOnClickCallBack(OnClickReturn);

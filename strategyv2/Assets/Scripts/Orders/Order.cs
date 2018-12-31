@@ -5,10 +5,12 @@ using UnityEngine;
 [System.Serializable]
 public class Order
 {
+    private static int OrderIdCnt = 0;
+
     public int HostId;
     public int CommanderSendingOrderId;
     public string name;
-
+    public int orderId;
     public bool HasStarted;
     public bool IsBackgroundOrder;
 
@@ -28,6 +30,7 @@ public class Order
         this.HasStarted = false;
         this.IsBackgroundOrder = false;
         this.name = name;
+        this.orderId = OrderIdCnt++;
     }
 
     public virtual void Start(Division Host) { HasStarted = true; }
@@ -52,5 +55,4 @@ public class Order
     {
         return Host.RememberedDivisions.TryGetValue(id, out rememberedDivision);
     }
-    //public virtual void RefreshRememberedDivisions(Dictionary<int, RememberedDivision> divisions) { }
 }
