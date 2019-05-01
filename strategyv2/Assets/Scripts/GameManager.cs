@@ -5,6 +5,7 @@ using UnityEngine;
 class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    public static bool DEBUG = true;
     public float GameSpeed = 1;
     public float DeltaTime { get{ return Time.deltaTime * GameSpeed; } }
     public float GameTime = 0;

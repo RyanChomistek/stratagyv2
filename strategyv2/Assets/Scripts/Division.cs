@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using System.Collections.ObjectModel;
 public class InsufficientSoldierCountException : System.Exception{
 }
 
@@ -12,7 +12,7 @@ public class Division {
     public int DivisionId;
     public string Name;
     public int Commander;
-    public List<Soldier> Soldiers;
+    public ObservableCollection<Soldier> Soldiers;
     public HashSet<int> Subordinates = new HashSet<int>();
     
     public List<Order> OrderQueue;
@@ -45,7 +45,7 @@ public class Division {
         this.BackgroundOrderList = new List<Order>();
         this.OngoingOrder = division.OngoingOrder;
 
-        this.Soldiers = new List<Soldier>(division.Soldiers);
+        this.Soldiers = new ObservableCollection<Soldier>(division.Soldiers);
         
         this.RememberedDivisions = new Dictionary<int, RememberedDivision>(division.RememberedDivisions);
 
@@ -55,6 +55,7 @@ public class Division {
         this.Controller = controller;
         SetupOrders();
         RecalculateAggrigateValues();
+        this.Soldiers.CollectionChanged += OnSoldiersChanged;
     }
 
     //use for creating a new division from inside a new controller
@@ -66,12 +67,13 @@ public class Division {
         this.Subordinates = new HashSet<int>();
         this.OrderQueue = new List<Order>();
         this.BackgroundOrderList = new List<Order>();
-        this.Soldiers = new List<Soldier>();
+        this.Soldiers = new ObservableCollection<Soldier>();
 
         this.RememberedDivisions = new Dictionary<int, RememberedDivision>();
         SetupOrders();
 
         Init(controller);
+        this.Soldiers.CollectionChanged += OnSoldiersChanged;
     }
 
     public void Init(DivisionController controller = null)
@@ -83,6 +85,14 @@ public class Division {
         this.Controller = controller;
         this.OngoingOrder = new EmptyOrder();
         SetupOrders();
+        if(GameManager.DEBUG)
+        {
+            for(int i = 0; i < 10; i++)
+            {
+                Soldiers.Add(new Soldier());
+            }
+            
+        }
     }
 
     #endregion
@@ -207,7 +217,7 @@ public class Division {
 
     public void TransferSoldiers(List<Soldier> troops)
     {
-        Soldiers.AddRange(troops);
+        troops.ForEach(x => Soldiers.Add(x));
         troops.Clear();
         OnChange();
     }
@@ -268,7 +278,7 @@ public class Division {
 
     public void AbsorbDivision(Division other)
     {
-        TransferSoldiers(other.Soldiers);
+        TransferSoldiers(other.Soldiers.ToList());
         DestroyDivision(other);
     }
 
@@ -301,7 +311,7 @@ public class Division {
 
         Division newDivision = new Division(newController)
         {
-            Soldiers = soldiersForChild
+            Soldiers = new ObservableCollection<Soldier>(soldiersForChild)
         };
 
         AddSubordinate(new RememberedDivision(newDivision));
@@ -345,8 +355,15 @@ public class Division {
         return false;
     }
 
+    void OnSoldiersChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        RecalculateAggrigateValues();
+    }
+
     public void RecalculateAggrigateValues()
     {
+        //check if soldier hash has changed
+
         MaxSightDistance = 0;
         Speed = 0;
         TotalHealth = 0;
@@ -374,6 +391,8 @@ public class Division {
         {
             VisibleDivisions.Add(controller.AttachedDivision.DivisionId, controller.AttachedDivision);
         }
+
+        RefreshRememberedDivisionsFromVisibleDivisions();
     }
 
     public void RefreshRememberedDivisionsFromVisibleDivisions()

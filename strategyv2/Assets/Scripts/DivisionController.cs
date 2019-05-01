@@ -28,12 +28,14 @@ public class DivisionController : BaseDivisionController {
     }
 
     void Update () {
-        RefreshVisibleDivisions();
-        AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
+
+        //these are potentually needed to sync but kills perf
+        //RefreshVisibleDivisions();
+        //AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
 
         AttachedDivision.DoOrders();
         AttachedDivision.DoBackgroundOrders();
-        AttachedDivision.RecalculateAggrigateValues();
+        //AttachedDivision.RecalculateAggrigateValues();
         SightCollider.radius = AttachedDivision.MaxSightDistance;
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
         
