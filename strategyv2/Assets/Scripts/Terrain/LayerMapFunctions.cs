@@ -18,7 +18,7 @@ public class LayerMapFunctions : MonoBehaviour
         return map;
     }
     
-    public static void RenderMap(Terrain[,] map, Tilemap tilemap, List<MapLayerSettings> layerSettings)
+    public static void RenderMapWithTiles(Terrain[,] map, Tilemap tilemap, List<MapLayerSettings> layerSettings)
     {
         tilemap.ClearAllTiles(); //Clear the map (ensures we dont overlap)
         for (int x = 0; x < map.GetUpperBound(0); x++) //Loop through the width of the map
@@ -86,7 +86,31 @@ public class LayerMapFunctions : MonoBehaviour
         return false;
     }
 
-    public static Terrain[,] RandomWalk2D(Terrain[,] map, System.Random rand, Terrain currentTerrain)
+    public static Terrain[,] RandomSquares(Terrain[,] map, System.Random rand, Terrain currentTerrain, int width)
+    {
+        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) /2, map.GetUpperBound(1) / 2);
+
+        int midRadiusX = map.GetUpperBound(0) / 2;
+        int midRadiusY = map.GetUpperBound(1) / 2;
+        mid += new Vector2Int(rand.Next(-midRadiusX, midRadiusX),
+            rand.Next(-midRadiusY, midRadiusY));
+
+        for(int i = -width; i < width; i++)
+        {
+            for (int j = -width; j < width; j++)
+            {
+                var point = mid + new Vector2Int(i, j);
+                if(InBounds(map, point))
+                {
+                    map[point.x, point.y] = currentTerrain;
+                }
+            }
+        }
+
+        return map;
+    }
+    
+    public static Terrain[,] RandomWalk2D(Terrain[,] map, System.Random rand, Terrain currentTerrain, int width)
     {
         //start on an edge
         var startOnXOrY = rand.Next(2);
@@ -95,21 +119,26 @@ public class LayerMapFunctions : MonoBehaviour
         if (startOnXOrY == 1)
         {
             if (startAtBeginingOrEnd == 1)
-                start = new Vector2Int(Random.Range(0, map.GetUpperBound(1)), 0);
+                start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), 0);
             else
-                start = new Vector2Int(Random.Range(0, map.GetUpperBound(1)),  map.GetUpperBound(0));
+                start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)),  map.GetUpperBound(1));
         }
         else
         {
             if (startAtBeginingOrEnd == 1)
-                start = new Vector2Int(0, Random.Range(0, map.GetUpperBound(0)));
+                start = new Vector2Int(0, Random.Range(0, map.GetUpperBound(1)));
             else
-                start = new Vector2Int(map.GetUpperBound(1), Random.Range(0, map.GetUpperBound(1)));
+                start = new Vector2Int(map.GetUpperBound(0), Random.Range(0, map.GetUpperBound(1)));
         }
 
-        Debug.Log(start);
+        //pick a random point in the middle to go through
+        Vector2Int mid = new Vector2Int(map.GetUpperBound(0)/4, map.GetUpperBound(1)/4);
 
-        Vector2Int mid = new Vector2Int(map.GetUpperBound(1)/2, map.GetUpperBound(0)/2);
+        int midRadiusX = map.GetUpperBound(0) / 2;
+        int midRadiusY = map.GetUpperBound(1) / 2;
+        mid += new Vector2Int(rand.Next(-midRadiusX, midRadiusX), 
+            rand.Next(-midRadiusY, midRadiusY));
+
         Vector2 dir = mid - start;
 
         //if we picked to start in the middle just pick a direction
@@ -127,50 +156,67 @@ public class LayerMapFunctions : MonoBehaviour
             dir = dir.normalized;
         }
 
-        Debug.Log(dir);
-        RandomWalk2DHelper(ref map, rand, currentTerrain, start, dir);
+        Vector2Int gridPosition = start;
+        Vector2 realPosition = start;
+        while (InBounds(map, gridPosition))
+        //for(int a = 0; a < 100; a++)
+        {
+            Vector2 tangent = Vector2.Perpendicular(dir);
 
+            for (int i = -width; i < width; i++)
+            {
+                Vector2 step = (realPosition + tangent * i);
+                Vector2Int stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
+                if (InBounds(map, stepRounded))
+                    map[stepRounded.x, stepRounded.y] = currentTerrain;
+            }
+
+            Vector2 nextMove = (realPosition + dir);
+            //add in a random amound of deveation from dir so that its more curvy
+            Vector2Int nextMoveRounded = new Vector2Int(Mathf.RoundToInt(nextMove.x), Mathf.RoundToInt(nextMove.y));
+            Vector2Int delta = nextMoveRounded - gridPosition;
+            dir += new Vector2((float)rand.NextDouble() - .5f, (float)rand.NextDouble() - .5f) * .01f;
+            dir = dir.normalized / 8;
+            gridPosition = gridPosition + delta;
+            realPosition = nextMove;
+        }
+
+        //Debug.Log(dir/8);
+
+        //RandomWalk2DHelper(ref map, rand, currentTerrain, start, start, dir/8, width, 0);
         return map;
     }
 
-    public static void RandomWalk2DHelper(ref Terrain[,] map, System.Random rand, Terrain currentTerrain, Vector2Int position, Vector2 dir)
+    public static void RandomWalk2DHelper(ref Terrain[,] map, System.Random rand, Terrain currentTerrain, Vector2Int gridPosition, Vector2 realPosition, Vector2 dir, int width, int numSteps)
     {
-        if(!InBounds(map, position))
+        if(!InBounds(map, gridPosition))
         {
             return;
         }
-        
-        map[position.x, position.y] = currentTerrain;
-        
-        Vector2 nextMove = (position + dir);
 
+        Vector2 tangent = Vector2.Perpendicular(dir);
+
+        for (int i = -width; i < width; i++)
+        {
+            Vector2 step = (realPosition + tangent*i);
+            Vector2Int stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
+            if(InBounds(map, stepRounded))
+                map[stepRounded.x, stepRounded.y] = currentTerrain;
+        }
+
+        //map[gridPosition.x, gridPosition.y] = currentTerrain;
+        
+        Vector2 nextMove = (realPosition + dir);
+
+        //add in a random amound od deveation from dir so that its more curvy
         Vector2Int nextMoveRounded = new Vector2Int(Mathf.RoundToInt(nextMove.x), Mathf.RoundToInt(nextMove.y));
-        Vector2Int delta = nextMoveRounded - position;
-
-        
-        //if we are moving diagonally make sure that we only move in cardinal directions
-        if (delta.x != 0 && delta.y != 0)
-        {
-            var xFlip = rand.Next(2);
-            var yFlip = xFlip == 1 ? 0 : 1;
-            //Debug.Log("flips " + xFlip + " " + yFlip);
-            delta.x = delta.x * xFlip;
-            delta.y = delta.y * yFlip;
-        }
-        else
-        {
-            var isSwitch = rand.Next(2);
-            if(isSwitch == 1)
-            {
-                var temp = delta.x;
-                delta.x = delta.y;
-                delta.y = temp;
-            }
-        }
+        Vector2Int delta = nextMoveRounded - gridPosition;
 
 
-
-        RandomWalk2DHelper(ref map, rand, currentTerrain, position + delta, dir);
+        dir += new Vector2((float) rand.NextDouble() - .5f, (float) rand.NextDouble() - .5f) * .01f;
+        dir = dir.normalized / 8;
+        //Debug.Log((float)rand.NextDouble() - .5f);
+        RandomWalk2DHelper(ref map, rand, currentTerrain, gridPosition + delta, nextMove, dir, width, numSteps);
     }
 
     public static bool FindPathToEdge(ref Terrain[,] map, System.Random rand, Terrain currentTerrain, Vector2Int position, int currentStep, int maxSteps)

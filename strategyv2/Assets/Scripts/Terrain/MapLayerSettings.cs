@@ -6,12 +6,12 @@ using UnityEngine.Tilemaps;
 
 public enum LayerFillAlgorithm
 {
-    Solid, RandomWalk
+    Solid, RandomWalk, Square
 }
 
 public enum Terrain
 {
-    Empty, Grass, Road
+    Empty, Grass, Road, Water, Farm, Town
 }
 
 
@@ -26,6 +26,8 @@ public class MapLayerSettings : ScriptableObject
     public bool randomSeed;
     public float seed;
     public int iterations = 1;
+    public int radius = 1;
+    public TerrainTile terrainTile;
 }
 
 
@@ -43,6 +45,7 @@ public class MapLayerSettings_Editor : Editor
         mapLayer.terrain = (Terrain)EditorGUILayout.EnumPopup(new GUIContent("Terrain type", ""), mapLayer.terrain);
         mapLayer.randomSeed = EditorGUILayout.Toggle("Random Seed", mapLayer.randomSeed);
         mapLayer.tile = EditorGUILayout.ObjectField("", mapLayer.tile, typeof(TileBase), false) as TileBase;
+        mapLayer.terrainTile = EditorGUILayout.ObjectField("", mapLayer.terrainTile, typeof(TerrainTile), false) as TerrainTile;
         //Only appear if we have the random seed set to false
         if (!mapLayer.randomSeed)
         {
@@ -56,7 +59,12 @@ public class MapLayerSettings_Editor : Editor
                 //No additional Variables
                 break;
             case LayerFillAlgorithm.RandomWalk:
-                mapLayer.iterations = EditorGUILayout.IntField(mapLayer.iterations);
+                mapLayer.iterations = EditorGUILayout.IntField("Iterations", mapLayer.iterations);
+                mapLayer.radius = EditorGUILayout.IntField("Radius", mapLayer.radius);
+                break;
+            case LayerFillAlgorithm.Square:
+                mapLayer.iterations = EditorGUILayout.IntField("Iterations", mapLayer.iterations);
+                mapLayer.radius = EditorGUILayout.IntField("Size", mapLayer.radius);
                 break;
         }
 

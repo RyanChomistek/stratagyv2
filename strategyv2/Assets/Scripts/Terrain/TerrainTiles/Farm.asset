@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95f8354dac7050f4581aa813e900d708, type: 3}
+  m_Name: Farm
+  m_EditorClassIdentifier: 
+  Supply: 20
+  Population: 5
+  MovementSpeedModifier: 0.75
+  TerrainType: 4
+  tile: {fileID: 11400000, guid: 4453ae3a5600d50448bdf564b72742f6, type: 2}

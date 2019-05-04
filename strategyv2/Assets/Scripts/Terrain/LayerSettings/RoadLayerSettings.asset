@@ -10,11 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e319c951dafda31469df9bcf7f10b019, type: 3}
-  m_Name: GrassLayerSettings
+  m_Name: RoadLayerSettings
   m_EditorClassIdentifier: 
-  terrain: 1
-  algorithm: 0
-  tile: {fileID: 11400000, guid: 1526d0f8d445b5a46b6d144e58c6ac54, type: 2}
+  terrain: 2
+  algorithm: 1
+  tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}
   randomSeed: 1
-  seed: 234234
-  iterations: 1
+  seed: 651651
+  iterations: 3
+  radius: 1
+  terrainTile: {fileID: 11400000, guid: 7b9d15a615d119d4c9651fae2ae806e1, type: 2}
