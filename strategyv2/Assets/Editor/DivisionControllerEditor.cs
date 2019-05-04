@@ -4,11 +4,12 @@ using UnityEditor;
 using System.Collections.Generic;
 
 [CustomEditor(typeof(DivisionController))]
-public class DivisionControllerEditor : Editor
+public class DivisionControllerEditor : CustomEditorBase
 {
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
+        base.OnInspectorGUI();
+        //DrawDefaultInspector();
         DivisionController myTarget = (DivisionController)target;
 
         //myTarget.experience = EditorGUILayout.IntField("Experience", myTarget.experience);

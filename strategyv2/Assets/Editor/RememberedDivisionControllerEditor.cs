@@ -4,11 +4,12 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(RememberedDivisionController))]
-public class RememberedDivisionControllerEditor : Editor
+public class RememberedDivisionControllerEditor : CustomEditorBase
 {
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
+        base.OnInspectorGUI();
+        //DrawDefaultInspector();
         RememberedDivisionController myTarget = (RememberedDivisionController)target;
 
         if (GUILayout.Button("print division details"))
