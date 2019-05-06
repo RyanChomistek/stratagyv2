@@ -8,9 +8,10 @@ public class LayerMapFunctions : MonoBehaviour
     public static Terrain[,] GenerateArray(int width, int height, Terrain defaultTerrain)
     {
         Terrain[,] map = new Terrain[width, height];
-        for (int x = 0; x < map.GetUpperBound(0); x++)
+        
+        for (int x = 0; x <= map.GetUpperBound(0); x++)
         {
-            for (int y = 0; y < map.GetUpperBound(1); y++)
+            for (int y = 0; y <= map.GetUpperBound(1); y++)
             {
                 map[x, y] = defaultTerrain;
             }
@@ -21,9 +22,9 @@ public class LayerMapFunctions : MonoBehaviour
     public static void RenderMapWithTiles(Terrain[,] map, Tilemap tilemap, List<MapLayerSettings> layerSettings)
     {
         tilemap.ClearAllTiles(); //Clear the map (ensures we dont overlap)
-        for (int x = 0; x < map.GetUpperBound(0); x++) //Loop through the width of the map
+        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
         {
-            for (int y = 0; y < map.GetUpperBound(1); y++) //Loop through the height of the map
+            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
             {
                 if(map[x, y] != Terrain.Empty)
                 {
@@ -131,6 +132,8 @@ public class LayerMapFunctions : MonoBehaviour
                 start = new Vector2Int(map.GetUpperBound(0), Random.Range(0, map.GetUpperBound(1)));
         }
 
+        Debug.Log(start);
+
         //pick a random point in the middle to go through
         Vector2Int mid = new Vector2Int(map.GetUpperBound(0)/4, map.GetUpperBound(1)/4);
 
@@ -159,17 +162,22 @@ public class LayerMapFunctions : MonoBehaviour
         Vector2Int gridPosition = start;
         Vector2 realPosition = start;
         while (InBounds(map, gridPosition))
-        //for(int a = 0; a < 100; a++)
         {
-            Vector2 tangent = Vector2.Perpendicular(dir);
+            Vector2 tangent = Vector2.Perpendicular(dir).normalized;
+            //Debug.Log(tangent.magnitude);
+
+            Vector2Int stepRounded = RoundVector(realPosition);
+            map[stepRounded.x, stepRounded.y] = currentTerrain;
 
             for (int i = -width; i < width; i++)
             {
                 Vector2 step = (realPosition + tangent * i);
-                Vector2Int stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
+                stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
                 if (InBounds(map, stepRounded))
                     map[stepRounded.x, stepRounded.y] = currentTerrain;
             }
+
+            
 
             Vector2 nextMove = (realPosition + dir);
             //add in a random amound of deveation from dir so that its more curvy
@@ -185,6 +193,11 @@ public class LayerMapFunctions : MonoBehaviour
 
         //RandomWalk2DHelper(ref map, rand, currentTerrain, start, start, dir/8, width, 0);
         return map;
+    }
+
+    private static Vector2Int RoundVector(Vector2 vec)
+    {
+        return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
     }
 
     public static void RandomWalk2DHelper(ref Terrain[,] map, System.Random rand, Terrain currentTerrain, Vector2Int gridPosition, Vector2 realPosition, Vector2 dir, int width, int numSteps)

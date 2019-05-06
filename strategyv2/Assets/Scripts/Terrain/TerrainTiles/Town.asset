@@ -9,11 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95f8354dac7050f4581aa813e900d708, type: 3}
+  m_Script: {fileID: 0}
   m_Name: Town
-  m_EditorClassIdentifier: 
-  Supply: 20
-  Population: 20
-  MovementSpeedModifier: 1
-  TerrainType: 5
-  tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  tile:
+    Supply: 20
+    Population: 20
+    MoveCost: 1200
+    TerrainType: 5
+    tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}

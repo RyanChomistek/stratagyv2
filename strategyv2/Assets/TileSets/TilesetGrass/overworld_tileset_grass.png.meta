@@ -539,6 +539,9 @@ TextureImporter:
   - first:
       213: -6970207071240012449
     second: overworld_tileset_grass_143
+  - first:
+      213: 1645497754237475537
+    second: overworld_tileset_grass_147
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -4333,6 +4336,27 @@ TextureImporter:
       bones: []
       spriteID: ac833b09a2091df4fb651b4bfbc9fbb8
       internalID: -6970207071240012449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overworld_tileset_grass_147
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 48
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9662cd062df828045a39b8fe3b889e82
+      internalID: 1645497754237475537
       vertices: []
       indices: 
       edges: []

@@ -9,11 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95f8354dac7050f4581aa813e900d708, type: 3}
+  m_Script: {fileID: 0}
   m_Name: Road
-  m_EditorClassIdentifier: 
-  Supply: 10
-  Population: 1
-  MovementSpeedModifier: 2
-  TerrainType: 2
-  tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  tile:
+    Supply: 10
+    Population: 3
+    MoveCost: 600
+    TerrainType: 2
+    tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}

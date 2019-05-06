@@ -9,11 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95f8354dac7050f4581aa813e900d708, type: 3}
+  m_Script: {fileID: 0}
   m_Name: Farm
-  m_EditorClassIdentifier: 
-  Supply: 20
-  Population: 5
-  MovementSpeedModifier: 0.75
-  TerrainType: 4
-  tile: {fileID: 11400000, guid: 4453ae3a5600d50448bdf564b72742f6, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  tile:
+    Supply: 20
+    Population: 2
+    MoveCost: 1300
+    TerrainType: 4
+    tile: {fileID: 11400000, guid: 4453ae3a5600d50448bdf564b72742f6, type: 2}

@@ -21,16 +21,22 @@ public class MapGenerator : MonoBehaviour
     public void GenerateMap()
     {
         ClearMap();
-        map = new Terrain[Width, Height];
+        map = new Terrain[Width+1, Height+1];
         float seed;
-        seed = Time.time;
+        seed = System.DateTime.Now.Millisecond;
         System.Random rand = new System.Random((int)seed);
 
         foreach (var layerSetting in LayerSettings)
         {
+            if (!layerSetting.IsEnabled)
+            {
+                continue;
+            }
+
             if (layerSetting.randomSeed)
             {
-                seed = Time.time;
+                seed = System.DateTime.Now.Millisecond + seed;
+                rand = new System.Random((int)seed);
             }
             else
             {
@@ -38,7 +44,6 @@ public class MapGenerator : MonoBehaviour
                 rand = new System.Random((int)seed);
             }
 
-            //Debug.Log(seed);
             
             for (int i = 0; i < layerSetting.iterations; i++)
             {

@@ -27,7 +27,8 @@ public class MapLayerSettings : ScriptableObject
     public float seed;
     public int iterations = 1;
     public int radius = 1;
-    public TerrainTile terrainTile;
+    public TerrainTileSettings terrainTile;
+    public bool IsEnabled = true;
 }
 
 
@@ -45,7 +46,8 @@ public class MapLayerSettings_Editor : Editor
         mapLayer.terrain = (Terrain)EditorGUILayout.EnumPopup(new GUIContent("Terrain type", ""), mapLayer.terrain);
         mapLayer.randomSeed = EditorGUILayout.Toggle("Random Seed", mapLayer.randomSeed);
         mapLayer.tile = EditorGUILayout.ObjectField("", mapLayer.tile, typeof(TileBase), false) as TileBase;
-        mapLayer.terrainTile = EditorGUILayout.ObjectField("", mapLayer.terrainTile, typeof(TerrainTile), false) as TerrainTile;
+        mapLayer.terrainTile = EditorGUILayout.ObjectField("", mapLayer.terrainTile, typeof(TerrainTileSettings), false) as TerrainTileSettings;
+        mapLayer.IsEnabled = EditorGUILayout.Toggle("Enable", mapLayer.IsEnabled);
         //Only appear if we have the random seed set to false
         if (!mapLayer.randomSeed)
         {

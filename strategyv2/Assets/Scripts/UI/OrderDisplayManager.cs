@@ -41,7 +41,6 @@ public class OrderDisplayManager : MonoBehaviour {
     {
         instance = this;
         int numChildren = transform.childCount;
-        Debug.Log(numChildren);
         displays = new List<GameObject>();
         for (int i = 0; i < numChildren; i++)
         {

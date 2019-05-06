@@ -20,3 +20,4 @@ MonoBehaviour:
   iterations: 5
   radius: 3
   terrainTile: {fileID: 11400000, guid: 397b37f915f38be4bb1d45471e077c00, type: 2}
+  IsEnabled: 1

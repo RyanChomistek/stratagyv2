@@ -45,7 +45,7 @@ public class MapManagerEditor : CustomEditorBase
         {
             //var soldiers = new List<Soldier>() { new Soldier() };
             //myTarget.AttachedDivision.TransferSoldiers(soldiers);
-            mapManager.RenderMapWithKey(x => x.MovementSpeedModifier);
+            mapManager.RenderMapWithKey(x => 1 / (float)x.MoveCost);
         }
     }
 }
