@@ -177,8 +177,6 @@ public class LayerMapFunctions : MonoBehaviour
                     map[stepRounded.x, stepRounded.y] = currentTerrain;
             }
 
-            
-
             Vector2 nextMove = (realPosition + dir);
             //add in a random amound of deveation from dir so that its more curvy
             Vector2Int nextMoveRounded = new Vector2Int(Mathf.RoundToInt(nextMove.x), Mathf.RoundToInt(nextMove.y));
@@ -195,7 +193,7 @@ public class LayerMapFunctions : MonoBehaviour
         return map;
     }
 
-    private static Vector2Int RoundVector(Vector2 vec)
+    public static Vector2Int RoundVector(Vector2 vec)
     {
         return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
     }

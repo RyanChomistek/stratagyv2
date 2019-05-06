@@ -379,8 +379,17 @@ public class Division {
         }
 
         MaxSightDistance /= cnt;
-        Speed /= cnt;
         NumSoldiers = cnt;
+        Speed /= cnt;
+        var pos = Controller.transform.position;
+        if(MapManager.Instance != null)
+        {
+            var tile = MapManager.Instance.GetTileFromPosition(pos);
+            var prespeed = Speed;
+            Speed *= 1 / (float)tile.MoveCost;
+            //Debug.Log($"{prespeed} {Speed} {tile.MoveCost} {Controller.name}");
+        }
+
         OnChange();
     }
 

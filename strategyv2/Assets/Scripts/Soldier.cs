@@ -7,7 +7,7 @@
 public class Soldier
 {
     //public int Count = 0;
-    public float Speed = 10;
+    public float Speed = 5000;
     public float HitStrength = 1;
     public float Health = 1;
     public float MinRange = 0f;

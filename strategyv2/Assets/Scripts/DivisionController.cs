@@ -21,6 +21,7 @@ public class DivisionController : BaseDivisionController {
 
     private void Start()
     {
+        
         if (AttachedDivision.Commander == -1)
         {
             AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;

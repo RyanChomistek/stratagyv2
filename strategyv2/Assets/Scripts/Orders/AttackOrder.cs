@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AttackOrder : TargetingOrder
 {
-    public int RememberedTargetId;
+    //public int RememberedTargetId;
     private bool IsFinished = false;
 
     LocalPlayerController.responseToUI UICallback;

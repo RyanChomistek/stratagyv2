@@ -8,6 +8,8 @@ using UnityEngine.Tilemaps;
 
 public class MapManager : MonoBehaviour
 {
+    private static MapManager _instance;
+    public static MapManager Instance { get { return _instance; } }
     public TerrainTile BaseTerrainTile;
     public MapGenerator MapGen;
     [Tooltip("The Tilemap to draw onto")]
@@ -16,10 +18,16 @@ public class MapManager : MonoBehaviour
     public TileBase BlankTile;
 
     public bool GenNewMapOnStart = false;
+    private void Awake()
+    {
+        _instance = this;
+        if (GenNewMapOnStart)
+            GenerateMap();
+    }
+
     void Start()
     {
-        if(GenNewMapOnStart)
-            GenerateMap();
+        CreateGraph();
     }
 
     public void GenerateMap()
@@ -27,8 +35,14 @@ public class MapManager : MonoBehaviour
         MapGen.GenerateMap();
         ConvertMapGenerationToTerrainTiles();
         RenderMapWithTiles();
-        //RenderMapWithKey(x => x.Population);
-        CreateGraph();
+    }
+
+    public TerrainTile GetTileFromPosition(Vector3 position)
+    {
+        var gridStart = Tilemap.transform.position;
+        var deltaFromStart = position - gridStart;
+        var rounded = LayerMapFunctions.RoundVector(deltaFromStart);
+        return map[rounded.x, rounded.y];
     }
 
     public static bool InBounds(PointNode[,] map, int x, int y)

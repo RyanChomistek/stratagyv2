@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Pathfinding;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,16 +25,25 @@ public class Move : Order {
 
     public void MoveToTarget(Division Host)
     {
+        /*
         Vector3 currLoc = Host.Controller.transform.position;
         Vector3 dir = (finish - currLoc).normalized;
         Vector3 moveVec = dir * Host.Speed;
         //set start moving twords finish
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
+        */
+        IAstarAI ai = Host.Controller.GetComponent<IAstarAI>();
+        ai.canMove = true;
+        ai.destination = finish;
+        Host.RecalculateAggrigateValues();
+        ai.maxSpeed = Host.Speed;
     }
 
     public override void Pause(Division Host)
     {
-        Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+        //Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+        IAstarAI ai = Host.Controller.GetComponent<IAstarAI>();
+        ai.canMove = false;
     }
 
     public override void End(Division Host)
@@ -61,11 +71,14 @@ public class Move : Order {
 
     public override void Proceed(Division Host)
     {
+        /*
         Vector3 currLoc = Host.Controller.transform.position;
         Vector3 dir = (finish - currLoc).normalized;
         Vector3 moveVec = dir * Host.Speed;
         //set start moving twords finish
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
+        */
+        MoveToTarget(Host);
     }
 
     public override bool TestIfFinished(Division Host)
