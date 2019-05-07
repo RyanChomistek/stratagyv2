@@ -21,11 +21,13 @@ public class DivisionController : BaseDivisionController {
 
     private void Start()
     {
-        
         if (AttachedDivision.Commander == -1)
         {
             AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;
         }
+
+        //FindVisibleDivisions();
+        //RefreshVisibleDivisions();
     }
 
     void Update () {
@@ -33,11 +35,11 @@ public class DivisionController : BaseDivisionController {
         //these are potentually needed to sync but kills perf
         //RefreshVisibleDivisions();
         //AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
-
+        FindVisibleDivisions();
         AttachedDivision.DoOrders();
         AttachedDivision.DoBackgroundOrders();
         //AttachedDivision.RecalculateAggrigateValues();
-        SightCollider.radius = AttachedDivision.MaxSightDistance;
+        //SightCollider.radius = AttachedDivision.MaxSightDistance;
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
         
         if (generalDivision == this || generalDivision.VisibleControllers.Contains(this))
@@ -107,13 +109,9 @@ public class DivisionController : BaseDivisionController {
         AttachedDivision.SendMessenger(to, orders);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnDivisionEnterSight(DivisionController controller)
     {
-        var controller = other.gameObject.GetComponent<DivisionController>();
-        if (!controller)
-        {
-            return;
-        }
+        Debug.Log($"enter {this.name} {controller.name}");
 
         if(VisibleControllers.Contains(controller))
         {
@@ -121,19 +119,41 @@ public class DivisionController : BaseDivisionController {
         }
 
         VisibleControllers.Add(controller);
+
+        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         RefreshVisibleDivisions();
+        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
     }
 
-    private void OnTriggerExit(Collider other)
+    private void OnDivisionExitSight(DivisionController controller)
     {
-        var controller = other.gameObject.GetComponent<DivisionController>();
-        if (!controller)
-        {
-            return;
-        }
-        
+        Debug.Log($"exit {this.name} {controller.name}");
+
         VisibleControllers.Remove(controller);
+
+        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         RefreshVisibleDivisions();
+        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+    }
+
+    private void FindVisibleDivisions()
+    {
+        //VisibleControllers.Clear();
+        var divisions = FindObjectsOfType<DivisionController>();
+        //foreach(var division in divisions)
+        for(int i = 0; i < divisions.Length; i++)
+        {
+            var division = divisions[i];
+            var isInSight = (transform.position - division.transform.position).magnitude < AttachedDivision.MaxSightDistance;
+            if (isInSight && !VisibleControllers.Contains(division))
+            {
+                OnDivisionEnterSight(division);
+            }
+            else if (!isInSight && VisibleControllers.Contains(division))
+            {
+                OnDivisionExitSight(division);
+            }
+        }
     }
 
     public void RefreshVisibleDivisions()
@@ -153,6 +173,9 @@ public class DivisionController : BaseDivisionController {
     public override void SelectDivision()
     {
         base.SelectDivision();
+        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        RefreshVisibleDivisions();
+        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         LocalPlayerController.Instance.Select(this);
     }
 }

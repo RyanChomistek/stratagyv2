@@ -73,6 +73,13 @@ public class RememberedDivision : Division
     public override string ToString()
     {
         //, {Controller}, {HasBeenDestroyed}, {Position}, {Velocity}
-        return $"({DivisionId}, {Commander}, {HasBeenDestroyed})";
+        string str = "";
+
+        foreach (var remembered in RememberedDivisions)
+        {
+            str += remembered;
+        }
+        
+        return $"({DivisionId}, {OngoingOrder}, <{str}>)";
     }
 }

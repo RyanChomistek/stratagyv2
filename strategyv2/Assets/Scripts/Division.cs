@@ -27,7 +27,6 @@ public class Division {
     public float DamageOutput = 0;
 
     public Dictionary<int, Division> VisibleDivisions = new Dictionary<int, Division>();
-    public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
     public DivisionController Controller;
 
     public delegate void RefreshDelegate(Division division);
@@ -47,7 +46,7 @@ public class Division {
 
         this.Soldiers = new ObservableCollection<Soldier>(division.Soldiers);
         
-        this.RememberedDivisions = new Dictionary<int, RememberedDivision>(division.RememberedDivisions);
+        //this.RememberedDivisions = new Dictionary<int, RememberedDivision>(division.RememberedDivisions);
 
         this.DivisionId = division.DivisionId;
 
@@ -415,10 +414,12 @@ public class Division {
             //only share info with same team
             if(VisibleDivisions[key].Controller.Controller.TeamId == Controller.Controller.TeamId)
             {
-                foreach (var kvp in VisibleDivisions[key].RememberedDivisions)
+                var rememberedDivisionKeys = VisibleDivisions[key].RememberedDivisions.Keys.ToList();
+                //foreach (var kvp in VisibleDivisions[key].RememberedDivisions)
+                for(int i = 0; i < rememberedDivisionKeys.Count; i++)
                 {
-                    int divisionId = kvp.Key;
-                    RememberedDivision otherDiv = kvp.Value;
+                    int divisionId = rememberedDivisionKeys[i];
+                    RememberedDivision otherDiv = VisibleDivisions[key].RememberedDivisions[divisionId];
                     UpdateRememberedDivision(otherDiv);
                 }
             }

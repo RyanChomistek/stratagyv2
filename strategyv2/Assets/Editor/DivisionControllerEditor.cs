@@ -47,7 +47,7 @@ public class DivisionControllerEditor : CustomEditorBase
 
         foreach (var remembered in division.RememberedDivisions)
         {
-            str += remembered;
+            str += $"<{remembered}> \n";
         }
 
         return str;
