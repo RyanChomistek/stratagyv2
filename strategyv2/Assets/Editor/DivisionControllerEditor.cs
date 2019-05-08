@@ -37,11 +37,16 @@ public class DivisionControllerEditor : CustomEditorBase
         {
             myTarget.AttachedDivision.DestroyDivision(myTarget.AttachedDivision);
         }
+
+        if (GUILayout.Button("Refresh from Visible"))
+        {
+            myTarget.RefreshVisibleDivisions();
+        }
     }
 
 
 
-    private string Serializeremembered(Division division)
+    private string Serializeremembered(ControlledDivision division)
     {
         string str = "";
 

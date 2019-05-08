@@ -16,14 +16,14 @@ public class Move : Order {
         this._thresholdDistance = thresholdDistance;
     }
 
-    public override void Start(Division Host)
+    public override void Start(ControlledDivision Host)
     {
         //Debug.Log("move start " + Host.Name);
         MoveToTarget(Host);
         base.Start(Host);
     }
 
-    public void MoveToTarget(Division Host)
+    public void MoveToTarget(ControlledDivision Host)
     {
         /*
         Vector3 currLoc = Host.Controller.transform.position;
@@ -39,37 +39,37 @@ public class Move : Order {
         ai.maxSpeed = Host.Speed;
     }
 
-    public override void Pause(Division Host)
+    public override void Pause(ControlledDivision Host)
     {
         //Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
         IAstarAI ai = Host.Controller.GetComponent<IAstarAI>();
         ai.canMove = false;
     }
 
-    public override void End(Division Host)
+    public override void End(ControlledDivision Host)
     {
-        Debug.Log("move end");
+        //Debug.Log("move end");
         Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
     }
 
-    public override void OnClickedInUI(Division Host)
+    public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
-        UICallback = mousePos => OnClickReturn(mousePos, Host);
+        UICallback = mousePos => OnClickReturn(mousePos, Host, playerController);
         InputController.Instance.RegisterOnClickCallBack(UICallback);
     }
 
-    public void OnClickReturn(Vector3 mousePos, Division Host)
+    public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
     {
         finish = new Vector3(mousePos.x, mousePos.y);
         InputController.Instance.UnregisterOnClickCallBack(UICallback);
         //clear ui
         OrderDisplayManager.instance.ClearOrders();
         //need to get 
-        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
-        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new Move(Host, CommanderSendingOrder.DivisionId, finish));
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
+        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new Move(Host, CommanderSendingOrder.DivisionId, finish), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
         /*
         Vector3 currLoc = Host.Controller.transform.position;
@@ -81,7 +81,7 @@ public class Move : Order {
         MoveToTarget(Host);
     }
 
-    public override bool TestIfFinished(Division Host)
+    public override bool TestIfFinished(ControlledDivision Host)
     {
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;

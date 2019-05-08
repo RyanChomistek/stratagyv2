@@ -21,11 +21,11 @@ public class EngageOrder : MultiOrder
         this.SubOrders.Add(new FindDivision(Host, CommanderSendingOrderId, RememberedTargetId, Host.MaxSightDistance));
     }
 
-    protected override void StartNextOrder(Division Host)
+    protected override void StartNextOrder(ControlledDivision Host)
     {
         base.StartNextOrder(Host);
 
-        if(Host.FindVisibleDivision(RememberedTargetId, out Division division))
+        if(Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
         {
             //if the target is within range attack
             Debug.Log("visible");
@@ -39,16 +39,16 @@ public class EngageOrder : MultiOrder
         }
     }
 
-    public override void OnClickedInUI(Division Host)
+    public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         //InputController.Instance.RegisterOnClickCallBack(OnClickReturn);
-        UICallback = division => OnUnitSelected(Host, division);
+        UICallback = division => OnUnitSelected(Host, division, playerController);
         LocalPlayerController.Instance.RegisterUnitSelectCallback(UICallback);
     }
 
-    public void OnUnitSelected(Division Host, RememberedDivision division)
+    public void OnUnitSelected(Division Host, RememberedDivision division, PlayerController playerController)
     {
-        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterUnitSelectCallback(UICallback);
         OrderDisplayManager.instance.ClearOrders();
         /*
@@ -60,7 +60,7 @@ public class EngageOrder : MultiOrder
         CommanderSendingOrder.SendOrdersTo(new RememberedDivision(Host), orders);
         */
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), 
-            new EngageOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId));
+            new EngageOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }
 }
 

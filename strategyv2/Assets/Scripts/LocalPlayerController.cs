@@ -32,6 +32,7 @@ public class LocalPlayerController : PlayerController {
             {
                 if (RememberedDivisionControllers.ContainsKey(kvp.Key))
                 {
+                    Debug.Log("removing remembered");
                     var controller = RememberedDivisionControllers[kvp.Key];
                     RememberedDivisionControllers.Remove(kvp.Key);
                     Destroy(controller.gameObject);
@@ -46,7 +47,7 @@ public class LocalPlayerController : PlayerController {
             }
             else if(RememberedDivisionControllers.ContainsKey(kvp.Key))
             {
-                RememberedDivisionControllers[kvp.Key].transform.position = kvp.Value.Position;
+                RememberedDivisionControllers[kvp.Key].transform.position = kvp.Value.PredictedPosition;
                 RememberedDivisionControllers[kvp.Key].AttachedDivision = kvp.Value;
             }
             else
@@ -78,7 +79,7 @@ public class LocalPlayerController : PlayerController {
                 order.CommanderSendingOrderId = GeneralDivision.AttachedDivision.DivisionId;
             }
 
-            OrderDisplayManager.instance.AddOrderSet(orders, division);
+            OrderDisplayManager.instance.AddOrderSet(orders, division, this);
         }
         else
         {

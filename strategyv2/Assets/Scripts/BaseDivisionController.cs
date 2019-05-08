@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BaseDivisionController : MonoBehaviour
 {
-    public Division AttachedDivision = new Division();
+    public Division AttachedDivision;
     [SerializeField]
     protected GameObject DivisionDisplayContainer;
     [SerializeField]

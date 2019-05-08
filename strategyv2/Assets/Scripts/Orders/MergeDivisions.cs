@@ -14,9 +14,9 @@ public class MergeDivisions : Order
         this.TargetId = targetId;
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
-        Division divisionToMergeWith;
+        ControlledDivision divisionToMergeWith;
         if(Host.FindVisibleDivision(TargetId, out divisionToMergeWith))
         {
             divisionToMergeWith.AbsorbDivision(Host);
@@ -24,5 +24,5 @@ public class MergeDivisions : Order
         }
     }
 
-    public override bool TestIfFinished(Division Host) { return FinishedMerging; }
+    public override bool TestIfFinished(ControlledDivision Host) { return FinishedMerging; }
 }

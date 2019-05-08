@@ -3,19 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DivisionController : BaseDivisionController {
-    
+
+    //wrapper to treat attached divisions as controlled divisions
+    public new ControlledDivision AttachedDivision { get { return base.AttachedDivision as ControlledDivision; } set { base.AttachedDivision = value; } }
     public GameObject DivisionPrefab;
 
     [SerializeField]
     public List<DivisionController> VisibleControllers = new List<DivisionController>();
-
-    [SerializeField]
-    private SphereCollider SightCollider;
+    
     void Awake () {
         //AttachedDivision = new Division(this);
         //var soldiers = new List<Soldier>() { new Soldier(), new Soldier(), new Soldier(), new Soldier(), new Soldier() };
         //soldiers[0].Count = 5;
         //AttachedDivision.TransferSoldiers(soldiers);
+        int numsoldiers = base.AttachedDivision.NumSoldiers;
+        base.AttachedDivision = new ControlledDivision(this);
+        if (GameManager.DEBUG)
+        {
+            for (int i = 0; i < numsoldiers; i++)
+            {
+                AttachedDivision.Soldiers.Add(new Soldier());
+            }
+
+        }
+
         AttachedDivision.Init(this);
     }
 
@@ -23,11 +34,18 @@ public class DivisionController : BaseDivisionController {
     {
         if (AttachedDivision.Commander == -1)
         {
-            AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;
+            //AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;
+            AttachedDivision.Commander = AttachedDivision.DivisionId;
         }
-
-        //FindVisibleDivisions();
-        //RefreshVisibleDivisions();
+        /*
+        AttachedDivision.AddRefreshDelegate(division => {
+            FindVisibleDivisions();
+            RefreshVisibleDivisions();
+            VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        });
+        */
+        FindVisibleDivisions();
+        RefreshVisibleDivisions();
     }
 
     void Update () {
@@ -100,7 +118,11 @@ public class DivisionController : BaseDivisionController {
         GameObject newDivision = Instantiate(DivisionPrefab);
         DivisionController newController = newDivision.GetComponent<DivisionController>();
         newController.Controller = Controller;
-        AttachedDivision.CreateChild(soldiersForChild, newController);
+        //AttachedDivision.CreateChild(soldiersForChild, newController);
+        newController.AttachedDivision.Soldiers.Clear();
+        newController.AttachedDivision.TransferSoldiers(soldiersForChild);
+        newController.AttachedDivision.Commander = AttachedDivision.DivisionId;
+        AttachedDivision.AddSubordinate(new RememberedDivision(newController.AttachedDivision));
         return newController;
     }
 
@@ -111,7 +133,7 @@ public class DivisionController : BaseDivisionController {
 
     private void OnDivisionEnterSight(DivisionController controller)
     {
-        Debug.Log($"enter {this.name} {controller.name}");
+        //Debug.Log($"enter {this.name} {controller.name}");
 
         if(VisibleControllers.Contains(controller))
         {
@@ -120,20 +142,22 @@ public class DivisionController : BaseDivisionController {
 
         VisibleControllers.Add(controller);
 
-        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         RefreshVisibleDivisions();
-        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
     }
 
     private void OnDivisionExitSight(DivisionController controller)
     {
-        Debug.Log($"exit {this.name} {controller.name}");
+        //Debug.Log($"exit {this.name} {controller.name}");
+
+        
+
+        //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        RefreshVisibleDivisions();
 
         VisibleControllers.Remove(controller);
-
-        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
-        RefreshVisibleDivisions();
-        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
     }
 
     private void FindVisibleDivisions()
@@ -145,8 +169,14 @@ public class DivisionController : BaseDivisionController {
         {
             var division = divisions[i];
             var isInSight = (transform.position - division.transform.position).magnitude < AttachedDivision.MaxSightDistance;
+            
             if (isInSight && !VisibleControllers.Contains(division))
             {
+                if(division.AttachedDivision.HasBeenDestroyed)
+                {
+                    OnDivisionExitSight(division);
+                }
+
                 OnDivisionEnterSight(division);
             }
             else if (!isInSight && VisibleControllers.Contains(division))
@@ -173,9 +203,9 @@ public class DivisionController : BaseDivisionController {
     public override void SelectDivision()
     {
         base.SelectDivision();
-        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         RefreshVisibleDivisions();
-        VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
+        //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         LocalPlayerController.Instance.Select(this);
     }
 }

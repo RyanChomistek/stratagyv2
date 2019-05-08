@@ -13,15 +13,30 @@ public class FindDivision : MultiOrder
         this.RememberedTargetId = rememberedTargetId;
         this._thresholdDistance = thresholdDistance;
 
-        AddMoveToTarget(controller);
+        //AddMoveToTarget(controller);
     }
 
-    private void AddMoveToTarget(Division Host)
+    public override void Start(ControlledDivision Host)
+    {
+        AddMoveToTarget(Host);
+        base.Start(Host);
+    }
+
+    
+    public override void Proceed(ControlledDivision Host)
+    {
+        if(SubOrders.Count == 0)
+            AddMoveToTarget(Host);
+        base.Proceed(Host);
+    }
+    
+
+    private void AddMoveToTarget(ControlledDivision Host)
     {
         RememberedDivision rememberedTarget;
         if (TryGetRememberedDivisionFromHost(Host, RememberedTargetId, out rememberedTarget))
         {
-            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.Position));
+            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition));
         }
         else
         {
@@ -29,16 +44,10 @@ public class FindDivision : MultiOrder
             this.SubOrders.Add(new WaitOrder(Host, CommanderSendingOrderId, .1f));
         }
     }
-
-    protected override void StartNextOrder(Division Host)
+    
+    public override bool TestIfFinished(ControlledDivision Host)
     {
-        base.StartNextOrder(Host);
-        AddMoveToTarget(Host);
-    }
-
-    public override bool TestIfFinished(Division Host)
-    {
-        Division visibleTarget;
+        ControlledDivision visibleTarget;
         if(Host.FindVisibleDivision(RememberedTargetId, out visibleTarget))
         {
             Vector3 currLoc = Host.Controller.transform.position;

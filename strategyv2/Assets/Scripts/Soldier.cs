@@ -12,7 +12,7 @@ public class Soldier
     public float Health = 1;
     public float MinRange = 0f;
     public float MaxRange = 2;
-    public float SightDistance = 4;
+    public float SightDistance = 6;
     public SoldierType Type = SoldierType.Melee;
 
     public Soldier()

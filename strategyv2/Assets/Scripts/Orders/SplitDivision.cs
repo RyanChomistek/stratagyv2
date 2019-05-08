@@ -14,7 +14,7 @@ public class SplitDivision : Order {
         this.IsFinishedSpliting = false;
     }
 
-    public override void Start(Division Host)
+    public override void Start(ControlledDivision Host)
     {
         Debug.Log("start split");
         List<Soldier> soldiers = new List<Soldier>();
@@ -34,9 +34,9 @@ public class SplitDivision : Order {
         base.Start(Host);
     }
 
-    public override void Pause(Division Host) { }
-    public override void End(Division Host) { }
-    public override void OnClickedInUI(Division Host)
+    public override void Pause(ControlledDivision Host) { }
+    public override void End(ControlledDivision Host) { }
+    public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         if(Host.Soldiers.Count <= 1)
         {
@@ -47,9 +47,9 @@ public class SplitDivision : Order {
         soldiersWanted.Add(SoldierType.Melee, 1);
 
         OrderDisplayManager.instance.ClearOrders();
-        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
-        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, CommanderSendingOrderId, soldiersWanted));
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
+        CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, CommanderSendingOrderId, soldiersWanted), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }
-    public override void Proceed(Division Host) { }
-    public override bool TestIfFinished(Division Host) { return IsFinishedSpliting; }
+    public override void Proceed(ControlledDivision Host) { }
+    public override bool TestIfFinished(ControlledDivision Host) { return IsFinishedSpliting; }
 }

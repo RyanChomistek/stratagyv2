@@ -26,23 +26,5 @@ public class RememberedDivisionControllerEditor : CustomEditorBase
         {
             Debug.Log(myTarget.RememberedAttachedDivision.PredictedPosition);
         }
-
-        if (GUILayout.Button("print Remembered"))
-        {
-            var subStr = Serializeremembered(myTarget.AttachedDivision);
-            Debug.Log(subStr);
-        }
-    }
-
-    private string Serializeremembered(Division division)
-    {
-        string str = "";
-
-        foreach (var remembered in division.RememberedDivisions)
-        {
-            str += remembered;
-        }
-
-        return str;
     }
 }

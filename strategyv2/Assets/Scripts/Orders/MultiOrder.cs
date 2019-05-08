@@ -18,13 +18,13 @@ public class MultiOrder : Order
         OngoingOrder = null;
     }
 
-    public override void Start(Division Host)
+    public override void Start(ControlledDivision Host)
     {
         base.Start(Host);
         StartNextOrder(Host);
     }
 
-    protected virtual void StartNextOrder(Division Host)
+    protected virtual void StartNextOrder(ControlledDivision Host)
     {
         if (SubOrders.Count > 0)
         {
@@ -45,7 +45,7 @@ public class MultiOrder : Order
         */
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
         OngoingOrder.Proceed(Host);
         if(OngoingOrder.TestIfFinished(Host))
@@ -66,18 +66,18 @@ public class MultiOrder : Order
         return OngoingOrder.GetPredictedPosition(rememberedDivision);
     }
 
-    public override void Pause(Division Host)
+    public override void Pause(ControlledDivision Host)
     {
         OngoingOrder?.Pause(Host);
     }
 
-    public override void End(Division Host)
+    public override void End(ControlledDivision Host)
     {
         OngoingOrder?.End(Host);
     }
 
 
-    public override bool TestIfFinished(Division Host)
+    public override bool TestIfFinished(ControlledDivision Host)
     {
         //Debug.Log((SubOrders.Count == 0) +" "+ (OngoingOrder == null) + " " + name);
         return SubOrders.Count == 0 && OngoingOrder == null;
