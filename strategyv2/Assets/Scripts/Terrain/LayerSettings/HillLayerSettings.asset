@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e319c951dafda31469df9bcf7f10b019, type: 3}
-  m_Name: RiverLayerSettings
+  m_Name: HillLayerSettings
   m_EditorClassIdentifier: 
-  terrain: 3
-  algorithm: 1
-  tile: {fileID: 11400000, guid: 3bac961e89a45b14ca43316c0409a0dd, type: 2}
+  terrain: 6
+  algorithm: 2
+  tile: {fileID: 11400000, guid: dc96b06dd113c964183ab955bfd08c90, type: 2}
   randomSeed: 1
-  seed: 6541132
-  iterations: 3
-  radius: 1
-  terrainTile: {fileID: 11400000, guid: b484cfafaadefae4bbd61070b0b26365, type: 2}
+  seed: 234234
+  iterations: 4
+  radius: 4
+  terrainTile: {fileID: 11400000, guid: a3e08438b93d765439e4a2d5be07b4a9, type: 2}
   IsEnabled: 1

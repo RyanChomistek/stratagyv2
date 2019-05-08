@@ -290,36 +290,5 @@ public class LayerMapFunctions : MonoBehaviour
             }
         }
         return false;
-
-
-        /*
-        foreach(var nextMove in possibleMoves)
-        {
-            bool foundEdge = RandomWalk2DHelper(ref map, rand, currentTerrain, nextMove);
-            if (foundEdge)
-            {
-                return true;
-            }
-        }
-        */
-
-
-        /*
-    map[position.x, position.y] = currentTerrain;
-    Vector2Int nextMove = new Vector2Int(rand.Next(-1,2), rand.Next(-1, 2));
-    Debug.Log(nextMove);
-    if (nextMove.x != 0 && nextMove.y != 0)
-    {
-        var xFlip = rand.Next(2);
-        var yFlip = xFlip == 1 ? 0 : 1;
-        Debug.Log("flips " + xFlip +" " + yFlip);
-        nextMove.x = nextMove.x * xFlip;
-        nextMove.y = nextMove.y * yFlip;
-    }
-
-    Debug.Log(nextMove);
-    */
-
-        //return RandomWalk2DHelper(ref map, rand, currentTerrain, position + nextMove);
     }
 }

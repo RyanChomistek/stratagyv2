@@ -11,7 +11,7 @@ public enum LayerFillAlgorithm
 
 public enum Terrain
 {
-    Empty, Grass, Road, Water, Farm, Town
+    Empty, Grass, Road, Water, Farm, Town, Hill
 }
 
 
