@@ -15,6 +15,6 @@ MonoBehaviour:
   tile:
     Supply: 0
     Population: 0
-    MovementSpeedModifier: 0
-    TerrainType: 0
+    MoveCost: 0
+    TerrainType: 2
     tile: {fileID: 0}

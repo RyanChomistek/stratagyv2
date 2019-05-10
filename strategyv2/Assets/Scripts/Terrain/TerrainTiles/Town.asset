@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Town
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 20
-    Population: 20
+    Supply: 100
+    Population: 100
     MoveCost: 1200
     TerrainType: 5
     tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}

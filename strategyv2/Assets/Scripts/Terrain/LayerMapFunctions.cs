@@ -132,8 +132,6 @@ public class LayerMapFunctions : MonoBehaviour
                 start = new Vector2Int(map.GetUpperBound(0), Random.Range(0, map.GetUpperBound(1)));
         }
 
-        Debug.Log(start);
-
         //pick a random point in the middle to go through
         Vector2Int mid = new Vector2Int(map.GetUpperBound(0)/4, map.GetUpperBound(1)/4);
 

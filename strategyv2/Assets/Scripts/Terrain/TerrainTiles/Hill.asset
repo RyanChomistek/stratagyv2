@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Hill
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 10
-    Population: 1
-    MoveCost: 1000
+    Supply: 100
+    Population: 80
+    MoveCost: 1200
     TerrainType: 6
     tile: {fileID: 11400000, guid: dc96b06dd113c964183ab955bfd08c90, type: 2}

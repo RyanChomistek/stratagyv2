@@ -10,11 +10,11 @@ public class MapManager : MonoBehaviour
 {
     private static MapManager _instance;
     public static MapManager Instance { get { return _instance; } }
-    public TerrainTile BaseTerrainTile;
+    public MapTerrainTile BaseTerrainTile;
     public MapGenerator MapGen;
     [Tooltip("The Tilemap to draw onto")]
     public Tilemap Tilemap;
-    public TerrainTile[,] map;
+    public MapTerrainTile[,] map;
     public TileBase BlankTile;
 
     public bool GenNewMapOnStart = false;
@@ -37,7 +37,7 @@ public class MapManager : MonoBehaviour
         RenderMapWithTiles();
     }
 
-    public TerrainTile GetTileFromPosition(Vector3 position)
+    public MapTerrainTile GetTileFromPosition(Vector3 position)
     {
         var gridStart = Tilemap.transform.position;
         var deltaFromStart = position - gridStart;
@@ -115,12 +115,12 @@ public class MapManager : MonoBehaviour
     private void ConvertMapGenerationToTerrainTiles()
     {
         var terrainTileLookup = MapGen.LayerSettings.ToDictionary(x => x.terrain, x => x.terrainTile);
-        map = new TerrainTile[MapGen.map.GetUpperBound(0)+1, MapGen.map.GetUpperBound(1)+1];
+        map = new MapTerrainTile[MapGen.map.GetUpperBound(0)+1, MapGen.map.GetUpperBound(1)+1];
         for (int i =0; i <= MapGen.map.GetUpperBound(0); i++)
         {
             for (int j = 0; j <= MapGen.map.GetUpperBound(1); j++)
             {
-                map[i, j] = new TerrainTile(terrainTileLookup[MapGen.map[i, j]]);
+                map[i, j] = new MapTerrainTile(terrainTileLookup[MapGen.map[i, j]]);
             }
         }
     }
@@ -144,7 +144,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void RenderMapWithKey(Func<TerrainTile, float> key)
+    public void RenderMapWithKey(Func<MapTerrainTile, float> key)
     {
         float min = float.MaxValue;
         float max = float.MinValue;

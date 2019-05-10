@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Grass
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 10
+    Supply: 20
     Population: 1
     MoveCost: 1000
     TerrainType: 1

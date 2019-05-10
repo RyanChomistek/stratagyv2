@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 [System.Serializable]
-public class TerrainTile
+public class MapTerrainTile
 {
     public float Supply = 1;
     public float Population = 1;
@@ -13,7 +13,7 @@ public class TerrainTile
     [Tooltip("The Tile to draw (use a RuleTile for best results)")]
     public TileBase tile;
 
-    public TerrainTile(TerrainTile other)
+    public MapTerrainTile(MapTerrainTile other)
     {
         this.Supply = other.Supply;
         this.Population = other.Population;
@@ -22,7 +22,7 @@ public class TerrainTile
         this.tile = other.tile;
     }
 
-    public TerrainTile(TerrainTileSettings other)
+    public MapTerrainTile(TerrainTileSettings other)
     {
         this.Supply = other.tile.Supply;
         this.Population = other.tile.Population;
@@ -37,5 +37,5 @@ public class TerrainTile
 public class TerrainTileSettings : ScriptableObject
 {
     [SerializeField]
-    public TerrainTile tile;
+    public MapTerrainTile tile;
 }

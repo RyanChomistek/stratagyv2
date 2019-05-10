@@ -37,6 +37,8 @@ public class DivisionController : BaseDivisionController {
             //AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;
             AttachedDivision.Commander = AttachedDivision.DivisionId;
         }
+
+        DivisionControllerManager.Instance.AddDivision(this);
         /*
         AttachedDivision.AddRefreshDelegate(division => {
             FindVisibleDivisions();
@@ -46,6 +48,11 @@ public class DivisionController : BaseDivisionController {
         */
         FindVisibleDivisions();
         RefreshVisibleDivisions();
+    }
+
+    private void OnDestroy()
+    {
+        DivisionControllerManager.Instance.RemoveDivision(this);
     }
 
     void Update () {
@@ -123,6 +130,8 @@ public class DivisionController : BaseDivisionController {
         newController.AttachedDivision.TransferSoldiers(soldiersForChild);
         newController.AttachedDivision.Commander = AttachedDivision.DivisionId;
         AttachedDivision.AddSubordinate(new RememberedDivision(newController.AttachedDivision));
+        DivisionControllerManager.Instance.AddDivision(newController);
+
         return newController;
     }
 
@@ -163,9 +172,11 @@ public class DivisionController : BaseDivisionController {
     private void FindVisibleDivisions()
     {
         //VisibleControllers.Clear();
-        var divisions = FindObjectsOfType<DivisionController>();
+        //var divisions = FindObjectsOfType<DivisionController>();
+        var divisions = DivisionControllerManager.Instance.Divisions;
+
         //foreach(var division in divisions)
-        for(int i = 0; i < divisions.Length; i++)
+        for (int i = 0; i < divisions.Count; i++)
         {
             var division = divisions[i];
             var isInSight = (transform.position - division.transform.position).magnitude < AttachedDivision.MaxSightDistance;

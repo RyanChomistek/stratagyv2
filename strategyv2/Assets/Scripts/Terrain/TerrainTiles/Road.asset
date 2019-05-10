@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Road
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 10
-    Population: 3
+    Supply: 30
+    Population: 20
     MoveCost: 600
     TerrainType: 2
     tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}
