@@ -50,16 +50,16 @@ public class MapGenerator : MonoBehaviour
                 switch (layerSetting.algorithm)
                 {
                     case LayerFillAlgorithm.Solid:
-                        //Debug.Log("solid");
                         map = LayerMapFunctions.GenerateArray(Width, Height, layerSetting.terrain);
                         break;
                     case LayerFillAlgorithm.RandomWalk:
-                        //Debug.Log("walk");
                         map = LayerMapFunctions.RandomWalk2D(map, rand, layerSetting.terrain, layerSetting.radius);
                         break;
                     case LayerFillAlgorithm.Square:
-                        //Debug.Log("walk");
                         map = LayerMapFunctions.RandomSquares(map, rand, layerSetting.terrain, layerSetting.radius);
+                        break;
+                    case LayerFillAlgorithm.PerlinNoise:
+                        map = LayerMapFunctions.PerlinNoise(ref map, layerSetting.terrain, rand, layerSetting.PerlinNoiseScale, layerSetting.PerlinNoiseThreshold);
                         break;
                 }
             }

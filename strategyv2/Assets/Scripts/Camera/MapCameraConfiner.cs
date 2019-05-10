@@ -12,7 +12,6 @@ public class MapCameraConfiner : MonoBehaviour
         var x = MapManager.Instance.map.GetUpperBound(0) + 1;
         var y = MapManager.Instance.map.GetUpperBound(1) + 1;
         mapSize = new Vector2(x, y);
-        Debug.Log($"{mapSize}");
         transform.position = mapSize / 2;
         confines.size = mapSize;
         

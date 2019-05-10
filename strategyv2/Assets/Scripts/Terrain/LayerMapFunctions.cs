@@ -228,6 +228,28 @@ public class LayerMapFunctions : MonoBehaviour
         RandomWalk2DHelper(ref map, rand, currentTerrain, gridPosition + delta, nextMove, dir, width, numSteps);
     }
 
+    public static Terrain[,] PerlinNoise(ref Terrain[,] map, Terrain currentTerrain, System.Random rand, float scale, float threshold)
+    {
+        Vector2 shift = new Vector2((float)rand.NextDouble() * 1000, (float)rand.NextDouble() * 1000);
+        for (int x = 0; x <= map.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= map.GetUpperBound(1); y++)
+            {
+                float xCoord = shift.x + x / (map.GetUpperBound(0) + 1f) * scale;
+                float yCoord = shift.y + y / (map.GetUpperBound(1) + 1f) * scale;
+                float sample = Mathf.PerlinNoise(xCoord, yCoord);
+
+                if(sample > threshold)
+                {
+                   
+                    map[x, y] = currentTerrain;
+                }
+            }
+        }
+
+        return map;
+    }
+
     public static bool FindPathToEdge(ref Terrain[,] map, System.Random rand, Terrain currentTerrain, Vector2Int position, int currentStep, int maxSteps)
     {
         Debug.Log("position " + position);

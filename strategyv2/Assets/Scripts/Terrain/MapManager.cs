@@ -6,6 +6,11 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+public enum MapDisplays
+{
+    Tiles, TilesWithVision, Population, Supply, MovementSpeed
+}
+
 public class MapManager : MonoBehaviour
 {
     private static MapManager _instance;
@@ -125,6 +130,30 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    public void RenderMap(MapDisplays mapDisplay)
+    {
+        switch(mapDisplay)
+        {
+            case MapDisplays.Population:
+                this.RenderMapWithKey(x => x.Population);
+                break;
+            case MapDisplays.Supply:
+                this.RenderMapWithKey(x => x.Supply);
+                break;
+            case MapDisplays.Tiles:
+                this.RenderMapWithTiles();
+                break;
+            case MapDisplays.TilesWithVision:
+                Debug.Log("visibility");
+                RenderAllTilesGray();
+                RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision);
+                break;
+            case MapDisplays.MovementSpeed:
+                this.RenderMapWithKey(x => 1 / (float)x.MoveCost);
+                break;
+        }
+    }
+
     public void RenderMapWithTiles()
     {
         Tilemap.ClearAllTiles(); //Clear the map (ensures we dont overlap)
@@ -140,6 +169,45 @@ public class MapManager : MonoBehaviour
                 }
                 */
                 Tilemap.SetTile(new Vector3Int(x, y, 0), map[x, y].tile);
+            }
+        }
+    }
+
+    public void RenderAllTilesGray()
+    {
+        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+        {
+            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            {
+                var position = new Vector3Int(x, y, 0);
+                Tilemap.SetTileFlags(position, TileFlags.None);
+                Tilemap.SetColor(position, Color.gray);
+            }
+        }
+    }
+
+    public static Vector2Int RoundVector(Vector2 vec)
+    {
+        return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
+    }
+
+    public void RenderMapWithTilesAndVision(DivisionController controller)
+    {
+        int sightDistance = Mathf.RoundToInt(controller.AttachedDivision.MaxSightDistance);
+        Vector2 controllerPosition = controller.transform.position;
+        Vector3Int controllerPositionRounded = new Vector3Int(RoundVector(controller.transform.position).x, RoundVector(controller.transform.position).y,0);
+
+        //for the x and ys we go one over so that we erase the old sight tiles as we walk past them
+        for (int x = -sightDistance-1; x <= sightDistance+1; x++) //Loop through the width of the map
+        {
+            for (int y = -sightDistance-1; y <= sightDistance+1; y++) //Loop through the height of the map
+            {
+               
+                var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
+                var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance ? 1 : 0;
+                var color = Color.Lerp(Color.gray, Color.white, inVision);
+                Tilemap.SetTileFlags(position, TileFlags.None);
+                Tilemap.SetColor(position, color);
             }
         }
     }
@@ -166,9 +234,6 @@ public class MapManager : MonoBehaviour
             {
                 var position = new Vector3Int(x, y, 0);
                 var color = Color.Lerp(Color.red, Color.green, key(map[x, y]) / max);
-                //Debug.Log($"{map[x, y].TerrainType.ToString()} {key(map[x, y]) / max} {color}");
-                //Tilemap.SetTile(position, map[x, y].tile);
-                //Tilemap.SetTile(position, BlankTile);
                 Tilemap.SetTileFlags(position, TileFlags.None);
                 Tilemap.SetColor(position, color);
                 

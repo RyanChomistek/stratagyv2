@@ -47,5 +47,12 @@ public class MapManagerEditor : CustomEditorBase
             //myTarget.AttachedDivision.TransferSoldiers(soldiers);
             mapManager.RenderMapWithKey(x => 1 / (float)x.MoveCost);
         }
+
+        if (GUILayout.Button("show vision"))
+        {
+            //var soldiers = new List<Soldier>() { new Soldier() };
+            //myTarget.AttachedDivision.TransferSoldiers(soldiers);
+            mapManager.RenderMap(MapDisplays.TilesWithVision);
+        }
     }
 }

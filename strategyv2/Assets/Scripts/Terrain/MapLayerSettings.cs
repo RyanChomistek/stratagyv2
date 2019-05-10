@@ -6,12 +6,12 @@ using UnityEngine.Tilemaps;
 
 public enum LayerFillAlgorithm
 {
-    Solid, RandomWalk, Square
+    Solid, RandomWalk, Square, PerlinNoise
 }
 
 public enum Terrain
 {
-    Empty, Grass, Road, Water, Farm, Town, Hill
+    Empty, Grass, Road, Water, Farm, Town, Hill, Forest
 }
 
 
@@ -29,6 +29,8 @@ public class MapLayerSettings : ScriptableObject
     public int radius = 1;
     public TerrainTileSettings terrainTile;
     public bool IsEnabled = true;
+    public float PerlinNoiseScale = 2.5f;
+    public float PerlinNoiseThreshold = .5f;
 }
 
 
@@ -48,6 +50,7 @@ public class MapLayerSettings_Editor : Editor
         mapLayer.tile = EditorGUILayout.ObjectField("", mapLayer.tile, typeof(TileBase), false) as TileBase;
         mapLayer.terrainTile = EditorGUILayout.ObjectField("", mapLayer.terrainTile, typeof(TerrainTileSettings), false) as TerrainTileSettings;
         mapLayer.IsEnabled = EditorGUILayout.Toggle("Enable", mapLayer.IsEnabled);
+        mapLayer.iterations = EditorGUILayout.IntField("Iterations", mapLayer.iterations);
         //Only appear if we have the random seed set to false
         if (!mapLayer.randomSeed)
         {
@@ -65,8 +68,11 @@ public class MapLayerSettings_Editor : Editor
                 mapLayer.radius = EditorGUILayout.IntField("Radius", mapLayer.radius);
                 break;
             case LayerFillAlgorithm.Square:
-                mapLayer.iterations = EditorGUILayout.IntField("Iterations", mapLayer.iterations);
                 mapLayer.radius = EditorGUILayout.IntField("Size", mapLayer.radius);
+                break;
+            case LayerFillAlgorithm.PerlinNoise:
+                mapLayer.PerlinNoiseScale = EditorGUILayout.FloatField("Perlin Noise Scale", mapLayer.PerlinNoiseScale);
+                mapLayer.PerlinNoiseThreshold = EditorGUILayout.FloatField("Perlin Noise Threshold", mapLayer.PerlinNoiseThreshold);
                 break;
         }
 

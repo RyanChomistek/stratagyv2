@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e319c951dafda31469df9bcf7f10b019, type: 3}
-  m_Name: RoadLayerSettings
+  m_Name: Forest
   m_EditorClassIdentifier: 
-  terrain: 2
-  algorithm: 1
-  tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}
+  terrain: 7
+  algorithm: 3
+  tile: {fileID: 11400000, guid: b685597f9dcf17744b0c5bbc9cc7d8df, type: 2}
   randomSeed: 1
-  seed: 651651
-  iterations: 3
-  radius: 1
-  terrainTile: {fileID: 11400000, guid: 7b9d15a615d119d4c9651fae2ae806e1, type: 2}
+  seed: 234234
+  iterations: 1
+  radius: 4
+  terrainTile: {fileID: 11400000, guid: 1fd22d7df27824c42b5dcae2cc8800eb, type: 2}
   IsEnabled: 1
-  PerlinNoiseModifier: 0.5
+  PerlinNoiseModifier: 2.5
