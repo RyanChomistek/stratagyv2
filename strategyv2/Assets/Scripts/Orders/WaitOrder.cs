@@ -12,12 +12,12 @@ public class WaitOrder : Order
         this.TimeRemaining = time;
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
         TimeRemaining -= GameManager.Instance.DeltaTime;
     }
 
-    public override bool TestIfFinished(Division Host)
+    public override bool TestIfFinished(ControlledDivision Host)
     {
         return TimeRemaining > 0;
     }

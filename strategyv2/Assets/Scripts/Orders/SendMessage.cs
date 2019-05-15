@@ -6,7 +6,7 @@ public class SendMessage : TargetingOrder
 {
     private bool _hasFoundTarget;
     private List<Order> _message;
-    private Division _visibleTarget;
+    private ControlledDivision _visibleTarget;
 
     public SendMessage(Division controller, int commanderSendingOrderId, List<Order> message, int targetId)
         : base(controller, commanderSendingOrderId, "Send Message", targetId)
@@ -15,7 +15,7 @@ public class SendMessage : TargetingOrder
         this._message = message;
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
         if(Host.FindVisibleDivision(RememberedTargetId, out _visibleTarget))
         {
@@ -24,12 +24,12 @@ public class SendMessage : TargetingOrder
         }
     }
 
-    public override bool TestIfFinished(Division Host)
+    public override bool TestIfFinished(ControlledDivision Host)
     {
         return _hasFoundTarget;
     }
 
-    public override void End(Division Host)
+    public override void End(ControlledDivision Host)
     {
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
         Host.Controller.GetComponent<Rigidbody>().velocity = Vector3.zero;

@@ -13,13 +13,13 @@ public class ScoutOrder : Order
         this.finish = finish;
     }
 
-    public override void OnClickedInUI(Division Host)
+    public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
-        UICallback = mousePos => OnClickReturn(mousePos, Host);
+        UICallback = mousePos => OnClickReturn(mousePos, Host, playerController);
         InputController.Instance.RegisterOnClickCallBack(UICallback);
     }
 
-    public void OnClickReturn(Vector3 mousePos, Division Host)
+    public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
     {
         finish = new Vector3(mousePos.x, mousePos.y);
         InputController.Instance.UnregisterOnClickCallBack(UICallback);
@@ -27,7 +27,7 @@ public class ScoutOrder : Order
         var scout = Host.CreateNewDivision();
         scout.name = "scout";
 
-        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
 
         scout.AttachedDivision.ReceiveOrder(new Move(scout.AttachedDivision, CommanderSendingOrder.DivisionId, finish));
         scout.AttachedDivision.ReceiveOrder(new FindDivision(scout.AttachedDivision, CommanderSendingOrder.DivisionId, Host.DivisionId));

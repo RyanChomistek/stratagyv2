@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AttackOrder : TargetingOrder
 {
-    public int RememberedTargetId;
+    //public int RememberedTargetId;
     private bool IsFinished = false;
 
     LocalPlayerController.responseToUI UICallback;
@@ -14,7 +14,7 @@ public class AttackOrder : TargetingOrder
     {
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
         RememberedDivision RememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
         float distanceToTarget = (RememberedTarget.Position - Host.Controller.transform.position).magnitude;
@@ -45,21 +45,21 @@ public class AttackOrder : TargetingOrder
         }
     }
 
-    public override bool TestIfFinished(Division Host)
+    public override bool TestIfFinished(ControlledDivision Host)
     {
         return IsFinished;
     }
 
-    public override void OnClickedInUI(Division Host)
+    public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         //InputController.Instance.RegisterOnClickCallBack(OnClickReturn);
-        UICallback = division => OnUnitSelected(Host, division);
+        UICallback = division => OnUnitSelected(Host, division, playerController);
         LocalPlayerController.Instance.RegisterUnitSelectCallback(UICallback);
     }
 
-    public void OnUnitSelected(Division Host, RememberedDivision division)
+    public void OnUnitSelected(Division Host, RememberedDivision division, PlayerController playerController)
     {
-        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterUnitSelectCallback(UICallback);
         OrderDisplayManager.instance.ClearOrders();
 
@@ -68,7 +68,7 @@ public class AttackOrder : TargetingOrder
             new AttackOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId)
         };
 
-        CommanderSendingOrder.SendOrdersTo(new RememberedDivision(Host), orders);
+        CommanderSendingOrder.SendOrdersTo(new RememberedDivision(Host), orders, ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }
     
 }

@@ -4,11 +4,12 @@ using UnityEditor;
 using System.Collections.Generic;
 
 [CustomEditor(typeof(DivisionController))]
-public class DivisionControllerEditor : Editor
+public class DivisionControllerEditor : CustomEditorBase
 {
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
+        base.OnInspectorGUI();
+        //DrawDefaultInspector();
         DivisionController myTarget = (DivisionController)target;
 
         //myTarget.experience = EditorGUILayout.IntField("Experience", myTarget.experience);
@@ -36,17 +37,22 @@ public class DivisionControllerEditor : Editor
         {
             myTarget.AttachedDivision.DestroyDivision(myTarget.AttachedDivision);
         }
+
+        if (GUILayout.Button("Refresh from Visible"))
+        {
+            myTarget.RefreshVisibleDivisions();
+        }
     }
 
 
 
-    private string Serializeremembered(Division division)
+    private string Serializeremembered(ControlledDivision division)
     {
         string str = "";
 
         foreach (var remembered in division.RememberedDivisions)
         {
-            str += remembered;
+            str += $"<{remembered}> \n";
         }
 
         return str;

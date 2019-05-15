@@ -7,14 +7,14 @@ public class HeartBeatOrder : TargetingOrder
     private float SecondsPerHeartbeat;
     private float TimeSinceLastHeartbeat;
 
-    public HeartBeatOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId, float secondsPerHeartbeat = 1f)
+    public HeartBeatOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId, float secondsPerHeartbeat = 2f)
         : base(controller, commanderSendingOrderId, "heart beat", rememberedTargetId)
     {
         this.SecondsPerHeartbeat = secondsPerHeartbeat;
         this.IsBackgroundOrder = true;
     }
 
-    public override void Proceed(Division Host)
+    public override void Proceed(ControlledDivision Host)
     {
         base.Proceed(Host);
         TimeSinceLastHeartbeat += GameManager.Instance.DeltaTime;
@@ -25,7 +25,7 @@ public class HeartBeatOrder : TargetingOrder
         }
     }
 
-    private void SendHeartBeat(Division Host)
+    private void SendHeartBeat(ControlledDivision Host)
     {
         DivisionController HeartBeatMessenger;
         if (Host.TryCreateNewDivision(out HeartBeatMessenger))
@@ -50,18 +50,18 @@ public class HeartBeatOrder : TargetingOrder
         }
     }
 
-    public override bool TestIfFinished(Division Host)
+    public override bool TestIfFinished(ControlledDivision Host)
     {
         return false;
     }
 
-    public override void OnClickedInUI(Division Host)
+    public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         OrderDisplayManager.instance.ClearOrders();
-        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         //Debug.Log($"heartbeat {Host.DivisionId} {CommanderSendingOrderId}");
         CommanderSendingOrder.SendOrderTo(
             new RememberedDivision(Host),
-            new HeartBeatOrder(Host, CommanderSendingOrderId, CommanderSendingOrderId));
+            new HeartBeatOrder(Host, CommanderSendingOrderId, CommanderSendingOrderId), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }
 }

@@ -10,14 +10,14 @@ public class OrderDisplayManager : MonoBehaviour {
     [SerializeField]
     GameObject orderPrefab;
 
-    public void AddOrderSet(List<Order> orders, RememberedDivision division)
+    public void AddOrderSet(List<Order> orders, RememberedDivision division, PlayerController playerController)
     {
         foreach(Order order in orders)
         {
             string name = order.GetType().Name;
             GameObject temp = Instantiate(orderPrefab);
             temp.transform.GetChild(0).GetComponent<Text>().text = name;
-            temp.GetComponent<Button>().onClick.AddListener(delegate { order.OnClickedInUI(division); });
+            temp.GetComponent<Button>().onClick.AddListener(delegate { order.OnClickedInUI(division, playerController); });
             AddToDisplay(temp);
         }
     }
@@ -41,7 +41,6 @@ public class OrderDisplayManager : MonoBehaviour {
     {
         instance = this;
         int numChildren = transform.childCount;
-        Debug.Log(numChildren);
         displays = new List<GameObject>();
         for (int i = 0; i < numChildren; i++)
         {

@@ -7,12 +7,12 @@
 public class Soldier
 {
     //public int Count = 0;
-    public float Speed = 10;
+    public float Speed = 5000;
     public float HitStrength = 1;
     public float Health = 1;
     public float MinRange = 0f;
     public float MaxRange = 2;
-    public float SightDistance = 4;
+    public float SightDistance = 6;
     public SoldierType Type = SoldierType.Melee;
 
     public Soldier()

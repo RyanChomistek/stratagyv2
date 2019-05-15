@@ -33,12 +33,13 @@ public class Order
         this.orderId = OrderIdCnt++;
     }
 
-    public virtual void Start(Division Host) { HasStarted = true; }
-    public virtual void Pause(Division Host) { }
-    public virtual void End(Division Host) { }
-    public virtual void OnClickedInUI(Division Host) { }
-    public virtual void Proceed(Division Host) { }
-    public virtual bool TestIfFinished(Division Host) { return false; }
+    public virtual void OnClickedInUI(Division Host, PlayerController playerController) { }
+
+    public virtual void Start(ControlledDivision Host) { HasStarted = true; }
+    public virtual void Pause(ControlledDivision Host) { }
+    public virtual void End(ControlledDivision Host) { }
+    public virtual void Proceed(ControlledDivision Host) { }
+    public virtual bool TestIfFinished(ControlledDivision Host) { return false; }
 
     public virtual Vector3 GetPredictedPosition(RememberedDivision rememberedDivision)
     {
@@ -46,12 +47,12 @@ public class Order
         return rememberedDivision.Position + rememberedDivision.Velocity * deltaTime;
     }
 
-    protected RememberedDivision GetRememberedDivisionFromHost(Division Host, int id)
+    protected RememberedDivision GetRememberedDivisionFromHost(ControlledDivision Host, int id)
     {
         return Host.RememberedDivisions[id];
     }
 
-    protected bool TryGetRememberedDivisionFromHost(Division Host, int id, out RememberedDivision rememberedDivision)
+    protected bool TryGetRememberedDivisionFromHost(ControlledDivision Host, int id, out RememberedDivision rememberedDivision)
     {
         return Host.RememberedDivisions.TryGetValue(id, out rememberedDivision);
     }
