@@ -22,30 +22,22 @@ public class MapManagerEditor : CustomEditorBase
 
         if (GUILayout.Button("Show Tiles"))
         {
-            //var soldiers = new List<Soldier>() { new Soldier() };
-            //myTarget.AttachedDivision.TransferSoldiers(soldiers);
-            mapManager.RenderMapWithTiles();
+            mapManager.RenderMap(MapDisplays.Tiles);
         }
 
         if (GUILayout.Button("show population Map Mode"))
         {
-            //var soldiers = new List<Soldier>() { new Soldier() };
-            //myTarget.AttachedDivision.TransferSoldiers(soldiers);
-            mapManager.RenderMapWithKey(x => x.Population);
+            mapManager.RenderMap(MapDisplays.Population);
         }
 
         if (GUILayout.Button("show supply Map Mode"))
         {
-            //var soldiers = new List<Soldier>() { new Soldier() };
-            //myTarget.AttachedDivision.TransferSoldiers(soldiers);
-            mapManager.RenderMapWithKey(x => x.Supply);
+            mapManager.RenderMap(MapDisplays.Supply);
         }
 
         if (GUILayout.Button("show mvmt Map Mode"))
         {
-            //var soldiers = new List<Soldier>() { new Soldier() };
-            //myTarget.AttachedDivision.TransferSoldiers(soldiers);
-            mapManager.RenderMapWithKey(x => 1 / (float)x.MoveCost);
+            mapManager.RenderMap(MapDisplays.MovementSpeed);
         }
 
         if (GUILayout.Button("show vision"))

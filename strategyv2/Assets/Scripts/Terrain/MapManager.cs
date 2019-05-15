@@ -23,16 +23,29 @@ public class MapManager : MonoBehaviour
     public TileBase BlankTile;
 
     public bool GenNewMapOnStart = false;
+    public MapDisplays CurrentlyDisplayingMapType;
+
     private void Awake()
     {
         _instance = this;
         if (GenNewMapOnStart)
             GenerateMap();
+
+        CurrentlyDisplayingMapType = MapDisplays.TilesWithVision;
     }
 
     void Start()
     {
         CreateGraph();
+    }
+
+    private void Update()
+    {
+        if(CurrentlyDisplayingMapType == MapDisplays.TilesWithVision)
+        {
+            //show the players vision range
+            RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision);
+        }
     }
 
     public void GenerateMap()
@@ -132,7 +145,8 @@ public class MapManager : MonoBehaviour
 
     public void RenderMap(MapDisplays mapDisplay)
     {
-        switch(mapDisplay)
+        CurrentlyDisplayingMapType = mapDisplay;
+        switch (mapDisplay)
         {
             case MapDisplays.Population:
                 this.RenderMapWithKey(x => x.Population);

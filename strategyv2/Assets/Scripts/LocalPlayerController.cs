@@ -14,22 +14,19 @@ public class LocalPlayerController : PlayerController {
 
     private Dictionary<int, RememberedDivisionController> RememberedDivisionControllers = new Dictionary<int, RememberedDivisionController>();
     public GameObject RememberedDivisionControllerPrefab;
-
-    public MapDisplays CurrentlyDisplayingMapType;
+    
     public Light GeneralLight;
     // Use this for initialization
     void Start () {
         Instance = this;
-        CurrentlyDisplayingMapType = MapDisplays.TilesWithVision;
-        MapManager.Instance.RenderMap(CurrentlyDisplayingMapType);
+        MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
     }
 	
 	// Update is called once per frame
 	void Update () {
         DisplayRememberedDivisions();
 
-        //show the players vision range
-        MapManager.Instance.RenderMapWithTilesAndVision(GeneralDivision);
+        
     }
 
     public void DisplayRememberedDivisions()
