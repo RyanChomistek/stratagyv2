@@ -40,6 +40,11 @@ public class MapManagerEditor : CustomEditorBase
             mapManager.RenderMap(MapDisplays.MovementSpeed);
         }
 
+        if (GUILayout.Button("show simple Map Mode"))
+        {
+            mapManager.RenderMap(MapDisplays.Simple);
+        }
+
         if (GUILayout.Button("show vision"))
         {
             //var soldiers = new List<Soldier>() { new Soldier() };

@@ -12,6 +12,7 @@ public class MapTerrainTile
     public Terrain TerrainType;
     [Tooltip("The Tile to draw (use a RuleTile for best results)")]
     public TileBase tile;
+    public Color SimpleDisplayColor;
 
     public MapTerrainTile(MapTerrainTile other)
     {
@@ -20,6 +21,7 @@ public class MapTerrainTile
         this.MoveCost = other.MoveCost;
         this.TerrainType = other.TerrainType;
         this.tile = other.tile;
+        this.SimpleDisplayColor = other.SimpleDisplayColor;
     }
 
     public MapTerrainTile(TerrainTileSettings other)
@@ -29,6 +31,7 @@ public class MapTerrainTile
         this.MoveCost = other.tile.MoveCost;
         this.TerrainType = other.tile.TerrainType;
         this.tile = other.tile.tile;
+        this.SimpleDisplayColor = other.tile.SimpleDisplayColor;
     }
 }
 

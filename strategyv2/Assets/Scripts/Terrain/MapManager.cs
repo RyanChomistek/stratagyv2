@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 
 public enum MapDisplays
 {
-    Tiles, TilesWithVision, Population, Supply, MovementSpeed
+    Tiles, TilesWithVision, Population, Supply, MovementSpeed, Simple
 }
 
 public class MapManager : MonoBehaviour
@@ -24,6 +24,10 @@ public class MapManager : MonoBehaviour
 
     public bool GenNewMapOnStart = false;
     public MapDisplays CurrentlyDisplayingMapType;
+
+    private Color _FowGrey = new Color(.25f, .25f, .25f, 1);
+    private Color _playerVision = new Color(1, 1, 1, 1);
+    private Color _otherDivisionsVision = new Color(.5f, .5f, .5f, 1);
 
     private void Awake()
     {
@@ -44,7 +48,7 @@ public class MapManager : MonoBehaviour
         if(CurrentlyDisplayingMapType == MapDisplays.TilesWithVision)
         {
             //show the players vision range
-            RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision);
+            RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
         }
     }
 
@@ -160,10 +164,13 @@ public class MapManager : MonoBehaviour
             case MapDisplays.TilesWithVision:
                 Debug.Log("visibility");
                 RenderAllTilesGray();
-                RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision);
+                RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
                 break;
             case MapDisplays.MovementSpeed:
                 this.RenderMapWithKey(x => 1 / (float)x.MoveCost);
+                break;
+            case MapDisplays.Simple:
+                this.RenderSimple();
                 break;
         }
     }
@@ -175,14 +182,22 @@ public class MapManager : MonoBehaviour
         {
             for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
             {
-                /*
-                if (map[x, y] != Terrain.Empty)
-                {
-                    var settings = layerSettings.Find(terrain => terrain.terrain == map[x, y]);
-                    Tilemap.SetTile(new Vector3Int(x, y, 0), settings.tile);
-                }
-                */
                 Tilemap.SetTile(new Vector3Int(x, y, 0), map[x, y].tile);
+            }
+        }
+    }
+
+    public void RenderSimple()
+    {
+        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+        {
+            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            {
+                //Tilemap.SetTile(position, BlankTile);
+                var position = new Vector3Int(x, y, 0);
+                Tilemap.SetTileFlags(position, TileFlags.None);
+                Tilemap.SetColor(position, map[x, y].SimpleDisplayColor);
+                //Debug.Log(map[x, y].SimpleDisplayColor);
             }
         }
     }
@@ -195,7 +210,7 @@ public class MapManager : MonoBehaviour
             {
                 var position = new Vector3Int(x, y, 0);
                 Tilemap.SetTileFlags(position, TileFlags.None);
-                Tilemap.SetColor(position, Color.gray);
+                Tilemap.SetColor(position, _FowGrey);
             }
         }
     }
@@ -205,7 +220,7 @@ public class MapManager : MonoBehaviour
         return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
     }
 
-    public void RenderMapWithTilesAndVision(DivisionController controller)
+    public void RenderMapWithTilesAndVision(DivisionController controller, Color visionColor)
     {
         int sightDistance = Mathf.RoundToInt(controller.AttachedDivision.MaxSightDistance);
         Vector2 controllerPosition = controller.transform.position;
@@ -219,7 +234,7 @@ public class MapManager : MonoBehaviour
                
                 var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
                 var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance ? 1 : 0;
-                var color = Color.Lerp(Color.gray, Color.white, inVision);
+                var color = Color.Lerp(_FowGrey, visionColor, inVision);
                 Tilemap.SetTileFlags(position, TileFlags.None);
                 Tilemap.SetColor(position, color);
             }

@@ -18,3 +18,4 @@ MonoBehaviour:
     MoveCost: 600
     TerrainType: 2
     tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}
+    SimpleDisplayColor: {r: 1, g: 0.04082808, b: 0, a: 1}

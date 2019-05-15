@@ -135,9 +135,9 @@ public class DivisionController : BaseDivisionController {
         return newController;
     }
 
-    public void SendMessenger(RememberedDivision to, List<Order> orders)
+    public void SendMessenger(RememberedDivision to, RememberedDivision endTarget, List<Order> orders)
     {
-        AttachedDivision.SendMessenger(to, orders);
+        AttachedDivision.SendMessenger(to, endTarget, orders);
     }
 
     private void OnDivisionEnterSight(DivisionController controller)

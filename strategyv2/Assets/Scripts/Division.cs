@@ -331,7 +331,7 @@ public class Division {
         }
 
         //send order to the next commander
-        pathToDivision[0].Controller.SendMessenger(pathToDivision[1], orders);
+        pathToDivision[0].Controller.SendMessenger(pathToDivision[1], to, orders);
     }
 
     public List<RememberedDivision> FindDivisionInSubordinates(RememberedDivision start, RememberedDivision end, List<RememberedDivision> prev_, ref Dictionary<int, RememberedDivision> rememberedDivisions)

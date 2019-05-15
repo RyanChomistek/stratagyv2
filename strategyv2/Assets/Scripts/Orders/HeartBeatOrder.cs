@@ -45,7 +45,8 @@ public class HeartBeatOrder : TargetingOrder
                     HeartBeatMessenger.AttachedDivision,
                     Host.DivisionId,
                     new List<Order>(),
-                    RememberedTargetId)
+                    RememberedTargetId,
+                    Host.DivisionId)
                 });
         }
     }

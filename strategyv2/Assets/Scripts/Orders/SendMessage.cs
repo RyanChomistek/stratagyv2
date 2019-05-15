@@ -8,18 +8,31 @@ public class SendMessage : TargetingOrder
     private List<Order> _message;
     private ControlledDivision _visibleTarget;
 
-    public SendMessage(Division controller, int commanderSendingOrderId, List<Order> message, int targetId)
+    //this is the actuall target, we will set targetId to the commanders and go down the chain until we find this id
+    private int _endTargetId;
+
+    public SendMessage(Division controller, int commanderSendingOrderId, List<Order> message, int targetId, int endTargetId)
         : base(controller, commanderSendingOrderId, "Send Message", targetId)
     {
         this._visibleTarget = null;
         this._message = message;
+        this._endTargetId = endTargetId;
     }
 
     public override void Proceed(ControlledDivision Host)
     {
         if(Host.FindVisibleDivision(RememberedTargetId, out _visibleTarget))
         {
-            _visibleTarget.ReceiveOrders(_message);
+            if (RememberedTargetId == _endTargetId)
+            {
+                _visibleTarget.ReceiveOrders(_message);
+            }
+            else
+            {
+                _visibleTarget.SendOrdersTo(GetRememberedDivisionFromHost(_visibleTarget, _endTargetId),
+                _message, ref _visibleTarget.RememberedDivisions);
+            }
+
             _hasFoundTarget = true;
         }
     }

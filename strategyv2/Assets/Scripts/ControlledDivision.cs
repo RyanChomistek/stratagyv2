@@ -271,14 +271,14 @@ public class ControlledDivision : Division
         OnChange();
     }
 
-    public void SendMessenger(RememberedDivision to, List<Order> orders)
+    public void SendMessenger(RememberedDivision to, RememberedDivision endTarget, List<Order> orders)
     {
         //create a new division
         DivisionController messenger = CreateNewDivision();
         messenger.name = "messenger";
         //todo discover location of to
         messenger.AttachedDivision.ReceiveOrder(new FindDivision(messenger.AttachedDivision, DivisionId, to.DivisionId));
-        messenger.AttachedDivision.ReceiveOrder(new SendMessage(messenger.AttachedDivision, DivisionId, orders, to.DivisionId));
+        messenger.AttachedDivision.ReceiveOrder(new SendMessage(messenger.AttachedDivision, DivisionId, orders, to.DivisionId, endTarget.DivisionId));
     }
 
     #endregion
