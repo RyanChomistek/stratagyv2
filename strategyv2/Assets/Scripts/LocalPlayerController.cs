@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class LocalPlayerController : PlayerController {
@@ -16,17 +17,14 @@ public class LocalPlayerController : PlayerController {
     public GameObject RememberedDivisionControllerPrefab;
     
     public Light GeneralLight;
-    // Use this for initialization
+
     void Start () {
         Instance = this;
         MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
     }
 	
-	// Update is called once per frame
 	void Update () {
         DisplayRememberedDivisions();
-
-        
     }
 
     public void DisplayRememberedDivisions()
@@ -54,6 +52,28 @@ public class LocalPlayerController : PlayerController {
             {
                 RememberedDivisionControllers[kvp.Key].transform.position = kvp.Value.PredictedPosition;
                 RememberedDivisionControllers[kvp.Key].AttachedDivision = kvp.Value;
+                var LR = RememberedDivisionControllers[kvp.Key].GetComponent<LineRenderer>();
+                
+                if(GeneralDivision.AttachedDivision.RememberedDivisions.TryGetValue(kvp.Value.Commander, out RememberedDivision commander))
+                {
+                    LR.SetPosition(0, kvp.Value.PredictedPosition);
+                    LR.SetPosition(1, commander.Position);
+
+                    var chainOfCommand = GeneralDivision.AttachedDivision.FindDivisionInSubordinates(new RememberedDivision(GeneralDivision.AttachedDivision), kvp.Value, new List<RememberedDivision>(), ref GeneralDivision.AttachedDivision.RememberedDivisions);
+                    //string str = "";
+                    //chainOfCommand.Select(x => x.DivisionId).ToList().ForEach(x => str += x + ", ");
+                    //Debug.Log(str + " | " + kvp.Key);
+                    
+                    var color = Color.red;
+                    if (chainOfCommand != null)
+                    {
+                        color = Color.Lerp(Color.red, Color.green, 1f / chainOfCommand.Count);
+                    }
+                    
+                    LR.material.color = color;
+                    
+                }
+                
             }
             else
             {

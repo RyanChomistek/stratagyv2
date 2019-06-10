@@ -167,7 +167,6 @@ MonoBehaviour:
   Controller: {fileID: 0}
   DivisionPrefab: {fileID: 4574684478244263188}
   VisibleControllers: []
-  SightCollider: {fileID: 0}
 --- !u!114 &2372225575837799924
 MonoBehaviour:
   m_ObjectHideFlags: 0

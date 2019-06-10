@@ -11,20 +11,21 @@ public class DivisionController : BaseDivisionController {
     [SerializeField]
     public List<DivisionController> VisibleControllers = new List<DivisionController>();
     
-    void Awake () {
-        //AttachedDivision = new Division(this);
-        //var soldiers = new List<Soldier>() { new Soldier(), new Soldier(), new Soldier(), new Soldier(), new Soldier() };
-        //soldiers[0].Count = 5;
-        //AttachedDivision.TransferSoldiers(soldiers);
+    void Awake ()
+    {
+        InitAwake();
+    }
+
+    protected void InitAwake()
+    {
         int numsoldiers = base.AttachedDivision.NumSoldiers;
-        base.AttachedDivision = new ControlledDivision(this);
+        base.AttachedDivision = new ControlledDivision(base.AttachedDivision.TeamId, this);
         if (GameManager.DEBUG)
         {
             for (int i = 0; i < numsoldiers; i++)
             {
                 AttachedDivision.Soldiers.Add(new Soldier());
             }
-
         }
 
         AttachedDivision.Init(this);
@@ -169,7 +170,7 @@ public class DivisionController : BaseDivisionController {
         //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
     }
 
-    private void FindVisibleDivisions()
+    protected void FindVisibleDivisions()
     {
         //VisibleControllers.Clear();
         //var divisions = FindObjectsOfType<DivisionController>();

@@ -14,8 +14,8 @@ public class ControlledDivision : Division
         SetupOrders();
     }
 
-    public ControlledDivision(DivisionController controller = null)
-        : base(controller)
+    public ControlledDivision(int teamId, DivisionController controller = null)
+        : base(teamId, controller)
     {
         SetupOrders();
     }
@@ -181,7 +181,7 @@ public class ControlledDivision : Division
         this.PossibleOrders.Add(new EngageOrder(this, -1, -1));
     }
 
-    public virtual void DoOrders()
+    public void DoOrders()
     {
         if (GameManager.Instance.IsPaused)
         {
@@ -210,6 +210,16 @@ public class ControlledDivision : Division
             ContinueOrder();
             OnChange();
         }
+        //if no orders queued
+        else if (OrderQueue.Count == 0)
+        {
+            OnEmptyOrder();
+        }
+    }
+
+    //in a normal controlled division this will do nothing, but the ai controller will override
+    virtual protected void OnEmptyOrder()
+    {
     }
 
     public void DoBackgroundOrders()

@@ -10,6 +10,7 @@ public class InsufficientSoldierCountException : System.Exception{
 public class Division {
     protected static int DivisionCounter = 0;
     public int DivisionId;
+    public int TeamId = -1;
     public string Name;
     public int Commander;
     public ObservableCollection<Soldier> Soldiers = new ObservableCollection<Soldier>();
@@ -50,6 +51,7 @@ public class Division {
         this.NumSoldiers = division.NumSoldiers;
 
         this.DivisionId = division.DivisionId;
+        this.TeamId = division.TeamId;
 
         this.Name = "Division " + DivisionId;
         this.Controller = controller;
@@ -59,7 +61,7 @@ public class Division {
     }
 
     //use for creating a new division from inside a new controller
-    public Division(DivisionController controller = null)
+    public Division(int teamId, DivisionController controller = null)
     {
         this.Commander = -1;
 
@@ -70,6 +72,8 @@ public class Division {
         this.Soldiers = new ObservableCollection<Soldier>();
         Init(controller);
         this.Soldiers.CollectionChanged += OnSoldiersChanged;
+
+        this.TeamId = teamId;
     }
 
     public void Init(DivisionController controller = null)
@@ -141,7 +145,7 @@ public class Division {
         newController.transform.position = this.Controller.transform.position;
         newController.transform.rotation = this.Controller.transform.rotation;
 
-        ControlledDivision newDivision = new ControlledDivision(newController)
+        ControlledDivision newDivision = new ControlledDivision(TeamId, newController)
         {
             Soldiers = new ObservableCollection<Soldier>(soldiersForChild)
         };
@@ -334,10 +338,10 @@ public class Division {
         pathToDivision[0].Controller.SendMessenger(pathToDivision[1], to, orders);
     }
 
+    //returns the chain of command to a subordinate
     public List<RememberedDivision> FindDivisionInSubordinates(RememberedDivision start, RememberedDivision end, List<RememberedDivision> prev_, ref Dictionary<int, RememberedDivision> rememberedDivisions)
     {
         List<RememberedDivision> prev = new List<RememberedDivision>(prev_);
-        //RememberedDivision rememberedStart = start.GenerateRememberedDivision();
         prev.Add(start);
         if (start.DivisionId == end.DivisionId)
         {
