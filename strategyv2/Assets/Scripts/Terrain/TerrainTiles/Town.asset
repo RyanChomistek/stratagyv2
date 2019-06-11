@@ -16,7 +16,7 @@ MonoBehaviour:
     Supply: 100
     _supplyGrowthRate: 0.01
     Population: 100
-    _PopulationGrowthRate: 0.05
+    _PopulationGrowthRate: 0.02
     MoveCost: 1200
     TerrainType: 5
     tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}

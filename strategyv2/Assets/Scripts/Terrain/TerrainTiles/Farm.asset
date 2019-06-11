@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Farm
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 80
-    _supplyGrowthRate: 0.01
+    Supply: 150
+    _supplyGrowthRate: 0.02
     Population: 50
     _PopulationGrowthRate: 0.01
     MoveCost: 1300
