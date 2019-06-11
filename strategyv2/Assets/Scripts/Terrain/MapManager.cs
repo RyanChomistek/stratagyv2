@@ -29,6 +29,9 @@ public class MapManager : MonoBehaviour
     private Color _playerVision = new Color(1, 1, 1, 1);
     private Color _otherDivisionsVision = new Color(.5f, .5f, .5f, 1);
 
+    [SerializeField]
+    private float _tileUpdateTickTime = 1;
+
     private void Awake()
     {
         _instance = this;
@@ -41,6 +44,7 @@ public class MapManager : MonoBehaviour
     void Start()
     {
         CreateGraph();
+        StartCoroutine(UpdateTileValues());
     }
 
     private void Update()
@@ -49,6 +53,38 @@ public class MapManager : MonoBehaviour
         {
             //show the players vision range
             RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
+        }
+    }
+
+    private IEnumerator UpdateTileValues()
+    {
+        float timeSinceLastTick = 0;
+        float GameTime = 0;
+        while(true)
+        {
+            while (timeSinceLastTick < _tileUpdateTickTime)
+            {
+                timeSinceLastTick += GameManager.Instance.DeltaTime;
+                GameTime += GameManager.Instance.DeltaTime;
+                yield return new WaitForEndOfFrame();
+            }
+
+            float max = 0;
+            float min = 0;
+
+            for (int y = 0; y <= map.GetUpperBound(0); y++)
+            {
+                for (int x = 0; x <= map.GetUpperBound(1); x++)
+                {
+                    map[x, y].Update(GameTime);
+                    max = Mathf.Max(max, map[x, y].Supply);
+                    min = Mathf.Min(min, map[x, y].Supply);
+                }
+            }
+
+            //Debug.Log("supply"+max + " "+ min);
+
+            timeSinceLastTick = 0;
         }
     }
 
@@ -94,7 +130,6 @@ public class MapManager : MonoBehaviour
         // Make sure we only modify the graph when all pathfinding threads are paused
         AstarPath.active.AddWorkItem(new AstarWorkItem(ctx => {
             //create the graph
-
             //first make node array
             PointNode[,] nodeArray = new PointNode[map.GetUpperBound(0) + 1, map.GetUpperBound(1) + 1];
 
@@ -102,7 +137,6 @@ public class MapManager : MonoBehaviour
             {
                 for (int x = 0; x <= map.GetUpperBound(1); x++)
                 {
-                    //Debug.Log($"{x} {y} {map[x,y].TerrainType} {map[x, y].MoveCost}");
                     nodeArray[x,y] = graph.AddNode((Int3)new Vector3(x, y, 0));
                 }
             }
@@ -116,12 +150,9 @@ public class MapManager : MonoBehaviour
                     {
                         for (int j = y-1; j <= y+1; j++)
                         {
-                            // && map[i, j].TerrainType != Terrain.Water
                             if (InBounds(nodeArray, i, j))
                             {
-
                                 nodeArray[x,y].AddConnection(nodeArray[i,j], map[x,y].MoveCost);
-                                
                                 connections++;
                             }
                         }

@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
     Supply: 80
+    _supplyGrowthRate: 0.01
     Population: 50
+    _PopulationGrowthRate: 0.01
     MoveCost: 1300
     TerrainType: 4
     tile: {fileID: 11400000, guid: 4453ae3a5600d50448bdf564b72742f6, type: 2}

@@ -1302,7 +1302,7 @@ Camera:
   far clip plane: 5000
   field of view: 40
   orthographic: 1
-  orthographic size: 10.15999
+  orthographic size: 26.16002
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1326,7 +1326,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 863233076}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.4000015, y: -20.6, z: -10}
+  m_LocalPosition: {x: -3.4932976, y: -20.600008, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1433891952}
@@ -92057,7 +92057,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BaseTerrainTile:
     Supply: 0
+    _supplyGrowthRate: 0
     Population: 0
+    _PopulationGrowthRate: 0
     MoveCost: 0
     TerrainType: 0
     tile: {fileID: 0}
@@ -92067,6 +92069,7 @@ MonoBehaviour:
   BlankTile: {fileID: 11400000, guid: 519be227bf552ab4bbf8807b45df1b99, type: 2}
   GenNewMapOnStart: 1
   CurrentlyDisplayingMapType: 1
+  _tileUpdateTickTime: 1
 --- !u!4 &1183998491
 Transform:
   m_ObjectHideFlags: 0
@@ -92644,7 +92647,7 @@ MonoBehaviour:
   m_Follow: {fileID: 0}
   m_Lens:
     FieldOfView: 40
-    OrthographicSize: 10.15999
+    OrthographicSize: 26.16002
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0

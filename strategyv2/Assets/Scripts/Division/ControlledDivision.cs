@@ -179,6 +179,7 @@ public class ControlledDivision : Division
         this.PossibleOrders.Add(new AttackOrder(this, -1, -1));
         this.PossibleOrders.Add(new HeartBeatOrder(this, -1, -1));
         this.PossibleOrders.Add(new EngageOrder(this, -1, -1));
+        this.PossibleOrders.Add(new RecruitOrder(this, -1));
     }
 
     public void DoOrders()
