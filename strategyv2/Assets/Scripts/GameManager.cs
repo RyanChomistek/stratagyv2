@@ -32,7 +32,7 @@ class GameManager : MonoBehaviour
             }
         }
 
-        GameTime += DeltaTime;
+        GameTime += DeltaTime * GameSpeed;
 
     }
 }

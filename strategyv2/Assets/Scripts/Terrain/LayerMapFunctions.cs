@@ -191,6 +191,11 @@ public class LayerMapFunctions : MonoBehaviour
         return map;
     }
 
+    public static Vector2Int FloorVector(Vector2 vec)
+    {
+        return new Vector2Int(Mathf.FloorToInt(vec.x), Mathf.FloorToInt(vec.y));
+    }
+
     public static Vector2Int RoundVector(Vector2 vec)
     {
         return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));

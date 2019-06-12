@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: Road
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 30
+    Supply: 10
+    MaxSupply: 1000
     _supplyGrowthRate: 0.01
-    Population: 20
-    _PopulationGrowthRate: 0.01
+    _supplySpreadRate: 0.2
+    Population: 10
+    MaxPopulation: 200
+    _populationGrowthRate: 0.01
+    _populationSpreadRate: 0.2
     MoveCost: 600
     TerrainType: 2
     tile: {fileID: 11400000, guid: 31a1decc9aa6cf44e8df4c5d106aa322, type: 2}

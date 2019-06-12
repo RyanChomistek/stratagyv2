@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: Hill
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 100
+    Supply: 200
+    MaxSupply: 1000
     _supplyGrowthRate: 0.01
-    Population: 80
-    _PopulationGrowthRate: 0.01
+    _supplySpreadRate: 0.01
+    Population: 100
+    MaxPopulation: 400
+    _populationGrowthRate: 0.01
+    _populationSpreadRate: 0.01
     MoveCost: 1200
     TerrainType: 6
     tile: {fileID: 11400000, guid: dc96b06dd113c964183ab955bfd08c90, type: 2}

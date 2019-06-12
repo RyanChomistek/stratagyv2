@@ -32,6 +32,8 @@ public class MapManager : MonoBehaviour
     [SerializeField]
     private float _tileUpdateTickTime = 1;
 
+    private Action _onMapRerender;
+
     private void Awake()
     {
         _instance = this;
@@ -44,7 +46,9 @@ public class MapManager : MonoBehaviour
     void Start()
     {
         CreateGraph();
+        SetUpAjdacentTiles();
         StartCoroutine(UpdateTileValues());
+        InputController.Instance.RegisterOnClickCallBack(PrintTile);
     }
 
     private void Update()
@@ -53,6 +57,43 @@ public class MapManager : MonoBehaviour
         {
             //show the players vision range
             RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
+            _onMapRerender?.Invoke();
+        }
+    }
+
+    public void RegisterOnMapRerenderCallback(Action callback)
+    {
+        _onMapRerender += callback;
+    }
+
+    private void PrintTile(Vector3 pos)
+    {
+        var tile = GetTileFromPosition(pos);
+        //tile.Update(GameManager.Instance.GameTime);
+        Debug.Log(tile);
+    }
+
+    private void SetUpAjdacentTiles()
+    {
+        List<MapTerrainTile> adjacents = new List<MapTerrainTile>();
+        for (int y = 0; y <= map.GetUpperBound(0); y++)
+        {
+            for (int x = 0; x <= map.GetUpperBound(1); x++)
+            {
+                adjacents.Clear();
+                for (int i = x - 1; i <= x + 1; i++)
+                {
+                    for (int j = y - 1; j <= y + 1; j++)
+                    {
+                        if (InBounds(map, i, j))
+                        {
+                            adjacents.Add(map[i, j]);
+                        }
+                    }
+                }
+
+                map[x, y].SetAdjacentTiles(adjacents);
+            }
         }
     }
 
@@ -71,7 +112,6 @@ public class MapManager : MonoBehaviour
 
             float max = 0;
             float min = 0;
-
             for (int y = 0; y <= map.GetUpperBound(0); y++)
             {
                 for (int x = 0; x <= map.GetUpperBound(1); x++)
@@ -79,10 +119,11 @@ public class MapManager : MonoBehaviour
                     map[x, y].Update(GameTime);
                     max = Mathf.Max(max, map[x, y].Supply);
                     min = Mathf.Min(min, map[x, y].Supply);
+
                 }
             }
 
-            //Debug.Log("supply"+max + " "+ min);
+            //RenderMap(CurrentlyDisplayingMapType);
 
             timeSinceLastTick = 0;
         }
@@ -92,18 +133,26 @@ public class MapManager : MonoBehaviour
     {
         MapGen.GenerateMap();
         ConvertMapGenerationToTerrainTiles();
-        RenderMapWithTiles();
+        RenderMap(MapDisplays.Tiles);
     }
 
     public MapTerrainTile GetTileFromPosition(Vector3 position)
     {
         var gridStart = Tilemap.transform.position;
         var deltaFromStart = position - gridStart;
-        var rounded = LayerMapFunctions.RoundVector(deltaFromStart);
+        var rounded = LayerMapFunctions.FloorVector(deltaFromStart);
         return map[rounded.x, rounded.y];
     }
 
-    public static bool InBounds(PointNode[,] map, int x, int y)
+    public Vector2Int GetTilePositionFromPosition(Vector3 position)
+    {
+        var gridStart = Tilemap.transform.position;
+        var deltaFromStart = position - gridStart;
+        var rounded = LayerMapFunctions.FloorVector(deltaFromStart);
+        return rounded;
+    }
+
+    public static bool InBounds<T>(T[,] map, int x, int y)
     {
         //Debug.Log($"{position}{map.GetUpperBound(0)} {position.x <= map.GetUpperBound(0)} { position.y <= map.GetUpperBound(1)} { position.x > 0} { position.y > 0} ");
         if (x <= map.GetUpperBound(0) &&
@@ -184,10 +233,12 @@ public class MapManager : MonoBehaviour
         switch (mapDisplay)
         {
             case MapDisplays.Population:
-                this.RenderMapWithKey(x => x.Population);
+                //this.RenderMapWithKeyAndRange(x => x.Population, 1000);
+                this.RenderMapWithKey(x => x.Population/x.MaxPopulation);
                 break;
             case MapDisplays.Supply:
-                this.RenderMapWithKey(x => x.Supply);
+                //this.RenderMapWithKeyAndRange(x => x.Supply, 1000);
+                this.RenderMapWithKey(x => x.Supply / x.MaxSupply);
                 break;
             case MapDisplays.Tiles:
                 this.RenderMapWithTiles();
@@ -204,6 +255,8 @@ public class MapManager : MonoBehaviour
                 this.RenderSimple();
                 break;
         }
+        
+        _onMapRerender?.Invoke();
     }
 
     public void RenderMapWithTiles()
@@ -216,6 +269,19 @@ public class MapManager : MonoBehaviour
                 Tilemap.SetTile(new Vector3Int(x, y, 0), map[x, y].tile);
             }
         }
+    }
+
+    public void SetTileColor(Vector2Int pos, Color color)
+    {
+        var position = new Vector3Int(pos.x, pos.y, 0);
+        Tilemap.SetTileFlags(position, TileFlags.None);
+        Tilemap.SetColor(position, color);
+    }
+
+    public Color GetTileColor(Vector2Int pos)
+    {
+        var position = new Vector3Int(pos.x, pos.y, 0);
+        return Tilemap.GetColor(position);
     }
 
     public void RenderSimple()
@@ -297,6 +363,20 @@ public class MapManager : MonoBehaviour
                 Tilemap.SetTileFlags(position, TileFlags.None);
                 Tilemap.SetColor(position, color);
                 
+            }
+        }
+    }
+
+    public void RenderMapWithKeyAndRange(Func<MapTerrainTile, float> key, float range)
+    {
+        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+        {
+            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            {
+                var position = new Vector3Int(x, y, 0);
+                var color = Color.Lerp(Color.red, Color.green, key(map[x, y]) / range);
+                Tilemap.SetTileFlags(position, TileFlags.None);
+                Tilemap.SetColor(position, color);
             }
         }
     }

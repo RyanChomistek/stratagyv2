@@ -36,7 +36,7 @@ public class Move : Order {
         ai.canMove = true;
         ai.destination = finish;
         Host.RecalculateAggrigateValues();
-        ai.maxSpeed = Host.Speed;
+        ai.maxSpeed = Host.Speed * GameManager.Instance.GameSpeed;
     }
 
     public override void Pause(ControlledDivision Host)

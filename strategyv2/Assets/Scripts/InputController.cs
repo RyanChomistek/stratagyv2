@@ -30,6 +30,82 @@ public class ButtonHandler
     }
 }
 
+public class HoverHandler
+{
+    public Action<HoverHandler, Vector3> OnHoverWarmupEnterCallBack;
+    public Action<HoverHandler, Vector3> OnHoverWarmupExitCallBack;
+    public Action<HoverHandler, Vector3> OnHoverStartCallBack;
+    public Action<HoverHandler, Vector3> OnHoverCallBack;
+    public Action<HoverHandler, Vector3> OnHoverEndCallBack;
+
+    private float _warmupTimestamp;
+    public float hoverWarmupTime;
+    public bool IsCurrentlyWarmingup = false;
+
+    public bool IsCurrentlyHovering = false;
+    public Vector3 LastMousePosition;
+
+    public HoverHandler(Action<HoverHandler, Vector3> onHoverWarmupEnter,
+        Action<HoverHandler, Vector3> onHoverWarmupExit,
+        Action<HoverHandler, Vector3> onHoverStart, 
+        Action<HoverHandler, Vector3> onHover, 
+        Action<HoverHandler, Vector3> onHoverEnd,
+        float hoverWarmupTime = 1f)
+    {
+        this.OnHoverWarmupEnterCallBack = onHoverWarmupEnter;
+        this.OnHoverWarmupExitCallBack = onHoverWarmupExit;
+        this.OnHoverStartCallBack = onHoverStart;
+        this.OnHoverCallBack = onHover;
+        this.OnHoverEndCallBack = onHoverEnd;
+        this.IsCurrentlyHovering = false;
+        this.IsCurrentlyWarmingup = false;
+        this._warmupTimestamp = Time.time;
+        this.hoverWarmupTime = hoverWarmupTime;
+    }
+
+    public virtual void OnHoverWarmupEnter()
+    {
+        //Debug.Log("warm");
+        this._warmupTimestamp = Time.time;
+        IsCurrentlyWarmingup = true;
+        this.OnHoverWarmupEnterCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+    }
+
+    //only called when warmup begins but is exited before hover starts
+    public virtual void OnHoverWarmupExit()
+    {
+        //Debug.Log("hover warm exit");
+        IsCurrentlyWarmingup = false;
+        this.OnHoverWarmupExitCallBack(this, LastMousePosition);
+    }
+
+    public virtual void OnHoverStart()
+    {
+        //Debug.Log("start");
+        IsCurrentlyWarmingup = false;
+        this.IsCurrentlyHovering = true;
+        this.OnHoverStartCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+    }
+
+    public virtual void OnHover()
+    {
+        //Debug.Log("hover");
+        this.OnHoverCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+    }
+
+    public virtual void OnHoverEnd()
+    {
+        //Debug.Log("end");
+        this.IsCurrentlyHovering = false;
+        this.OnHoverEndCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+    }
+
+    public bool IsDoneWarmingup()
+    {
+        return IsCurrentlyWarmingup && (Time.time - _warmupTimestamp > hoverWarmupTime);
+    }
+}
+
 public class DragHandler : ButtonHandler
 {
     /*position, delta */
@@ -95,20 +171,23 @@ public class InputController : MonoBehaviour {
 
     private List<ButtonHandler> _buttonHandlers;
     private List<AxisHandler> _axisHandlers;
+    private List<HoverHandler> _hoverHandlers;
 
     private void Awake()
     {
         _buttonHandlers = new List<ButtonHandler>();
         _axisHandlers = new List<AxisHandler>();
+        _hoverHandlers = new List<HoverHandler>();
         Instance = this;
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
         if (Input.GetButtonUp("Fire1") && !EventSystem.current.IsPointerOverGameObject())
         {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if(OnClickDel != null)
                 OnClickDel(mousePos);
         }
@@ -136,6 +215,39 @@ public class InputController : MonoBehaviour {
                 handler.OnChange();
             }
         }
+
+        foreach (HoverHandler handler in _hoverHandlers)
+        {
+            if (mousePos == handler.LastMousePosition)
+            {
+                if (!handler.IsCurrentlyHovering)
+                {
+                    if(!handler.IsCurrentlyWarmingup)
+                    {
+                        handler.OnHoverWarmupEnter();
+                    }
+                    else if (handler.IsDoneWarmingup())
+                    {
+                        handler.OnHoverStart();
+                    }
+                }
+                else if (handler.IsCurrentlyHovering)
+                {
+                    handler.OnHover();
+                }
+            }
+            else if (handler.IsCurrentlyHovering)
+            {
+                handler.OnHoverEnd();
+            }
+            else
+            {
+                handler.OnHoverWarmupExit();
+                handler.IsCurrentlyWarmingup = false;
+            }
+
+            handler.LastMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        }
     }
     
     public void RegisterOnClickCallBack(OnClick callback)
@@ -158,5 +270,10 @@ public class InputController : MonoBehaviour {
     public void RegisterAxisHandler(AxisHandler handler)
     {
         _axisHandlers.Add(handler);
+    }
+
+    public void RegisterHoverHandler(HoverHandler handler)
+    {
+        _hoverHandlers.Add(handler);
     }
 }

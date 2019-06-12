@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: Grass
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
   tile:
-    Supply: 20
+    Supply: 100
+    MaxSupply: 1000
     _supplyGrowthRate: 0.01
-    Population: 1
-    _PopulationGrowthRate: 0.01
+    _supplySpreadRate: 0.001
+    Population: 20
+    MaxPopulation: 200
+    _populationGrowthRate: 0.01
+    _populationSpreadRate: 0.001
     MoveCost: 1000
     TerrainType: 1
     tile: {fileID: 11400000, guid: 1526d0f8d445b5a46b6d144e58c6ac54, type: 2}
