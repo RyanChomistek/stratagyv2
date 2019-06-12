@@ -184,6 +184,13 @@ public class InputController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        //ignore events over ui
+        if(EventSystem.current.IsPointerOverGameObject())
+        {
+            Debug.Log("Clicked on the UI");
+            return;
+        }
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         if (Input.GetButtonUp("Fire1") && !EventSystem.current.IsPointerOverGameObject())

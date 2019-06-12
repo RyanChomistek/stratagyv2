@@ -21,12 +21,14 @@ public class Division {
     public List<Order> PossibleOrders = new List<Order>();
     public Order OngoingOrder = null;
 
-    //aggrigate values
+    //calculated values
     public float Speed = 10;
     public float MaxSightDistance = 0;
     public float TotalHealth = 0;
     public int NumSoldiers = 0;
     public float DamageOutput = 0;
+    public float Supply = 0;
+    public float MaxSupply = 0;
 
     public bool HasBeenDestroyed;
 
@@ -192,6 +194,8 @@ public class Division {
             Speed += soldier.Speed;
             TotalHealth += soldier.Health;
             DamageOutput += soldier.HitStrength;
+            Supply += soldier.Supply;
+            MaxSupply += soldier.Supply;
             cnt++;
         }
 

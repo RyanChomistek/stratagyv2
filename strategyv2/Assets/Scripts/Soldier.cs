@@ -13,6 +13,8 @@ public class Soldier
     public float MinRange = 0f;
     public float MaxRange = 2;
     public float SightDistance = 6;
+    public float Supply = 0;
+    public float MaxSupply = 10;
     public SoldierType Type = SoldierType.Melee;
 
     public Soldier()
@@ -29,16 +31,4 @@ public class Soldier
         this.SightDistance = other.SightDistance;
         this.Type = other.Type;
     }
-    /*
-    public Soldier(float speed, float hitStrength, float minRange, float maxRange, float sightDistance, SoldierType type)
-    {
-        //this.Count = count;
-        this.Speed = speed;
-        this.HitStrength = hitStrength;
-        this.MinRange = minRange;
-        this.MaxRange = maxRange;
-        this.SightDistance = sightDistance;
-        this.Type = type;
-    }
-    */
 }
