@@ -89,9 +89,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4331171978721746637}
   - component: {fileID: 3040411429548632981}
-  - component: {fileID: 4574684478244263189}
   - component: {fileID: 2372225575837799924}
   - component: {fileID: 1067205346625854692}
+  - component: {fileID: 2016376223}
+  - component: {fileID: 2016376229}
   m_Layer: 0
   m_Name: Division
   m_TagString: Untagged
@@ -128,48 +129,8 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &4574684478244263189
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4574684478244263188}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abe923e61733759488df1479d272ce29, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AttachedDivision:
-    DivisionId: 0
-    TeamId: 0
-    Name: 
-    Commander: -1
-    OrderQueue: []
-    BackgroundOrderList: []
-    PossibleOrders: []
-    OngoingOrder:
-      HostId: -1
-      CommanderSendingOrderId: -1
-      name: 
-      orderId: 569
-      HasStarted: 0
-      IsBackgroundOrder: 0
-    Speed: 0
-    MaxSightDistance: 0
-    TotalHealth: 0
-    NumSoldiers: 0
-    DamageOutput: 0
-    Supply: 0
-    MaxSupply: 0
-    HasBeenDestroyed: 0
-    Controller: {fileID: 4574684478244263189}
-  DivisionDisplayContainer: {fileID: 6728466315703208345}
-  Controller: {fileID: 0}
-  DivisionPrefab: {fileID: 4574684478244263188}
-  VisibleControllers: []
 --- !u!114 &2372225575837799924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -234,6 +195,59 @@ MonoBehaviour:
   slowWhenNotFacingTarget: 1
   whenCloseToDestination: 0
   constrainInsideGraph: 0
+--- !u!65 &2016376223
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574684478244263188}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 2.5, y: 2.5, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2016376229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574684478244263188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bdd0833ecfd25c44b589a688e5d209f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AttachedDivision:
+    DivisionId: 0
+    TeamId: 1
+    Name: 
+    Commander: 0
+    OrderQueue: []
+    BackgroundOrderList: []
+    PossibleOrders: []
+    OngoingOrder:
+      HostId: 0
+      CommanderSendingOrderId: 0
+      name: 
+      orderId: 0
+      HasStarted: 0
+      IsBackgroundOrder: 0
+    Speed: 0
+    MaxSightDistance: 0
+    TotalHealth: 0
+    NumSoldiers: 15
+    DamageOutput: 0
+    Supply: 0
+    MaxSupply: 0
+    HasBeenDestroyed: 0
+    Controller: {fileID: 0}
+  DivisionDisplayContainer: {fileID: 6728466315703208345}
+  Controller: {fileID: 0}
+  DivisionPrefab: {fileID: 4574684478244263188}
+  VisibleControllers: []
 --- !u!1 &5262780603511204795
 GameObject:
   m_ObjectHideFlags: 0
@@ -353,7 +367,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4574684478244263189}
+      - m_Target: {fileID: 2016376229}
         m_MethodName: SelectDivision
         m_Mode: 1
         m_Arguments:

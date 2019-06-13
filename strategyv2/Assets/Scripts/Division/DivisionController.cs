@@ -18,16 +18,7 @@ public class DivisionController : BaseDivisionController {
 
     protected void InitAwake()
     {
-        int numsoldiers = base.AttachedDivision.NumSoldiers;
         base.AttachedDivision = new ControlledDivision(base.AttachedDivision.TeamId, this);
-        if (GameManager.DEBUG)
-        {
-            for (int i = 0; i < numsoldiers; i++)
-            {
-                AttachedDivision.Soldiers.Add(new Soldier());
-            }
-        }
-
         AttachedDivision.Init(this);
     }
 
