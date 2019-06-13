@@ -58,7 +58,7 @@ public class HeartBeatOrder : TargetingOrder
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
-        OrderDisplayManager.instance.ClearOrders();
+        OrderDisplayManager.Instance.ClearOrders();
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         //Debug.Log($"heartbeat {Host.DivisionId} {CommanderSendingOrderId}");
         CommanderSendingOrder.SendOrderTo(

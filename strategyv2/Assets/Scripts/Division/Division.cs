@@ -102,7 +102,7 @@ public class Division {
     {
         troops.ForEach(x => Soldiers.Add(x));
         troops.Clear();
-        OnChange();
+        RecalculateAggrigateValues();
     }
 
     public void AddSubordinate(RememberedDivision division)
@@ -175,11 +175,14 @@ public class Division {
 
     public void OnChange()
     {
-        if(!HasBeenDestroyed)
+        if (!HasBeenDestroyed)
+        {
             refresh?.Invoke(this);
+        }
+            
     }
 
-    public void RecalculateAggrigateValues()
+    public virtual void RecalculateAggrigateValues()
     {
         //check if soldier hash has changed
 

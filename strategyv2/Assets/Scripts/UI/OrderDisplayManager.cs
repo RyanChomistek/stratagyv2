@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class OrderDisplayManager : MonoBehaviour {
-    public static OrderDisplayManager instance { get; set; }
+    public static OrderDisplayManager Instance { get; set; }
     private List<GameObject> displays;
     private List<GameObject> displayedOrders = new List<GameObject>();
     [SerializeField]
@@ -39,7 +39,7 @@ public class OrderDisplayManager : MonoBehaviour {
 
     void Start()
     {
-        instance = this;
+        Instance = this;
         int numChildren = transform.childCount;
         displays = new List<GameObject>();
         for (int i = 0; i < numChildren; i++)

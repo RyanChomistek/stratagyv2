@@ -50,7 +50,7 @@ public class EngageOrder : MultiOrder
     {
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterUnitSelectCallback(UICallback);
-        OrderDisplayManager.instance.ClearOrders();
+        OrderDisplayManager.Instance.ClearOrders();
         /*
         var orders = new List<Order>() {
             new FindDivision(Host, CommanderSendingOrder.DivisionId, division.DivisionId),

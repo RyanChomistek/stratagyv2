@@ -46,7 +46,7 @@ public class SplitDivision : Order {
         var soldiersWanted = new Dictionary<SoldierType, int>();
         soldiersWanted.Add(SoldierType.Melee, 1);
 
-        OrderDisplayManager.instance.ClearOrders();
+        OrderDisplayManager.Instance.ClearOrders();
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new SplitDivision(Host, CommanderSendingOrderId, soldiersWanted), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }

@@ -45,6 +45,14 @@ public class ControlledDivision : Division
             
         }
     }
+    
+    //change remembered version of self with recalculated values
+    public override void RecalculateAggrigateValues()
+    {
+        base.RecalculateAggrigateValues();
+        UpdateRememberedDivision(new RememberedDivision(this));
+        OnChange();
+    }
 
     public void AbsorbDivision(ControlledDivision other)
     {

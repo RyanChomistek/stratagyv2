@@ -88,6 +88,7 @@ public class LocalPlayerController : PlayerController {
 
     public void Select(RememberedDivision division)
     {
+        Debug.Log("select " + division);
         if (!UIwaitingForSelection)
         {
             if(division.Controller.Controller.TeamId != TeamId)
@@ -97,14 +98,17 @@ public class LocalPlayerController : PlayerController {
 
             Selected = division.Controller;
             //bing up order ui
-            OrderDisplayManager.instance.ClearOrders();
+            OrderDisplayManager.Instance.ClearOrders();
             List<Order> orders = new List<Order>(Selected.AttachedDivision.PossibleOrders);
             foreach (Order order in orders)
             {
                 order.CommanderSendingOrderId = GeneralDivision.AttachedDivision.DivisionId;
             }
 
-            OrderDisplayManager.instance.AddOrderSet(orders, division, this);
+            OrderDisplayManager.Instance.AddOrderSet(orders, division, this);
+
+            //bring up division display
+            DivisionDisplayManager.Instance.DisplayDivision(division);
         }
         else
         {

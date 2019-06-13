@@ -63,7 +63,7 @@ public class Move : Order {
         finish = new Vector3(mousePos.x, mousePos.y);
         InputController.Instance.UnregisterOnClickCallBack(UICallback);
         //clear ui
-        OrderDisplayManager.instance.ClearOrders();
+        OrderDisplayManager.Instance.ClearOrders();
         //need to get 
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new Move(Host, CommanderSendingOrder.DivisionId, finish), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);

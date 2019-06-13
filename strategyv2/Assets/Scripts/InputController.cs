@@ -187,7 +187,6 @@ public class InputController : MonoBehaviour {
         //ignore events over ui
         if(EventSystem.current.IsPointerOverGameObject())
         {
-            Debug.Log("Clicked on the UI");
             return;
         }
 

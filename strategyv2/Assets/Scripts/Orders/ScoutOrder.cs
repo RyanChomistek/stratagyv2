@@ -23,7 +23,7 @@ public class ScoutOrder : Order
     {
         finish = new Vector3(mousePos.x, mousePos.y);
         InputController.Instance.UnregisterOnClickCallBack(UICallback);
-        OrderDisplayManager.instance.ClearOrders();
+        OrderDisplayManager.Instance.ClearOrders();
         var scout = Host.CreateNewDivision();
         scout.name = "scout";
 
