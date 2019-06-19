@@ -26,6 +26,7 @@ public class MapManager : MonoBehaviour
     public MapDisplays CurrentlyDisplayingMapType;
 
     private Color _FowGrey = new Color(.25f, .25f, .25f, 1);
+    private Color _notDiscovered = new Color(0f, 0f, 0f, 1);
     private Color _playerVision = new Color(1, 1, 1, 1);
     private Color _otherDivisionsVision = new Color(.5f, .5f, .5f, 1);
 
@@ -49,6 +50,7 @@ public class MapManager : MonoBehaviour
         SetUpAjdacentTiles();
         StartCoroutine(UpdateTileValues());
         InputController.Instance.RegisterOnClickCallBack(PrintTile);
+        LocalPlayerController.Instance.GeneralDivision.AttachedDivision.OnDiscoveredMapChanged += x => Rerender();
     }
 
     private void Update()
@@ -59,6 +61,19 @@ public class MapManager : MonoBehaviour
             RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
             _onMapRerender?.Invoke();
         }
+    }
+
+    public bool[,] GetMapMask()
+    {
+        bool[,] mask = new bool[map.GetUpperBound(1)+1, map.GetUpperBound(0)+1];
+        for (int i = 0; i <= mask.GetUpperBound(0); i++)
+        {
+            for (int j = 0; j <= mask.GetUpperBound(1); j++)
+            {
+                mask[i, j] = false;
+            }
+        }
+        return mask;
     }
 
     public void RegisterOnMapRerenderCallback(Action callback)
@@ -227,6 +242,12 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    public void Rerender()
+    {
+        Debug.Log("rerender");
+        RenderMap(CurrentlyDisplayingMapType);
+    }
+
     public void RenderMap(MapDisplays mapDisplay)
     {
         CurrentlyDisplayingMapType = mapDisplay;
@@ -245,7 +266,8 @@ public class MapManager : MonoBehaviour
                 break;
             case MapDisplays.TilesWithVision:
                 Debug.Log("visibility");
-                RenderAllTilesGray();
+                //RenderAllTilesGray();
+                RenderDiscoveredTiles(LocalPlayerController.Instance.GeneralDivision.AttachedDivision);
                 RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
                 break;
             case MapDisplays.MovementSpeed:
@@ -312,6 +334,27 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    public void RenderDiscoveredTiles(ControlledDivision division)
+    {
+        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+        {
+            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            {
+                var position = new Vector3Int(x, y, 0);
+                Tilemap.SetTileFlags(position, TileFlags.None);
+                
+                if(division.discoveredMapLocations[x, y])
+                {
+                    Tilemap.SetColor(position, _FowGrey);
+                }
+                else
+                {
+                    Tilemap.SetColor(position, _notDiscovered);
+                }
+            }
+        }
+    }
+
     public static Vector2Int RoundVector(Vector2 vec)
     {
         return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
@@ -324,14 +367,24 @@ public class MapManager : MonoBehaviour
         Vector3Int controllerPositionRounded = new Vector3Int(RoundVector(controller.transform.position).x, RoundVector(controller.transform.position).y,0);
 
         //for the x and ys we go one over so that we erase the old sight tiles as we walk past them
-        for (int x = -sightDistance-1; x <= sightDistance+1; x++) //Loop through the width of the map
+        for (int x = -sightDistance-1; x <= sightDistance+1; x++)
         {
-            for (int y = -sightDistance-1; y <= sightDistance+1; y++) //Loop through the height of the map
+            for (int y = -sightDistance-1; y <= sightDistance+1; y++)
             {
                
                 var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
-                var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance ? 1 : 0;
-                var color = Color.Lerp(_FowGrey, visionColor, inVision);
+                var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance;
+                var color = _notDiscovered;
+                
+                if (inVision)
+                {
+                    color = visionColor;
+                }
+                else if(controller.AttachedDivision.discoveredMapLocations[position.x, position.y])
+                {
+                    color = _FowGrey;
+                }
+                
                 Tilemap.SetTileFlags(position, TileFlags.None);
                 Tilemap.SetColor(position, color);
             }

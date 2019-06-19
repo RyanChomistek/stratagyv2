@@ -2585,7 +2585,7 @@ Camera:
   far clip plane: 5000
   field of view: 40
   orthographic: 1
-  orthographic size: 7.75998
+  orthographic size: 25.76001
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2609,7 +2609,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 863233076}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.4000015, y: -20.6, z: -10}
+  m_LocalPosition: {x: -4.204422, y: -20.6, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1433891952}
@@ -94923,7 +94923,7 @@ MonoBehaviour:
   m_Follow: {fileID: 0}
   m_Lens:
     FieldOfView: 40
-    OrthographicSize: 7.75998
+    OrthographicSize: 25.76001
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0
@@ -96174,6 +96174,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerGeneral
       objectReference: {fileID: 0}
+    - target: {fileID: 2244712348670738544, guid: 5463b0d38d9d40f4183cc332b3008618,
+        type: 3}
+      propertyPath: Controller
+      value: 
+      objectReference: {fileID: 592116456}
     - target: {fileID: 2035964860622703528, guid: 5463b0d38d9d40f4183cc332b3008618,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -96229,10 +96234,5 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2244712348670738544, guid: 5463b0d38d9d40f4183cc332b3008618,
-        type: 3}
-      propertyPath: Controller
-      value: 
-      objectReference: {fileID: 592116456}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5463b0d38d9d40f4183cc332b3008618, type: 3}

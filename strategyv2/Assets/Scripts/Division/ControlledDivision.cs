@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,16 +9,22 @@ public class ControlledDivision : Division
     public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
     public Dictionary<int, ControlledDivision> VisibleDivisions = new Dictionary<int, ControlledDivision>();
 
+    public bool[,] discoveredMapLocations;
+
+    public Action<ControlledDivision> OnDiscoveredMapChanged;
+
     public ControlledDivision(Division division, DivisionController controller = null)
         : base(division, division.Controller)
     {
         SetupOrders();
+        discoveredMapLocations = MapManager.Instance.GetMapMask();
     }
 
     public ControlledDivision(int teamId, DivisionController controller = null)
         : base(teamId, controller)
     {
         SetupOrders();
+        discoveredMapLocations = MapManager.Instance.GetMapMask();
     }
     
     public void DestroyDivision(ControlledDivision other)
@@ -89,6 +96,43 @@ public class ControlledDivision : Division
 
         RecalculateAggrigateValues();
         return false;
+    }
+
+    public void RefreshDiscoveredTiles()
+    {
+        int sightDistance = Mathf.RoundToInt(MaxSightDistance);
+        Vector2 controllerPosition = Controller.transform.position;
+        Vector3Int controllerPositionRounded = new Vector3Int(MapManager.RoundVector(Controller.transform.position).x, MapManager.RoundVector(Controller.transform.position).y, 0);
+
+        for (int x = -sightDistance - 1; x <= sightDistance + 1; x++)
+        {
+            for (int y = -sightDistance - 1; y <= sightDistance + 1; y++)
+            {
+                var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
+                var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < Controller.AttachedDivision.MaxSightDistance;
+
+                if (inVision)
+                {
+                    discoveredMapLocations[position.x, position.y] = true;
+                }
+            }
+        }
+    }
+
+    public void ShareMapInformation(ControlledDivision other)
+    {
+        for (int x = 0; x <= discoveredMapLocations.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= discoveredMapLocations.GetUpperBound(1); y++)
+            {
+                bool info = discoveredMapLocations[x, y] | other.discoveredMapLocations[x, y];
+                discoveredMapLocations[x, y] = info;
+                other.discoveredMapLocations[x, y] = info;
+            }
+        }
+
+        OnDiscoveredMapChanged?.Invoke(this);
+        other.OnDiscoveredMapChanged?.Invoke(other);
     }
 
     public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)

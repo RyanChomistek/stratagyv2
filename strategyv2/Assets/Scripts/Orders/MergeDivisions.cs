@@ -19,6 +19,7 @@ public class MergeDivisions : Order
         ControlledDivision divisionToMergeWith;
         if(Host.FindVisibleDivision(TargetId, out divisionToMergeWith))
         {
+            Host.ShareMapInformation(divisionToMergeWith);
             divisionToMergeWith.AbsorbDivision(Host);
             FinishedMerging = true;
         }

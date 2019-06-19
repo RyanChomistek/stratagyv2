@@ -36,6 +36,7 @@ public class Move : Order {
         ai.canMove = true;
         ai.destination = finish;
         Host.RecalculateAggrigateValues();
+        Host.RefreshDiscoveredTiles();
         ai.maxSpeed = Host.Speed * GameManager.Instance.GameSpeed;
     }
 
