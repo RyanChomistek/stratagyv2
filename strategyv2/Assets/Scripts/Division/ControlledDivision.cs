@@ -49,7 +49,6 @@ public class ControlledDivision : Division
             {
                 kvp.Value.RememberedDivisions[DivisionId] = new RememberedDivision(this);
             }
-            
         }
     }
     
@@ -98,6 +97,28 @@ public class ControlledDivision : Division
         return false;
     }
 
+    public bool CheckDamageDone(ControlledDivision from)
+    {
+        for (int i = 0; i < Soldiers.Count; i++)
+        {
+            var soldier = Soldiers[i];
+            if (soldier.Health <= 0)
+            {
+                Soldiers.RemoveAt(i);
+                i--;
+            }
+        }
+
+        if (Soldiers.Count == 0)
+        {
+            from.DestroyDivision(this);
+            return true;
+        }
+
+        RecalculateAggrigateValues();
+        return false;
+    }
+
     public void RefreshDiscoveredTiles()
     {
         int sightDistance = Mathf.RoundToInt(MaxSightDistance);
@@ -111,7 +132,7 @@ public class ControlledDivision : Division
                 var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
                 var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < Controller.AttachedDivision.MaxSightDistance;
 
-                if (inVision)
+                if (inVision && MapManager.InBounds(discoveredMapLocations, position.x, position.y))
                 {
                     discoveredMapLocations[position.x, position.y] = true;
                 }

@@ -27,6 +27,7 @@ public class Division {
     public float TotalHealth = 0;
     public int NumSoldiers = 0;
     public float DamageOutput = 0;
+    public float MaxHitRange = 0;
     public float Supply = 0;
     public float MaxSupply = 0;
 
@@ -190,6 +191,7 @@ public class Division {
         Speed = 0;
         TotalHealth = 0;
         DamageOutput = 0;
+        MaxHitRange = 0;
         int cnt = 0;
         foreach(Soldier soldier in Soldiers)
         {
@@ -199,6 +201,7 @@ public class Division {
             DamageOutput += soldier.HitStrength;
             Supply += soldier.Supply;
             MaxSupply += soldier.Supply;
+            MaxHitRange = Mathf.Max(MaxHitRange, soldier.HitRange);
             cnt++;
         }
 

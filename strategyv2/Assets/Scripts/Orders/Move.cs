@@ -8,6 +8,7 @@ public class Move : Order {
     public Vector3 finish;
     private float _thresholdDistance;
     InputController.OnClick UICallback;
+    private IAstarAI _ai;
 
     public Move(Division controller, int commanderSendingOrderId, Vector3 finish, float thresholdDistance = .5f)
         : base(controller, commanderSendingOrderId, "Move")
@@ -18,7 +19,7 @@ public class Move : Order {
 
     public override void Start(ControlledDivision Host)
     {
-        //Debug.Log("move start " + Host.Name);
+        _ai = Host.Controller.GetComponent<IAstarAI>();
         MoveToTarget(Host);
         base.Start(Host);
     }
@@ -32,12 +33,12 @@ public class Move : Order {
         //set start moving twords finish
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
         */
-        IAstarAI ai = Host.Controller.GetComponent<IAstarAI>();
-        ai.canMove = true;
-        ai.destination = finish;
+        
+        _ai.canMove = true;
+        _ai.destination = finish;
         Host.RecalculateAggrigateValues();
         Host.RefreshDiscoveredTiles();
-        ai.maxSpeed = Host.Speed * GameManager.Instance.GameSpeed;
+        _ai.maxSpeed = Host.Speed * GameManager.Instance.GameSpeed;
     }
 
     public override void Pause(ControlledDivision Host)
@@ -79,11 +80,12 @@ public class Move : Order {
         //set start moving twords finish
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
         */
-        MoveToTarget(Host);
+        //MoveToTarget(Host);
     }
 
     public override bool TestIfFinished(ControlledDivision Host)
     {
+        /*
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;
         if (distanceToFinish < _thresholdDistance)
@@ -91,6 +93,8 @@ public class Move : Order {
             return true;
         }
         return false;
+        */
+        return _ai.reachedEndOfPath;
     }
 
     public override Vector3 GetPredictedPosition(RememberedDivision rememberedDivision)

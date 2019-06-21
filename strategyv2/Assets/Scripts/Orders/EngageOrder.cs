@@ -12,7 +12,6 @@ public class EngageOrder : MultiOrder
         : base(controller, commanderSendingOrderId, "Engage", new List<Order>())
     {
         this.RememberedTargetId = rememberedTargetId;
-
         AddFindTarget(controller);
     }
 
@@ -25,11 +24,21 @@ public class EngageOrder : MultiOrder
     {
         base.StartNextOrder(Host);
 
-        if(Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
+        var rememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
+
+        //if the target has been destroyed do nothing and to end the order
+        if(rememberedTarget.HasBeenDestroyed)
+        {
+            OngoingOrder = null;
+            return;
+        }
+
+        if (Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
         {
             //if the target is within range attack
-            Debug.Log("visible");
+            Debug.Log("engaged");
             Debug.Log(SubOrders.Count);
+            this.SubOrders.Add(new AttackOrder(Host, CommanderSendingOrderId, division.DivisionId, Host.MaxHitRange));
         }
         else
         {
@@ -51,14 +60,7 @@ public class EngageOrder : MultiOrder
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterUnitSelectCallback(UICallback);
         OrderDisplayManager.Instance.ClearOrders();
-        /*
-        var orders = new List<Order>() {
-            new FindDivision(Host, CommanderSendingOrder.DivisionId, division.DivisionId),
-            new AttackOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId)
-        };
 
-        CommanderSendingOrder.SendOrdersTo(new RememberedDivision(Host), orders);
-        */
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), 
             new EngageOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }

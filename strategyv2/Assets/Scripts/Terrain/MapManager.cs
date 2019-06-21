@@ -380,7 +380,7 @@ public class MapManager : MonoBehaviour
                 {
                     color = visionColor;
                 }
-                else if(controller.AttachedDivision.discoveredMapLocations[position.x, position.y])
+                else if(InBounds(controller.AttachedDivision.discoveredMapLocations, position.x, position.y) && controller.AttachedDivision.discoveredMapLocations[position.x, position.y])
                 {
                     color = _FowGrey;
                 }

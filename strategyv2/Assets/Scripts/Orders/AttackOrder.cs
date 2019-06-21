@@ -9,39 +9,39 @@ public class AttackOrder : TargetingOrder
 
     LocalPlayerController.responseToUI UICallback;
 
-    public AttackOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId)
-        : base(controller, commanderSendingOrderId, "Attack", rememberedTargetId)
+    public AttackOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId, float thresholdDistance = .5f)
+        : base(controller, commanderSendingOrderId, "Attack", rememberedTargetId, thresholdDistance)
     {
     }
 
     public override void Proceed(ControlledDivision Host)
     {
-        RememberedDivision RememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
-        float distanceToTarget = (RememberedTarget.Position - Host.Controller.transform.position).magnitude;
-        List<Soldier> soldiersWhoCanAttack = new List<Soldier>();
-        foreach(Soldier soldier in Host.Soldiers)
+        if (!IsFinished && Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
         {
-            if(distanceToTarget > soldier.MinRange && distanceToTarget < soldier.MaxRange)
+            var distanceToTarget = (division.Controller.transform.position - Host.Controller.transform.position).magnitude;
+            if(distanceToTarget > Host.MaxHitRange)
             {
-                soldiersWhoCanAttack.Add(soldier);
+                return;
             }
-        }
 
-        float totalDamage = 0;
-        
-        foreach(Soldier soldier in soldiersWhoCanAttack)
-        {
-            totalDamage += soldier.HitStrength;
-        }
+            float totalDamage = 0;
+            foreach (Soldier soldier in Host.Soldiers)
+            {
+                if (distanceToTarget > soldier.MinRange && distanceToTarget < soldier.MaxRange)
+                {
+                    totalDamage += soldier.Attack(ref division);
+                }
+            }
 
-        totalDamage *= GameManager.Instance.DeltaTime;
-
-        bool isDestroyed = RememberedTarget.Controller.AttachedDivision.TakeDamage(totalDamage, Host);
-        if(isDestroyed)
-        {
-            RememberedTarget.HasBeenDestroyed = true;
-            RememberedTarget.TimeStamp = GameManager.Instance.GameTime;
-            IsFinished = true;
+            
+            bool isDestroyed = division.CheckDamageDone(Host);
+            if (isDestroyed)
+            {
+                RememberedDivision RememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
+                RememberedTarget.HasBeenDestroyed = true;
+                RememberedTarget.TimeStamp = GameManager.Instance.GameTime;
+                IsFinished = true;
+            }
         }
     }
 
@@ -65,7 +65,7 @@ public class AttackOrder : TargetingOrder
 
         var orders = new List<Order>() {
             new FindDivision(Host, CommanderSendingOrder.DivisionId, division.DivisionId),
-            new AttackOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId)
+            new AttackOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId, Host.MaxHitRange)
         };
 
         CommanderSendingOrder.SendOrdersTo(new RememberedDivision(Host), orders, ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
