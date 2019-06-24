@@ -13,7 +13,7 @@ public class Soldier : IEquatable<Soldier>
     private static int IdCount = 0;
     public int Id = -1;
     public float Speed = 5000;
-    public float HitStrength = 1;
+    public float HitStrength = .1f;
     public float HitRange = 1;
     public float Health = 1;
     public float MinRange = 0f;

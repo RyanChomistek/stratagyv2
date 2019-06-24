@@ -116,8 +116,8 @@ public class DivisionController : BaseDivisionController {
     {
         GameObject newDivision = Instantiate(DivisionPrefab);
         DivisionController newController = newDivision.GetComponent<DivisionController>();
+        newController.transform.position = transform.position;
         newController.Controller = Controller;
-        //AttachedDivision.CreateChild(soldiersForChild, newController);
         newController.AttachedDivision.Soldiers.Clear();
         newController.AttachedDivision.TransferSoldiers(soldiersForChild);
         newController.AttachedDivision.Commander = AttachedDivision.DivisionId;

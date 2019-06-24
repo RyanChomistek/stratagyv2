@@ -13,6 +13,8 @@ public class ControlledDivision : Division
 
     public Action<ControlledDivision> OnDiscoveredMapChanged;
 
+    public Vector3 Position { get { return Controller.transform.position; } }
+
     public ControlledDivision(Division division, DivisionController controller = null)
         : base(division, division.Controller)
     {
@@ -272,6 +274,7 @@ public class ControlledDivision : Division
             }
             else
             {
+                Debug.Log("ContinueOrder");
                 ContinueOrder();
             }
         }

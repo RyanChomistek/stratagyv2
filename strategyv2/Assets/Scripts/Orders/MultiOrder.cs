@@ -7,6 +7,8 @@ public class MultiOrder : Order
     protected List<Order> SubOrders;
     protected Order OngoingOrder;
 
+    private string _baseName;
+
     public MultiOrder(Division controller, int commanderSendingOrderId, string name, List<Order> subOrders)
         : base(controller, commanderSendingOrderId, name)
     {
@@ -16,6 +18,7 @@ public class MultiOrder : Order
             this.SubOrders = new List<Order>();
 
         OngoingOrder = null;
+        _baseName = name;
     }
 
     public override void Start(ControlledDivision Host)
@@ -31,6 +34,7 @@ public class MultiOrder : Order
             OngoingOrder = SubOrders[0];
             SubOrders.RemoveAt(0);
             OngoingOrder.Start(Host);
+            name = $"{_baseName} {OngoingOrder.name}";
         }
         /*
         else

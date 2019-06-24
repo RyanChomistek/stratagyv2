@@ -36,7 +36,7 @@ public class FindDivision : MultiOrder
         RememberedDivision rememberedTarget;
         if (TryGetRememberedDivisionFromHost(Host, RememberedTargetId, out rememberedTarget))
         {
-            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition, _thresholdDistance));
+            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition, _thresholdDistance * .5f));
         }
         else
         {
@@ -50,6 +50,11 @@ public class FindDivision : MultiOrder
         ControlledDivision visibleTarget;
         if(Host.FindVisibleDivision(RememberedTargetId, out visibleTarget))
         {
+            if(visibleTarget.HasBeenDestroyed)
+            {
+                return true;
+            }
+
             Vector3 currLoc = Host.Controller.transform.position;
             float distanceToFinish = (visibleTarget.Controller.transform.position - currLoc).magnitude;
             if (distanceToFinish < _thresholdDistance)

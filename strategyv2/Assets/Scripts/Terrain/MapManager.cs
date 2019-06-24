@@ -84,7 +84,6 @@ public class MapManager : MonoBehaviour
     private void PrintTile(Vector3 pos)
     {
         var tile = GetTileFromPosition(pos);
-        //tile.Update(GameManager.Instance.GameTime);
         Debug.Log(tile);
     }
 

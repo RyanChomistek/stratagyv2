@@ -21,6 +21,7 @@ public class AttackOrder : TargetingOrder
             var distanceToTarget = (division.Controller.transform.position - Host.Controller.transform.position).magnitude;
             if(distanceToTarget > Host.MaxHitRange)
             {
+                IsFinished = true;
                 return;
             }
 

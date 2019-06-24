@@ -16,7 +16,7 @@ public class ScoutOrder : Order
     public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         UICallback = mousePos => OnClickReturn(mousePos, Host, playerController);
-        InputController.Instance.RegisterOnClickCallBack(UICallback);
+        InputController.Instance.RegisterOnClickCallBackWithUICancel(UICallback);
     }
 
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)

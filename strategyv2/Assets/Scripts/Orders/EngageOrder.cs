@@ -35,10 +35,18 @@ public class EngageOrder : MultiOrder
 
         if (Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
         {
-            //if the target is within range attack
-            Debug.Log("engaged");
-            Debug.Log(SubOrders.Count);
-            this.SubOrders.Add(new AttackOrder(Host, CommanderSendingOrderId, division.DivisionId, Host.MaxHitRange));
+            var distanceToTarget = (division.Controller.transform.position - Host.Controller.transform.position).magnitude;
+
+            //need to move closer
+            if (distanceToTarget > Host.MaxHitRange)
+            {
+                this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, division.Position, Host.MaxHitRange * .5f));
+            }
+            else
+            {
+                //if the target is within range attack
+                this.SubOrders.Add(new AttackOrder(Host, CommanderSendingOrderId, division.DivisionId, Host.MaxHitRange));
+            }
         }
         else
         {

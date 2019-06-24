@@ -168,6 +168,7 @@ public class InputController : MonoBehaviour {
     public Player Player;
     public delegate void OnClick(Vector3 mouseLoc);
     public OnClick OnClickDel;
+    public OnClick OnUIClickDel;
 
     private List<ButtonHandler> _buttonHandlers;
     private List<AxisHandler> _axisHandlers;
@@ -184,15 +185,19 @@ public class InputController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        //ignore events over ui
-        if(EventSystem.current.IsPointerOverGameObject())
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        if (EventSystem.current.IsPointerOverGameObject())
         {
+            if (Input.GetButtonUp("Fire1"))
+            {
+                OnUIClickDel?.Invoke(mousePos);
+            }
+            
             return;
         }
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-        if (Input.GetButtonUp("Fire1") && !EventSystem.current.IsPointerOverGameObject())
+        if (Input.GetButtonUp("Fire1"))
         {
             if(OnClickDel != null)
                 OnClickDel(mousePos);
@@ -260,6 +265,20 @@ public class InputController : MonoBehaviour {
     {
         Debug.Log("registering click");
         OnClickDel += callback;
+    }
+
+    //use this so when you click on a ui element it cancles the previous click delegate
+    public void RegisterOnClickCallBackWithUICancel(OnClick callback)
+    {
+        RegisterOnClickCallBack(callback);
+        //need to wait for 1 frame so that if we happend to activate this register from a ui click, we dont immediatly cancel it
+        StartCoroutine(RegisterOnClickCallBackWithUICancelHelper(callback));
+    }
+
+    private IEnumerator RegisterOnClickCallBackWithUICancelHelper(OnClick callback)
+    {
+        yield return new WaitForEndOfFrame();
+        OnUIClickDel += x => { OnClickDel -= callback; };
     }
 
     public void UnregisterOnClickCallBack(OnClick callback)

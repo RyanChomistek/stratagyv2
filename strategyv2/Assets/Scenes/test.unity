@@ -2617,7 +2617,7 @@ Camera:
   far clip plane: 5000
   field of view: 40
   orthographic: 1
-  orthographic size: 9.159986
+  orthographic size: 6.359988
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -95033,7 +95033,7 @@ MonoBehaviour:
   m_Follow: {fileID: 0}
   m_Lens:
     FieldOfView: 40
-    OrthographicSize: 9.159986
+    OrthographicSize: 6.359988
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0
@@ -96343,6 +96343,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3356627771916142977, guid: 5463b0d38d9d40f4183cc332b3008618,
+        type: 3}
+      propertyPath: endReachedDistance
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5463b0d38d9d40f4183cc332b3008618, type: 3}

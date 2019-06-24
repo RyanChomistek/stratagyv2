@@ -31,6 +31,7 @@ public class Division {
     public float Supply = 0;
     public float MaxSupply = 0;
 
+    public float MessageCommunicationRange = 1;
     public bool HasBeenDestroyed;
 
     public DivisionController Controller;

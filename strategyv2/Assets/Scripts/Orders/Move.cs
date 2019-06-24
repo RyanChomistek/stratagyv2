@@ -8,7 +8,7 @@ public class Move : Order {
     public Vector3 finish;
     private float _thresholdDistance;
     InputController.OnClick UICallback;
-    private IAstarAI _ai;
+    private AIPath _ai;
 
     public Move(Division controller, int commanderSendingOrderId, Vector3 finish, float thresholdDistance = .5f)
         : base(controller, commanderSendingOrderId, "Move")
@@ -19,7 +19,7 @@ public class Move : Order {
 
     public override void Start(ControlledDivision Host)
     {
-        _ai = Host.Controller.GetComponent<IAstarAI>();
+        _ai = Host.Controller.GetComponent<AIPath>();
         MoveToTarget(Host);
         base.Start(Host);
     }
@@ -34,8 +34,14 @@ public class Move : Order {
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
         */
         
-        _ai.canMove = true;
         _ai.destination = finish;
+        _ai.endReachedDistance = _thresholdDistance * .5f;
+        UpdateCalculatedValues(Host);
+    }
+
+    public void UpdateCalculatedValues(ControlledDivision Host)
+    {
+        _ai.canMove = true;
         Host.RecalculateAggrigateValues();
         Host.RefreshDiscoveredTiles();
         _ai.maxSpeed = Host.Speed * GameManager.Instance.GameSpeed;
@@ -44,20 +50,18 @@ public class Move : Order {
     public override void Pause(ControlledDivision Host)
     {
         //Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
-        IAstarAI ai = Host.Controller.GetComponent<IAstarAI>();
-        ai.canMove = false;
+        _ai.canMove = false;
     }
 
     public override void End(ControlledDivision Host)
     {
-        //Debug.Log("move end");
         Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
     }
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         UICallback = mousePos => OnClickReturn(mousePos, Host, playerController);
-        InputController.Instance.RegisterOnClickCallBack(UICallback);
+        InputController.Instance.RegisterOnClickCallBackWithUICancel(UICallback);
     }
 
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
@@ -81,20 +85,22 @@ public class Move : Order {
         Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
         */
         //MoveToTarget(Host);
+        UpdateCalculatedValues(Host);
     }
 
     public override bool TestIfFinished(ControlledDivision Host)
     {
-        /*
+        
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;
-        if (distanceToFinish < _thresholdDistance)
+        if (distanceToFinish <= _thresholdDistance)
         {
             return true;
         }
         return false;
-        */
-        return _ai.reachedEndOfPath;
+        
+        //for whatever reason the pathPending doesnt get updated for a few frames
+        //return  !_ai.pathPending && _ai.reachedEndOfPath;
     }
 
     public override Vector3 GetPredictedPosition(RememberedDivision rememberedDivision)
