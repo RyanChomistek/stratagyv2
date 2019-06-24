@@ -251,7 +251,6 @@ public class ControlledDivision : Division
         this.PossibleOrders.Add(new Move(this, -1, new Vector3()));
         this.PossibleOrders.Add(new SplitDivision(this, -1, null));
         this.PossibleOrders.Add(new ScoutOrder(this, -1, new Vector3()));
-        this.PossibleOrders.Add(new AttackOrder(this, -1, -1));
         this.PossibleOrders.Add(new HeartBeatOrder(this, -1, -1));
         this.PossibleOrders.Add(new EngageOrder(this, -1, -1));
         this.PossibleOrders.Add(new RecruitOrder(this, -1));
@@ -274,7 +273,6 @@ public class ControlledDivision : Division
             }
             else
             {
-                Debug.Log("ContinueOrder");
                 ContinueOrder();
             }
         }

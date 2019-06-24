@@ -34,16 +34,33 @@ public class DivisionDisplayManager : MonoBehaviour
 
         _divisionIdToDisplay = divisionToDisplay.DivisionId;
         var localPlayer = LocalPlayerController.Instance.GeneralDivision;
-        RefreshDivision(localPlayer.AttachedDivision);
-        localPlayer.AttachedDivision.AddRefreshDelegate(RefreshDivision);
+        RefreshDivisionCallback(divisionToDisplay);
+        divisionToDisplay.AddRefreshDelegate(RefreshDivisionCallback);
+        //RefreshDivision(localPlayer.AttachedDivision);
+        //localPlayer.AttachedDivision.AddRefreshDelegate(RefreshDivision);
 
         InputController.Instance.RegisterOnClickCallBack(OnClickOff);
     }
 
-    public void RefreshDivision(Division division)
+    public void RefreshDivisionCallback(Division rootDivision)
     {
         var localPlayer = LocalPlayerController.Instance.GeneralDivision.AttachedDivision;
-        var displayedDivision = localPlayer.RememberedDivisions[_divisionIdToDisplay];
+
+        //try to see if the division is visible
+        if(localPlayer.VisibleDivisions.TryGetValue(_divisionIdToDisplay, out ControlledDivision division))
+        {
+            RefreshDivision(division);
+        }
+        else
+        {
+            //else grab its remembered info
+            var rememberedDivision = localPlayer.RememberedDivisions[_divisionIdToDisplay];
+            RefreshDivision(rememberedDivision);
+        }
+    }
+
+    public void RefreshDivision(Division displayedDivision)
+    {
         _divisionNameDisplay.text = displayedDivision.Name;
         _troopCountDisplay.text = displayedDivision.NumSoldiers.ToString();
         _supplyDisplay.text = $"{displayedDivision.Supply}/{displayedDivision.MaxSupply}";
@@ -69,6 +86,24 @@ public class DivisionDisplayManager : MonoBehaviour
                 soldierTypeCards.Add(kvp.Key, card.GetComponent<SoldierCardController>());
                 UpdateSoldierCard(kvp.Key, kvp.Value);
             }
+        }
+
+        //remove empty cards
+        var oldCardTypes = soldierTypeCards.Keys;
+        List<SoldierType> cardsToRemove = new List<SoldierType>();
+
+        foreach(var key in oldCardTypes)
+        { 
+            if(!soldiersSplitIntoTypes.ContainsKey(key))
+            {
+                cardsToRemove.Add(key);
+            }
+        }
+
+        foreach (var key in cardsToRemove)
+        {
+            Destroy(soldierTypeCards[key].gameObject);
+            soldierTypeCards.Remove(key);
         }
     }
 

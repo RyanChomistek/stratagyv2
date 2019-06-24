@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System.Collections.ObjectModel;
+using System;
+
 public class InsufficientSoldierCountException : System.Exception{
 }
 
 [System.Serializable]
-public class Division {
+public class Division : IEquatable<Division>
+{
     protected static int DivisionCounter = 0;
     public int DivisionId;
     public int TeamId = -1;
@@ -181,7 +184,6 @@ public class Division {
         {
             refresh?.Invoke(this);
         }
-            
     }
 
     public virtual void RecalculateAggrigateValues()
@@ -336,8 +338,8 @@ public class Division {
 
     public void SendOrdersTo(RememberedDivision to, List<Order> orders, ref Dictionary<int, RememberedDivision> rememberedDivisions)
     {
-        //follow commander tree to get there
-        List<RememberedDivision> pathToDivision = FindDivisionInSubordinates(new RememberedDivision(this), to, new List<RememberedDivision>(), ref rememberedDivisions);
+        //follow command tree to get there
+        List<RememberedDivision> pathToDivision = FindDivisionInSubordinatesHelper(new RememberedDivision(this), to, ref rememberedDivisions);
         //if path is only size one, were at where the order needs to go
         if (pathToDivision.Count == 1)
         {
@@ -347,6 +349,44 @@ public class Division {
 
         //send order to the next commander
         pathToDivision[0].Controller.SendMessenger(pathToDivision[1], to, orders);
+    }
+
+    public List<RememberedDivision> FindDivisionInSubordinatesHelper(RememberedDivision start, RememberedDivision end, ref Dictionary<int, RememberedDivision> rememberedDivisions)
+    {
+        //first go to top of command chain
+        List<RememberedDivision> pathToDivision = new List<RememberedDivision>();
+        
+
+        RememberedDivision topOfChain = new RememberedDivision(this);
+        
+        while (topOfChain.DivisionId != topOfChain.Commander)
+        {
+            pathToDivision.Add(topOfChain);
+            topOfChain = rememberedDivisions[topOfChain.Commander];
+        }
+
+        pathToDivision = FindDivisionInSubordinates(topOfChain, end, pathToDivision, ref rememberedDivisions);
+
+        //remove cycles
+        Stack<RememberedDivision> prevNodes = new Stack<RememberedDivision>();
+        foreach(var division in pathToDivision)
+        {
+            if (prevNodes.Contains(division))
+            {
+                while(!prevNodes.Peek().Equals(division))
+                {
+                    prevNodes.Pop();
+                }
+            }
+            else
+            {
+                prevNodes.Push(division);
+            }
+        }
+
+        pathToDivision = prevNodes.ToList();
+        pathToDivision.Reverse();
+        return pathToDivision;
     }
 
     //returns the chain of command to a subordinate
@@ -361,11 +401,14 @@ public class Division {
 
         foreach (int subordinateId in start.Subordinates)
         {
-            RememberedDivision division = rememberedDivisions[subordinateId];
-            List<RememberedDivision> temp = FindDivisionInSubordinates(division, end, prev, ref rememberedDivisions);
-            if (temp != null)
+            if(rememberedDivisions.TryGetValue(subordinateId, out RememberedDivision division))
             {
-                return temp;
+                //RememberedDivision division = rememberedDivisions[subordinateId];
+                List<RememberedDivision> temp = FindDivisionInSubordinates(division, end, prev, ref rememberedDivisions);
+                if (temp != null)
+                {
+                    return temp;
+                }
             }
         }
 
@@ -433,5 +476,23 @@ public class Division {
         }
 
         return str + "]";
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null) return false;
+        Division objAsDivision = obj as Division;
+        if (objAsDivision == null) return false;
+        else return Equals(objAsDivision);
+    }
+
+    public bool Equals(Division other)
+    {
+        return this.DivisionId == other.DivisionId;
+    }
+
+    public override int GetHashCode()
+    {
+        return this.DivisionId;
     }
 }

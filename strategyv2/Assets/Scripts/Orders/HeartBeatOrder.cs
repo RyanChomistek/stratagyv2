@@ -27,12 +27,15 @@ public class HeartBeatOrder : TargetingOrder
 
     private void SendHeartBeat(ControlledDivision Host)
     {
+        RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+        RememberedDivision rememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
+        Host.SendOrdersTo(rememberedTarget, new List<Order>(), ref Host.RememberedDivisions);
+        /*
         DivisionController HeartBeatMessenger;
         if (Host.TryCreateNewDivision(out HeartBeatMessenger))
         {
             HeartBeatMessenger.name = "Heatbeat messenger";
-
-            RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
+            
             Debug.Log($" heartbeat {Host.DivisionId} {RememberedTargetId}");
             HeartBeatMessenger.AttachedDivision.ReceiveOrders(
                 new List<Order>()
@@ -48,7 +51,9 @@ public class HeartBeatOrder : TargetingOrder
                     RememberedTargetId,
                     Host.DivisionId)
                 });
+                
         }
+        */
     }
 
     public override bool TestIfFinished(ControlledDivision Host)

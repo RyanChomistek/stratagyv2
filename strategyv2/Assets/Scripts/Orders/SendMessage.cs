@@ -45,7 +45,6 @@ public class SendMessage : TargetingOrder
     public override void End(ControlledDivision Host)
     {
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(Host, CommanderSendingOrderId);
-        Host.Controller.GetComponent<Rigidbody>().velocity = Vector3.zero;
         RememberedDivision commander = Host.RememberedDivisions[CommanderSendingOrder.DivisionId];
         Host.ReceiveOrder(new FindDivision(Host, _visibleTarget.DivisionId, commander.DivisionId));
         Host.ReceiveOrder(new MergeDivisions(Host, commander.DivisionId, commander.DivisionId));

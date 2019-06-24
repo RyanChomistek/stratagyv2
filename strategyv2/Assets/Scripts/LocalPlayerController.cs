@@ -86,9 +86,9 @@ public class LocalPlayerController : PlayerController {
         }
     }
 
-    public void Select(RememberedDivision division)
+    public void Select(Division division)
     {
-        Debug.Log("select " + division);
+        Debug.Log($"select  {division} {division is ControlledDivision}");
         if (!UIwaitingForSelection)
         {
             if(division.Controller.Controller.TeamId != TeamId)
@@ -105,14 +105,14 @@ public class LocalPlayerController : PlayerController {
                 order.CommanderSendingOrderId = GeneralDivision.AttachedDivision.DivisionId;
             }
 
-            OrderDisplayManager.Instance.AddOrderSet(orders, division, this);
+            OrderDisplayManager.Instance.AddOrderSet(orders, new RememberedDivision(division), this);
 
             //bring up division display
             DivisionDisplayManager.Instance.DisplayDivision(division);
         }
         else
         {
-            UnitSelectCallback(division);
+            UnitSelectCallback(new RememberedDivision(division));
         }
     }
 
@@ -123,7 +123,7 @@ public class LocalPlayerController : PlayerController {
 
     public void Select(DivisionController divisionController)
     {
-        Select(new RememberedDivision(divisionController.AttachedDivision));
+        Select(divisionController.AttachedDivision);
     }
 
     public void RegisterUnitSelectCallback(responseToUI callback)
