@@ -10,6 +10,8 @@ public class DivisionControllerManager : MonoBehaviour
     protected List<DivisionController> _divisions;
     public List<DivisionController> Divisions { get { return _divisions; } protected set { _divisions = value; } }
 
+    public GameObject DivisionPrefab;
+
     public void Awake()
     {
         _instance = this;

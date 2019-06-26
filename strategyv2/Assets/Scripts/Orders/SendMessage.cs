@@ -48,5 +48,6 @@ public class SendMessage : TargetingOrder
         RememberedDivision commander = Host.RememberedDivisions[CommanderSendingOrder.DivisionId];
         Host.ReceiveOrder(new FindDivision(Host, _visibleTarget.DivisionId, commander.DivisionId));
         Host.ReceiveOrder(new MergeDivisions(Host, commander.DivisionId, commander.DivisionId));
+        base.End(Host);
     }
 }

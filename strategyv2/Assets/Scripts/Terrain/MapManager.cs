@@ -119,8 +119,8 @@ public class MapManager : MonoBehaviour
         {
             while (timeSinceLastTick < _tileUpdateTickTime)
             {
-                timeSinceLastTick += GameManager.Instance.DeltaTime;
-                GameTime += GameManager.Instance.DeltaTime;
+                timeSinceLastTick += GameManager.DeltaTime;
+                GameTime += GameManager.DeltaTime;
                 yield return new WaitForEndOfFrame();
             }
 

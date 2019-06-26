@@ -78,6 +78,7 @@ public class MultiOrder : Order
     public override void End(ControlledDivision Host)
     {
         OngoingOrder?.End(Host);
+        base.End(Host);
     }
 
 

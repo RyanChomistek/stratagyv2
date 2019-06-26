@@ -59,8 +59,15 @@ public class EngageOrder : MultiOrder
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
-        //InputController.Instance.RegisterOnClickCallBack(OnClickReturn);
-        UICallback = division => OnUnitSelected(Host, division, playerController);
+        UICallback = division => {
+            //make sure we dont click the same unit
+            if(division.Equals(Host))
+            {
+                return;
+            }
+
+            OnUnitSelected(Host, division, playerController);
+            };
         LocalPlayerController.Instance.RegisterUnitSelectCallback(UICallback);
     }
 

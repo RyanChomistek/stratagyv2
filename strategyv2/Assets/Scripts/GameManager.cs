@@ -6,8 +6,8 @@ class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     public static bool DEBUG = true;
-    public float GameSpeed = 1;
-    public float DeltaTime { get{ return Time.deltaTime * GameSpeed; } }
+    public static float GameSpeed = 1;
+    public static float DeltaTime { get{ return Time.deltaTime * GameSpeed; } }
     public float GameTime = 0;
     public float GameUITimeSetting = .5f;
     public bool IsPaused = false;

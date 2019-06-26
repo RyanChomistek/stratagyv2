@@ -247,6 +247,7 @@ public class ControlledDivision : Division
 
     public override void SetupOrders()
     {
+        //add possible orders
         PossibleOrders = new List<Order>();
         this.PossibleOrders.Add(new Move(this, -1, new Vector3()));
         this.PossibleOrders.Add(new SplitDivision(this, -1, null));
@@ -254,6 +255,16 @@ public class ControlledDivision : Division
         this.PossibleOrders.Add(new HeartBeatOrder(this, -1, -1));
         this.PossibleOrders.Add(new EngageOrder(this, -1, -1));
         this.PossibleOrders.Add(new RecruitOrder(this, -1));
+        this.PossibleOrders.Add(new GatherSuppliesOrder(this, -1));
+    }
+
+    public void AddAutoRunBackgroundOrders()
+    {
+        //add background orders which should continously run
+        RememberedDivision CommanderSendingOrder = new RememberedDivision(this);
+        CommanderSendingOrder.SendOrderTo(
+            new RememberedDivision(this),
+            new UseSuppliesOrder(this, DivisionId), ref RememberedDivisions);
     }
 
     public void DoOrders()

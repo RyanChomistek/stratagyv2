@@ -21,6 +21,8 @@ public class DivisionDisplayManager : MonoBehaviour
     private GameObject _soldierCardsContainer;
     [SerializeField]
     private GameObject _soldierCardPrefab;
+    [SerializeField]
+    private ActiveOrdersDisplay _orderDisplay;
 
     private Dictionary<SoldierType, SoldierCardController> soldierTypeCards = new Dictionary<SoldierType, SoldierCardController>();
 
@@ -32,14 +34,12 @@ public class DivisionDisplayManager : MonoBehaviour
     public void DisplayDivision(Division divisionToDisplay)
     {
         _divisionDisplayContainer.SetActive(true);
-
+        _orderDisplay.ClearOrders();
         DivisionIdToDisplay = divisionToDisplay.DivisionId;
         var localPlayer = LocalPlayerController.Instance.GeneralDivision;
         RefreshDivisionCallback(divisionToDisplay);
         divisionToDisplay.AddRefreshDelegate(RefreshDivisionCallback);
-        //RefreshDivision(localPlayer.AttachedDivision);
-        //localPlayer.AttachedDivision.AddRefreshDelegate(RefreshDivision);
-
+        
         InputController.Instance.RegisterOnClickCallBack(OnClickOff);
     }
 
@@ -69,8 +69,9 @@ public class DivisionDisplayManager : MonoBehaviour
     {
         _divisionNameDisplay.text = displayedDivision.Name;
         _troopCountDisplay.text = displayedDivision.NumSoldiers.ToString();
-        _supplyDisplay.text = $"{displayedDivision.Supply}/{displayedDivision.MaxSupply}";
+        _supplyDisplay.text = $"{Mathf.Round(displayedDivision.Supply)}/{displayedDivision.MaxSupply}";
         UpdateSoldierCards(displayedDivision);
+        _orderDisplay.RefreshDisplay(displayedDivision.DivisionId);
         RebuildLayout();
     }
 
@@ -130,8 +131,14 @@ public class DivisionDisplayManager : MonoBehaviour
             HP += soldier.Health;
         }
 
-        card.SupplyAmountDisplay.text = $"{supply}/{MaxSupply}";
-        card.HPDisplay.text = $"{HP}";
+        card.SupplyAmountDisplay.text = $"{Mathf.Round(supply)}/{MaxSupply}";
+        card.HPDisplay.text = $"{Mathf.Round(HP * 100)}";
+
+        if(card.DisplayingIndividualCards)
+        {
+            card.RefreshCards(soldiers);
+        }
+
     }
 
     public void OnClickOff(Vector3 pos)

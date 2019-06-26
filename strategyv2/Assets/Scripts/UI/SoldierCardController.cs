@@ -22,24 +22,28 @@ public class SoldierCardController : MonoBehaviour
 
     private int DivisionIdToDisplay { get { return DivisionDisplayManager.Instance.DivisionIdToDisplay; } }
 
-    public bool Displaying = false;
+    public bool DisplayingIndividualCards = false;
 
     public void ToggleIndividualCardDisplay()
     {
-        if(!Displaying)
+        if(!DisplayingIndividualCards)
         {
             var localPlayer = LocalPlayerController.Instance.GeneralDivision.AttachedDivision;
-
+            
             //try to see if the division is visible
             if (localPlayer.VisibleDivisions.TryGetValue(DivisionIdToDisplay, out ControlledDivision division))
             {
-                UpdateCards(division);
+                Dictionary<SoldierType, List<Soldier>> soldiersSplitIntoTypes = division.SplitSoldiersIntoTypes();
+                List<Soldier> soldiers = soldiersSplitIntoTypes[DisplayedSoldierType];
+                RefreshCards(soldiers);
             }
             else
             {
                 //else grab its remembered info
                 var rememberedDivision = localPlayer.RememberedDivisions[DivisionIdToDisplay];
-                UpdateCards(rememberedDivision);
+                Dictionary<SoldierType, List<Soldier>> soldiersSplitIntoTypes = rememberedDivision.SplitSoldiersIntoTypes();
+                List<Soldier> soldiers = soldiersSplitIntoTypes[DisplayedSoldierType];
+                RefreshCards(soldiers);
             }
         }
         else
@@ -53,18 +57,22 @@ public class SoldierCardController : MonoBehaviour
             soldierCards.Clear();
         }
 
-        Displaying = !Displaying;
+        DisplayingIndividualCards = !DisplayingIndividualCards;
         DivisionDisplayManager.Instance.RebuildLayout();
     }
 
-    public void UpdateCards(Division displayedDivision)
+    public void RefreshCards(List<Soldier> soldiers)
     {
-        Dictionary<SoldierType, List<Soldier>> soldiersSplitIntoTypes =
-            displayedDivision.SplitSoldiersIntoTypes();
-        List<Soldier> displayedSoldiersList = soldiersSplitIntoTypes[DisplayedSoldierType];
-        foreach(var soldier in displayedSoldiersList)
+        foreach (var soldier in soldiers)
         {
-            CreateIndividualSoldierCard(soldier);
+            if(!soldierCards.ContainsKey(soldier.Id))
+            {
+                CreateIndividualSoldierCard(soldier);
+            }
+            else
+            {
+                RefreshCard(soldier);
+            }
         }
     }
 
@@ -74,8 +82,14 @@ public class SoldierCardController : MonoBehaviour
         GameObject card = Instantiate(IndividualSoldierCardPrefab);
         card.transform.SetParent(IndividualSoldierCardContainer.transform);
         soldierCards.Add(soldier.Id, card.GetComponent<IndividualSoldierCard>());
+        
+        RefreshCard(soldier);
+    }
+
+    public void RefreshCard(Soldier soldier)
+    {
+        var card = soldierCards[soldier.Id];
         card.GetComponent<IndividualSoldierCard>().HPDisplay.text = "" + Mathf.Round(soldier.Health * 100);
-        card.GetComponent<IndividualSoldierCard>().SupplyAmountDisplay.text = "" + soldier.Supply;
-        //UpdateSoldierCard(kvp.Key, kvp.Value);
+        card.GetComponent<IndividualSoldierCard>().SupplyAmountDisplay.text = "" + Mathf.Round(soldier.Supply * 100) / 100;
     }
 }

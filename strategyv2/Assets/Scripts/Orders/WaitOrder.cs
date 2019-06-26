@@ -14,7 +14,7 @@ public class WaitOrder : Order
 
     public override void Proceed(ControlledDivision Host)
     {
-        TimeRemaining -= GameManager.Instance.DeltaTime;
+        TimeRemaining -= GameManager.DeltaTime;
     }
 
     public override bool TestIfFinished(ControlledDivision Host)

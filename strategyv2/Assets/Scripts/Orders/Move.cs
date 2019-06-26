@@ -44,7 +44,7 @@ public class Move : Order {
         _ai.canMove = true;
         Host.RecalculateAggrigateValues();
         Host.RefreshDiscoveredTiles();
-        _ai.maxSpeed = Host.Speed * GameManager.Instance.GameSpeed;
+        _ai.maxSpeed = Host.Speed * GameManager.GameSpeed;
     }
 
     public override void Pause(ControlledDivision Host)
@@ -56,6 +56,7 @@ public class Move : Order {
     public override void End(ControlledDivision Host)
     {
         Host.Controller.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
+        base.End(Host);
     }
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)

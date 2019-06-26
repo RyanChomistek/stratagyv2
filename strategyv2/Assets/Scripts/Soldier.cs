@@ -42,12 +42,14 @@ public class Soldier : IEquatable<Soldier>
     public float MaxRange = 4;
     public float SightDistance = 6;
     public float Supply = 0;
+    public float SupplyUsePerSec = .1f;
     public float MaxSupply = 10;
     public SoldierType Type = SoldierType.Melee;
 
     public Soldier()
     {
         Id = IdCount++;
+        Supply = MaxSupply * .5f;
     }
 
     public Soldier(Soldier other)
@@ -77,32 +79,41 @@ public class Soldier : IEquatable<Soldier>
         {
             if(defender.Health > 0)
             {
-                var damageDone = Mathf.Min(defender.Health, this.HitStrength * GameManager.Instance.DeltaTime) ;
+                var damageDone = Mathf.Min(defender.Health, this.HitStrength * GameManager.DeltaTime) ;
                 defender.Health -= damageDone;
                 result.DamageToDefender = damageDone;
                 result.Defender = defender;
-                defender.Defend(this, distanceToTarget);
+                result.DamageToAttacker = defender.Defend(this, distanceToTarget);
                 break;
             }
         }
 
         return result;
     }
-
-    //weird argument passing due to the nature of observable data structures not being able to use ref passing of indexed fields
+    
     public virtual float Defend(Soldier Attacker, float distanceToTarget)
     {
         if (distanceToTarget < MinRange || distanceToTarget > MaxRange)
         {
             return 0;
         }
-
-        //var soldier = attackingDivision.Soldiers[indexOfAttackingSoldier];
-
-        var damageDone = Mathf.Min(Attacker.Health, this.HitStrength * GameManager.Instance.DeltaTime);
-        Debug.Log("defend " + damageDone);
+        
+        var damageDone = Mathf.Min(Attacker.Health, this.HitStrength * GameManager.DeltaTime);
         Attacker.Health -= damageDone;
         return damageDone;
+    }
+
+    //should be called once per second
+    public virtual void UseSupply()
+    {
+        Supply -= SupplyUsePerSec;
+    }
+
+    public virtual void GatherSupplies(MapTerrainTile tile)
+    {
+        tile.Supply -= 1;
+        Supply += 1;
+        Supply = Mathf.Min(MaxSupply, Supply);
     }
 
     public override bool Equals(object obj)

@@ -6,7 +6,6 @@ public class DivisionController : BaseDivisionController {
 
     //wrapper to treat attached divisions as controlled divisions
     public new ControlledDivision AttachedDivision { get { return base.AttachedDivision as ControlledDivision; } set { base.AttachedDivision = value; } }
-    public GameObject DivisionPrefab;
 
     [SerializeField]
     public List<DivisionController> VisibleControllers = new List<DivisionController>();
@@ -40,6 +39,7 @@ public class DivisionController : BaseDivisionController {
         */
         FindVisibleDivisions();
         RefreshVisibleDivisions();
+        AttachedDivision.AddAutoRunBackgroundOrders();
     }
 
     private void OnDestroy()
@@ -52,6 +52,7 @@ public class DivisionController : BaseDivisionController {
         //these are potentually needed to sync but kills perf
         //RefreshVisibleDivisions();
         //AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
+        //AttachedDivision.UseSupply();
         FindVisibleDivisions();
         AttachedDivision.DoOrders();
         AttachedDivision.DoBackgroundOrders();
@@ -114,7 +115,7 @@ public class DivisionController : BaseDivisionController {
 
     public DivisionController CreateChild(List<Soldier> soldiersForChild)
     {
-        GameObject newDivision = Instantiate(DivisionPrefab);
+        GameObject newDivision = Instantiate(DivisionControllerManager.Instance.DivisionPrefab);
         DivisionController newController = newDivision.GetComponent<DivisionController>();
         newController.transform.position = transform.position;
         newController.Controller = Controller;

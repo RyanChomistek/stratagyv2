@@ -195,6 +195,8 @@ public class Division : IEquatable<Division>
         TotalHealth = 0;
         DamageOutput = 0;
         MaxHitRange = 0;
+        Supply = 0;
+        MaxSupply = 0;
         int cnt = 0;
         foreach(Soldier soldier in Soldiers)
         {
@@ -203,7 +205,7 @@ public class Division : IEquatable<Division>
             TotalHealth += soldier.Health;
             DamageOutput += soldier.HitStrength;
             Supply += soldier.Supply;
-            MaxSupply += soldier.Supply;
+            MaxSupply += soldier.MaxSupply;
             MaxHitRange = Mathf.Max(MaxHitRange, soldier.MaxRange);
             cnt++;
         }
@@ -299,38 +301,6 @@ public class Division : IEquatable<Division>
 
     }
 
-    /*
-    public void RefreshSubordinates(Dictionary<int, RememberedDivision> divisions)
-    {
-        var divisionIds = Subordinates.Keys.ToList();
-        for (int i = 0; i < divisionIds.Count; i++)
-        {
-            int divisionId = divisionIds[i];
-            if(divisions.ContainsKey(divisionId))
-            {
-                Subordinates[divisionId] = divisions[divisionId];
-            }
-            else
-            {
-                divisions.Add(divisionId, Subordinates[divisionId]);
-            }
-
-            Subordinates[divisionId].RefreshSubordinates(divisions);
-        }
-    }
-    */
-    /*
-    public void RefreshOrdersRememberedDivisions(Dictionary<int, RememberedDivision> divisions)
-    {
-        foreach(var order in OrderQueue)
-        {
-            order.RefreshRememberedDivisions(divisions);
-        }
-
-        OngoingOrder.RefreshRememberedDivisions(divisions);
-    }
-    */
-
     public void SendOrderTo(RememberedDivision to, Order order, ref Dictionary<int, RememberedDivision> rememberedDivisions)
     {
         SendOrdersTo(to, new List<Order>() { order }, ref rememberedDivisions);
@@ -340,7 +310,7 @@ public class Division : IEquatable<Division>
     {
         //follow command tree to get there
         List<RememberedDivision> pathToDivision = FindDivisionInSubordinatesHelper(new RememberedDivision(this), to, ref rememberedDivisions);
-        //if path is only size one, were at where the order needs to go
+        //if path is only size one, we're at where the order needs to go
         if (pathToDivision.Count == 1)
         {
             Controller.AttachedDivision.ReceiveOrders(orders);
@@ -356,7 +326,6 @@ public class Division : IEquatable<Division>
         //first go to top of command chain
         List<RememberedDivision> pathToDivision = new List<RememberedDivision>();
         
-
         RememberedDivision topOfChain = new RememberedDivision(this);
         
         while (topOfChain.DivisionId != topOfChain.Commander)

@@ -17,7 +17,7 @@ public class HeartBeatOrder : TargetingOrder
     public override void Proceed(ControlledDivision Host)
     {
         base.Proceed(Host);
-        TimeSinceLastHeartbeat += GameManager.Instance.DeltaTime;
+        TimeSinceLastHeartbeat += GameManager.DeltaTime;
         if(TimeSinceLastHeartbeat > SecondsPerHeartbeat)
         {
             SendHeartBeat(Host);

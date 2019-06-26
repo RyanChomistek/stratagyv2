@@ -13,7 +13,8 @@ public class Order
     public int orderId;
     public bool HasStarted;
     public bool IsBackgroundOrder;
-
+    public bool CanBeCanceled;
+    public bool HasFinished;
     public Order(Division controller, int commanderSendingOrderId, string name)
     {
         this.CommanderSendingOrderId = commanderSendingOrderId;
@@ -29,15 +30,17 @@ public class Order
         
         this.HasStarted = false;
         this.IsBackgroundOrder = false;
+        this.CanBeCanceled = true;
         this.name = name;
         this.orderId = OrderIdCnt++;
+        this.HasFinished = false;
     }
 
     public virtual void OnClickedInUI(Division Host, PlayerController playerController) { }
 
     public virtual void Start(ControlledDivision Host) { HasStarted = true; }
     public virtual void Pause(ControlledDivision Host) { }
-    public virtual void End(ControlledDivision Host) { }
+    public virtual void End(ControlledDivision Host) { HasFinished = true; }
     public virtual void Proceed(ControlledDivision Host) { }
     public virtual bool TestIfFinished(ControlledDivision Host) { return false; }
 
@@ -55,5 +58,23 @@ public class Order
     protected bool TryGetRememberedDivisionFromHost(ControlledDivision Host, int id, out RememberedDivision rememberedDivision)
     {
         return Host.RememberedDivisions.TryGetValue(id, out rememberedDivision);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null) return false;
+        Order objAsOrder = obj as Order;
+        if (objAsOrder == null) return false;
+        else return Equals(objAsOrder);
+    }
+
+    public bool Equals(Order other)
+    {
+        return this.orderId == other.orderId;
+    }
+
+    public override int GetHashCode()
+    {
+        return this.orderId;
     }
 }

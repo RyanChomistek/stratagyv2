@@ -35,7 +35,7 @@ public class SplitDivision : Order {
     }
 
     public override void Pause(ControlledDivision Host) { }
-    public override void End(ControlledDivision Host) { }
+    public override void End(ControlledDivision Host) { base.End(Host); }
     public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
         if(Host.Soldiers.Count <= 1)
