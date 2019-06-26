@@ -204,10 +204,10 @@ public class Division : IEquatable<Division>
             DamageOutput += soldier.HitStrength;
             Supply += soldier.Supply;
             MaxSupply += soldier.Supply;
-            MaxHitRange = Mathf.Max(MaxHitRange, soldier.HitRange);
+            MaxHitRange = Mathf.Max(MaxHitRange, soldier.MaxRange);
             cnt++;
         }
-
+        
         MaxSightDistance /= cnt;
         NumSoldiers = cnt;
         Speed /= cnt;

@@ -25,17 +25,21 @@ public class AttackOrder : TargetingOrder
                 return;
             }
 
-            float totalDamage = 0;
-            foreach (Soldier soldier in Host.Soldiers)
+            float totalAttackerDamage = 0;
+            for (int i = 0; i < Host.Soldiers.Count; i++)
             {
+                Soldier soldier = Host.Soldiers[i];
+
                 if (distanceToTarget > soldier.MinRange && distanceToTarget < soldier.MaxRange)
                 {
-                    totalDamage += soldier.Attack(ref division);
+                    var result = soldier.Attack(ref division, distanceToTarget);
+                    totalAttackerDamage += result.DamageToDefender;
                 }
             }
 
             
             bool isDestroyed = division.CheckDamageDone(Host);
+            bool isHostDestroyed = Host.CheckDamageDone(division);
             if (isDestroyed)
             {
                 RememberedDivision RememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);

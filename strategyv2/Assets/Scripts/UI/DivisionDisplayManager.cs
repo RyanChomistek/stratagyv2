@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DivisionDisplayManager : MonoBehaviour
 {
     public static DivisionDisplayManager Instance { get; set; }
     [SerializeField]
-    private int _divisionIdToDisplay;
+    public int DivisionIdToDisplay;
     [SerializeField]
     private TextMeshProUGUI _divisionNameDisplay;
     [SerializeField]
@@ -32,7 +33,7 @@ public class DivisionDisplayManager : MonoBehaviour
     {
         _divisionDisplayContainer.SetActive(true);
 
-        _divisionIdToDisplay = divisionToDisplay.DivisionId;
+        DivisionIdToDisplay = divisionToDisplay.DivisionId;
         var localPlayer = LocalPlayerController.Instance.GeneralDivision;
         RefreshDivisionCallback(divisionToDisplay);
         divisionToDisplay.AddRefreshDelegate(RefreshDivisionCallback);
@@ -47,16 +48,21 @@ public class DivisionDisplayManager : MonoBehaviour
         var localPlayer = LocalPlayerController.Instance.GeneralDivision.AttachedDivision;
 
         //try to see if the division is visible
-        if(localPlayer.VisibleDivisions.TryGetValue(_divisionIdToDisplay, out ControlledDivision division))
+        if(localPlayer.VisibleDivisions.TryGetValue(DivisionIdToDisplay, out ControlledDivision division))
         {
             RefreshDivision(division);
         }
         else
         {
             //else grab its remembered info
-            var rememberedDivision = localPlayer.RememberedDivisions[_divisionIdToDisplay];
+            var rememberedDivision = localPlayer.RememberedDivisions[DivisionIdToDisplay];
             RefreshDivision(rememberedDivision);
         }
+    }
+
+    public void RebuildLayout()
+    {
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_soldierCardsContainer.GetComponent<RectTransform>());
     }
 
     public void RefreshDivision(Division displayedDivision)
@@ -65,6 +71,7 @@ public class DivisionDisplayManager : MonoBehaviour
         _troopCountDisplay.text = displayedDivision.NumSoldiers.ToString();
         _supplyDisplay.text = $"{displayedDivision.Supply}/{displayedDivision.MaxSupply}";
         UpdateSoldierCards(displayedDivision);
+        RebuildLayout();
     }
 
     private void UpdateSoldierCards(Division division)
@@ -82,6 +89,7 @@ public class DivisionDisplayManager : MonoBehaviour
             {
                 //create card
                 GameObject card = Instantiate(_soldierCardPrefab);
+                card.GetComponent<SoldierCardController>().DisplayedSoldierType = kvp.Key;
                 card.transform.SetParent(_soldierCardsContainer.transform);
                 soldierTypeCards.Add(kvp.Key, card.GetComponent<SoldierCardController>());
                 UpdateSoldierCard(kvp.Key, kvp.Value);
@@ -113,15 +121,17 @@ public class DivisionDisplayManager : MonoBehaviour
         card.TypeDisplay.text = type.ToString();
         card.TroopAmountDisplay.text = soldiers.Count.ToString();
 
-        float supply = 0, MaxSupply = 0;
+        float supply = 0, MaxSupply = 0, HP = 0;
 
         foreach(var soldier in soldiers)
         {
             supply += soldier.Supply;
             MaxSupply += soldier.MaxSupply;
+            HP += soldier.Health;
         }
 
         card.SupplyAmountDisplay.text = $"{supply}/{MaxSupply}";
+        card.HPDisplay.text = $"{HP}";
     }
 
     public void OnClickOff(Vector3 pos)

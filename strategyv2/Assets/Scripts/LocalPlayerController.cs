@@ -35,7 +35,7 @@ public class LocalPlayerController : PlayerController {
             {
                 if (RememberedDivisionControllers.ContainsKey(kvp.Key))
                 {
-                    Debug.Log("removing remembered");
+                    //Debug.Log("removing remembered");
                     var controller = RememberedDivisionControllers[kvp.Key];
                     RememberedDivisionControllers.Remove(kvp.Key);
                     Destroy(controller.gameObject);

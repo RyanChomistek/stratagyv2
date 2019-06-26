@@ -2,6 +2,28 @@
 using System.Collections.ObjectModel;
 using UnityEngine;
 
+public class CombatResult
+{
+    public Soldier Attacker;
+    public Soldier Defender;
+    public float DamageToAttacker;
+    public float DamageToDefender;
+    public bool AttackSuccess;
+
+    public CombatResult()
+    {
+    }
+
+    public CombatResult(Soldier attacker, Soldier defender, float damageToAttacker, float damageToDefender, bool attackSuccess)
+    {
+        Attacker = attacker;
+        Defender = defender;
+        DamageToAttacker = damageToAttacker;
+        DamageToDefender = damageToDefender;
+        AttackSuccess = attackSuccess;
+    }
+}
+
 public enum SoldierType
 {
     Melee, Ranged, Seige
@@ -13,11 +35,11 @@ public class Soldier : IEquatable<Soldier>
     private static int IdCount = 0;
     public int Id = -1;
     public float Speed = 5000;
-    public float HitStrength = .1f;
-    public float HitRange = 1;
+    public float BaseHitStrength = .5f;
+    public float HitStrength { get { return BaseHitStrength * Health; } }
     public float Health = 1;
     public float MinRange = 0f;
-    public float MaxRange = 2;
+    public float MaxRange = 4;
     public float SightDistance = 6;
     public float Supply = 0;
     public float MaxSupply = 10;
@@ -31,28 +53,56 @@ public class Soldier : IEquatable<Soldier>
     public Soldier(Soldier other)
     {
         this.Speed = other.Speed;
-        this.HitStrength = other.HitStrength;
+        this.BaseHitStrength = other.BaseHitStrength;
         this.Health = other.Health;
         this.MinRange = other.MinRange;
         this.MaxRange = other.MaxRange;
         this.SightDistance = other.SightDistance;
         this.Type = other.Type;
-        this.HitRange = other.HitRange;
     }
-
-    //returns damage done
-    public virtual float Attack(ref ControlledDivision division)
+    
+    public virtual CombatResult Attack(ref ControlledDivision division, float distanceToTarget)
     {
-        foreach(var otherSoldier in division.Soldiers)
+        CombatResult result = new CombatResult();
+
+        if (distanceToTarget < MinRange || distanceToTarget > MaxRange)
         {
-            if(otherSoldier.Health > 0)
+            result.AttackSuccess = false;
+            return result;
+        }
+
+        result.Attacker = this;
+
+        foreach (var defender in division.Soldiers)
+        {
+            if(defender.Health > 0)
             {
-                var damageDone = Mathf.Min(otherSoldier.Health, this.HitStrength);
-                otherSoldier.Health -= this.HitStrength * GameManager.Instance.DeltaTime;
-                return damageDone;
+                var damageDone = Mathf.Min(defender.Health, this.HitStrength * GameManager.Instance.DeltaTime) ;
+                defender.Health -= damageDone;
+                result.DamageToDefender = damageDone;
+                result.Defender = defender;
+                defender.Defend(this, distanceToTarget);
+                break;
             }
         }
-        return 0;
+
+        return result;
+    }
+
+    //weird argument passing due to the nature of observable data structures not being able to use ref passing of indexed fields
+    public virtual float Defend(Soldier Attacker, float distanceToTarget)
+    {
+        if (distanceToTarget < MinRange || distanceToTarget > MaxRange)
+        {
+            return 0;
+        }
+
+        //var soldier = attackingDivision.Soldiers[indexOfAttackingSoldier];
+
+        var damageDone = Mathf.Min(Attacker.Health, this.HitStrength * GameManager.Instance.DeltaTime);
+        Debug.Log("defend " + damageDone);
+        Attacker.Health -= damageDone;
+        return damageDone;
     }
 
     public override bool Equals(object obj)

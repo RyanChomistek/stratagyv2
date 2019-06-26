@@ -40,6 +40,7 @@ public class EngageOrder : MultiOrder
             //need to move closer
             if (distanceToTarget > Host.MaxHitRange)
             {
+                Debug.Log(Host.MaxHitRange * .5f);
                 this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, division.Position, Host.MaxHitRange * .5f));
             }
             else
