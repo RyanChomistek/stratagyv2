@@ -14,7 +14,9 @@ public class Order
     public bool HasStarted;
     public bool IsBackgroundOrder;
     public bool CanBeCanceled;
+    public bool Canceled;
     public bool HasFinished;
+
     public Order(Division controller, int commanderSendingOrderId, string name)
     {
         this.CommanderSendingOrderId = commanderSendingOrderId;
@@ -34,6 +36,7 @@ public class Order
         this.name = name;
         this.orderId = OrderIdCnt++;
         this.HasFinished = false;
+        this.Canceled = false;
     }
 
     public virtual void OnClickedInUI(Division Host, PlayerController playerController) { }

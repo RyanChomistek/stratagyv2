@@ -158,6 +158,26 @@ public class ControlledDivision : Division
         other.OnDiscoveredMapChanged?.Invoke(other);
     }
 
+    public bool TryGetVisibleOrRememberedDivisionFromId(int divisionId, out Division division)
+    {
+        division = null;
+
+        if (VisibleDivisions.TryGetValue(divisionId, out ControlledDivision controlledDivision))
+        {
+            division = controlledDivision;
+            return true;
+        }
+        else if (RememberedDivisions.TryGetValue(divisionId, out RememberedDivision rememberedDivision))
+        {
+            division = rememberedDivision;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)
     {
         VisibleDivisions.Clear();
@@ -269,7 +289,12 @@ public class ControlledDivision : Division
 
     public void DoOrders()
     {
-        if (GameManager.Instance.IsPaused)
+        if(OngoingOrder.Canceled)
+        {
+            OngoingOrder.End(this);
+            TryStartNextOrder();
+        }
+        else if (GameManager.Instance.IsPaused)
         {
             OngoingOrder.Pause(this);
         }
@@ -288,19 +313,27 @@ public class ControlledDivision : Division
             }
         }
         //grab a new order
-        else if (OrderQueue.Count > 0)
+        else if (TryStartNextOrder())
+        {}
+    }
+
+    private bool TryStartNextOrder()
+    {
+        if (OrderQueue.Count > 0)
         {
             OngoingOrder = OrderQueue[0];
             OrderQueue.RemoveAt(0);
             OngoingOrder.Start(this);
             ContinueOrder();
             OnChange();
+            return true;
         }
-        //if no orders queued
-        else if (OrderQueue.Count == 0)
-        {
-            OnEmptyOrder();
-        }
+
+        if(!(OngoingOrder is EmptyOrder))
+            OngoingOrder = new EmptyOrder();
+
+        OnEmptyOrder();
+        return false;
     }
 
     //in a normal controlled division this will do nothing, but the ai controller will override
@@ -319,6 +352,15 @@ public class ControlledDivision : Division
             for (int i = 0; i < BackgroundOrderList.Count; i++)
             {
                 var order = BackgroundOrderList[i];
+
+                if(order.Canceled)
+                {
+                    order.End(this);
+                    BackgroundOrderList.RemoveAt(i);
+                    i--;
+                    OnChange();
+                }
+
                 if (!order.HasStarted)
                 {
                     order.Start(this);
@@ -364,7 +406,33 @@ public class ControlledDivision : Division
         {
             ReceiveOrder(order);
         }
+
         OnChange();
+    }
+    
+    private void CancelOrder(Order order, HashSet<int> orderIdsToCancel)
+    {
+        if (orderIdsToCancel.Contains(order.orderId))
+        {
+            order.Canceled = true;
+        }
+    }
+
+    private void CancelOrders(List<Order> orders, HashSet<int> orderIdsToCancel)
+    {
+        for (int i = 0; i < orders.Count; i++)
+        {
+            var order = BackgroundOrderList[i];
+            CancelOrder(order, orderIdsToCancel);
+        }
+    }
+
+    public void CancelOrders(HashSet<int> orderIdsToCancel)
+    {
+        CancelOrders(OrderQueue, orderIdsToCancel);
+        CancelOrders(BackgroundOrderList, orderIdsToCancel);
+        CancelOrder(OngoingOrder, orderIdsToCancel);
+        DoOrders();
     }
 
     public void SendMessenger(RememberedDivision to, RememberedDivision endTarget, List<Order> orders)

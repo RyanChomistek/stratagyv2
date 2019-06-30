@@ -137,6 +137,4 @@ public class LocalPlayerController : PlayerController {
         UnitSelectCallback -= callback;
         UIwaitingForSelection = false;
     }
-
-    
 }

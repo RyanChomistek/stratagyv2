@@ -10,8 +10,11 @@ public class ActiveOrdersDisplay : MonoBehaviour
     public GameObject OrderCardContainer;
     public GameObject OrderCardPrefab;
 
+    public int DisplayedDivisonId;
+
     public void RefreshDisplay(int divisionId)
     {
+        DisplayedDivisonId = divisionId;
         var localPlayer = LocalPlayerController.Instance.GeneralDivision.AttachedDivision;
         List<Order> orders = new List<Order>();
         //try to see if the division is visible
@@ -35,7 +38,6 @@ public class ActiveOrdersDisplay : MonoBehaviour
 
     public void RefreshCards(List<Order> orders)
     {
-        
         foreach (var order in orders)
         {
             if (!OrderCards.ContainsKey(order.orderId))
@@ -68,6 +70,8 @@ public class ActiveOrdersDisplay : MonoBehaviour
     {
         GameObject card = Instantiate(OrderCardPrefab);
         card.transform.SetParent(OrderCardContainer.transform);
+        card.GetComponent<ActiveOrderCardController>().DisplayedOrder = order;
+        card.GetComponent<ActiveOrderCardController>().OnOrderCanceled += CancelOrder;
         OrderCards.Add(order.orderId, card.GetComponent<ActiveOrderCardController>());
         RefreshCard(order);
     }
@@ -76,6 +80,22 @@ public class ActiveOrdersDisplay : MonoBehaviour
     {
         var card = OrderCards[order.orderId];
         card.GetComponent<ActiveOrderCardController>().NameDisplay.text = order.name;
+    }
+
+    public void CancelOrder(Order order)
+    {
+        var card = OrderCards[order.orderId];
+        OrderCards.Remove(order.orderId);
+        Destroy(card.gameObject);
+        
+        var localPlayer = LocalPlayerController.Instance.GeneralDivision.AttachedDivision;
+
+        if(localPlayer.TryGetVisibleOrRememberedDivisionFromId(DisplayedDivisonId, out Division division))
+        {
+            localPlayer.SendOrderTo(new RememberedDivision(division), 
+                new CancelOrder(division, localPlayer.DivisionId, new HashSet<int>() { order.orderId }), 
+                ref localPlayer.RememberedDivisions);
+        }
     }
 
     public void ClearOrders()
