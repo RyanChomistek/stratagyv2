@@ -56,6 +56,7 @@ public class DivisionController : BaseDivisionController {
         FindVisibleDivisions();
         AttachedDivision.DoOrders();
         AttachedDivision.DoBackgroundOrders();
+        AttachedDivision.CheckRefresh();
         //AttachedDivision.RecalculateAggrigateValues();
         //SightCollider.radius = AttachedDivision.MaxSightDistance;
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;

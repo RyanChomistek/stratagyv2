@@ -41,7 +41,7 @@ public class Division : IEquatable<Division>
 
     public delegate void RefreshDelegate(Division division);
     protected RefreshDelegate refresh;
-
+    protected bool RefreshFlag = true;
     #region constructors
     public Division(Division division, DivisionController controller = null)
     {
@@ -182,7 +182,16 @@ public class Division : IEquatable<Division>
     {
         if (!HasBeenDestroyed)
         {
+            RefreshFlag = true;
+        }
+    }
+
+    public void CheckRefresh()
+    {
+        if (RefreshFlag)
+        {
             refresh?.Invoke(this);
+            RefreshFlag = false;
         }
     }
 
