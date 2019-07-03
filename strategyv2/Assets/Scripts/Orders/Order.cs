@@ -13,7 +13,7 @@ public class Order
     public int orderId;
     public bool HasStarted;
     public bool IsBackgroundOrder;
-    public bool CanBeCanceled;
+    public bool IsCancelable;
     public bool Canceled;
     public bool HasFinished;
 
@@ -32,7 +32,7 @@ public class Order
         
         this.HasStarted = false;
         this.IsBackgroundOrder = false;
-        this.CanBeCanceled = true;
+        this.IsCancelable = true;
         this.name = name;
         this.orderId = OrderIdCnt++;
         this.HasFinished = false;

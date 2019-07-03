@@ -6,7 +6,6 @@ using UnityEngine;
 public class RememberedDivision : Division
 {
     public float TimeStamp;
-    public Vector3 Position;
     public Vector3 Velocity;
 
     public Vector3 PredictedPosition {

@@ -24,6 +24,10 @@ public class Division : IEquatable<Division>
     public List<Order> PossibleOrders = new List<Order>();
     public Order OngoingOrder = null;
 
+    public List<DivisionModifier> DivisionModifiers = new List<DivisionModifier>();
+
+    public virtual Vector3 Position { get; set; }
+
     //calculated values
     public float Speed = 10;
     public float MaxSightDistance = 0;
@@ -42,6 +46,7 @@ public class Division : IEquatable<Division>
     public delegate void RefreshDelegate(Division division);
     protected RefreshDelegate refresh;
     protected bool RefreshFlag = true;
+
     #region constructors
     public Division(Division division, DivisionController controller = null)
     {
@@ -62,7 +67,7 @@ public class Division : IEquatable<Division>
 
         this.Name = "Division " + DivisionId;
         this.Controller = controller;
-        
+        SetupModifiers();
         RecalculateAggrigateValues();
         this.Soldiers.CollectionChanged += OnSoldiersChanged;
     }
@@ -81,6 +86,7 @@ public class Division : IEquatable<Division>
         this.Soldiers.CollectionChanged += OnSoldiersChanged;
 
         this.TeamId = teamId;
+        SetupModifiers();
     }
 
     public void Init(DivisionController controller = null)
@@ -95,6 +101,12 @@ public class Division : IEquatable<Division>
     }
 
     #endregion
+
+    public void SetupModifiers()
+    {
+        DivisionModifiers.Add(new TileModifier());
+        DivisionModifiers.Add(new SupplyModifier());
+    }
 
     public virtual void SetupOrders()
     {
@@ -200,7 +212,7 @@ public class Division : IEquatable<Division>
         //check if soldier hash has changed
 
         MaxSightDistance = 0;
-        Speed = 0;
+        Speed = Mathf.Infinity;
         TotalHealth = 0;
         DamageOutput = 0;
         MaxHitRange = 0;
@@ -210,7 +222,7 @@ public class Division : IEquatable<Division>
         foreach(Soldier soldier in Soldiers)
         {
             MaxSightDistance += soldier.SightDistance;
-            Speed += soldier.Speed;
+            Speed = Mathf.Min(Speed, soldier.Speed);
             TotalHealth += soldier.Health;
             DamageOutput += soldier.HitStrength;
             Supply += soldier.Supply;
@@ -221,14 +233,21 @@ public class Division : IEquatable<Division>
         
         MaxSightDistance /= cnt;
         NumSoldiers = cnt;
-        Speed /= cnt;
-        var pos = Controller.transform.position;
-        if(MapManager.Instance != null)
+
+        for (int i = 0; i < DivisionModifiers.Count; i++)
         {
-            var tile = MapManager.Instance.GetTileFromPosition(pos);
-            var prespeed = Speed;
-            Speed *= 1 / (float)tile.MoveCost;
-            //Debug.Log($"{prespeed} {Speed} {tile.MoveCost} {Controller.name}");
+            DivisionModifier divisionModifier = DivisionModifiers[i];
+            DivisionModifier newModifier = divisionModifier.ModifyDivision(this);
+            if(newModifier != null)
+            {
+                DivisionModifiers[i] = newModifier;
+            }
+            else
+            {
+                DivisionModifiers.RemoveAt(i);
+                i--;
+            }
+
         }
 
         OnChange();

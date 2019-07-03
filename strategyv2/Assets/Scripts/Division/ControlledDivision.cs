@@ -13,7 +13,7 @@ public class ControlledDivision : Division
 
     public Action<ControlledDivision> OnDiscoveredMapChanged;
 
-    public Vector3 Position { get { return Controller.transform.position; } }
+    public override Vector3 Position { get { return Controller.transform.position; } }
 
     public ControlledDivision(Division division, DivisionController controller = null)
         : base(division, division.Controller)
@@ -390,7 +390,6 @@ public class ControlledDivision : Division
         if (order.IsBackgroundOrder)
         {
             BackgroundOrderList.Add(order);
-            Debug.Log(BackgroundOrderList.Count);
         }
         else
         {
@@ -412,7 +411,7 @@ public class ControlledDivision : Division
     
     private void CancelOrder(Order order, HashSet<int> orderIdsToCancel)
     {
-        if (orderIdsToCancel.Contains(order.orderId))
+        if (order.IsCancelable && orderIdsToCancel.Contains(order.orderId))
         {
             order.Canceled = true;
         }

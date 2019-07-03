@@ -8,7 +8,7 @@ public class UseSuppliesOrder : TickingOrder
         : base(controller, commanderSendingOrderId, "Use Supplies", 1)
     {
         this.IsBackgroundOrder = true;
-        this.CanBeCanceled = false;
+        this.IsCancelable = false;
     }
 
     public override void OnTick(ControlledDivision Host)
@@ -19,5 +19,7 @@ public class UseSuppliesOrder : TickingOrder
         }
 
         Host.RecalculateAggrigateValues();
+
+
     }
 }

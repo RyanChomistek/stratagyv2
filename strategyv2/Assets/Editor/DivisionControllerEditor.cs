@@ -42,6 +42,17 @@ public class DivisionControllerEditor : CustomEditorBase
         {
             myTarget.RefreshVisibleDivisions();
         }
+
+        if (GUILayout.Button("print modifiers"))
+        {
+            string str = "modifiers : ";
+            foreach(var modifier in myTarget.AttachedDivision.DivisionModifiers)
+            {
+                str += modifier.ToString();
+            }
+
+            Debug.Log(str);
+        }
     }
 
 

@@ -51,17 +51,6 @@ public class Soldier : IEquatable<Soldier>
         Id = IdCount++;
         Supply = MaxSupply * .5f;
     }
-
-    public Soldier(Soldier other)
-    {
-        this.Speed = other.Speed;
-        this.BaseHitStrength = other.BaseHitStrength;
-        this.Health = other.Health;
-        this.MinRange = other.MinRange;
-        this.MaxRange = other.MaxRange;
-        this.SightDistance = other.SightDistance;
-        this.Type = other.Type;
-    }
     
     public virtual CombatResult Attack(ref ControlledDivision division, float distanceToTarget)
     {
