@@ -18,6 +18,8 @@ public class LocalPlayerController : PlayerController {
     
     public Light GeneralLight;
 
+    public GameObject ZoneDisplayPrefab;
+
     void Start () {
         Instance = this;
         MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
@@ -25,6 +27,7 @@ public class LocalPlayerController : PlayerController {
 	
 	void Update () {
         DisplayRememberedDivisions();
+        DrawZones();
     }
 
     public void DisplayRememberedDivisions()
@@ -136,5 +139,28 @@ public class LocalPlayerController : PlayerController {
     {
         UnitSelectCallback -= callback;
         UIwaitingForSelection = false;
+    }
+
+    public void BeginCreateZone()
+    {
+        Zone zone = new Zone(new Rect(Vector2.zero, Vector2.zero), Color.white);
+        ZoneDisplay zoneDisplay = Instantiate(ZoneDisplayPrefab).GetComponent<ZoneDisplay>();
+        zoneDisplay.Init(zone);
+        Vector3 start = Vector3.zero;
+        InputController.Instance.RegisterButtonHandler(new DragHandler("Fire1",
+            (handler, mousePosition) => 
+            {
+                zoneDisplay.Change(mousePosition,mousePosition);
+                start = mousePosition;
+            },
+            (handler, mousePosition, delta) =>
+            {
+                zoneDisplay.Change(start, mousePosition);
+            },
+            (handler, point) => 
+            {
+                handler.Cancel = true;
+                Debug.Log(zone.GetRect());
+            }));
     }
 }

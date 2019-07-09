@@ -10,8 +10,21 @@ public class PlayerController : MonoBehaviour
     private int _teamId = -1;
     public int TeamId { get { if (_teamId == -1) { _teamId = _teamIdCnt++; } return _teamId; } }
 
+    public List<Zone> Zones;
+    public Dictionary<Zone, ZoneDisplay> ZoneDisplayMap;
+
     private void Awake()
     {
         _teamId = _teamIdCnt++;
+    }
+
+    public void CreateZone()
+    {
+
+    }
+
+    public void DrawZones()
+    {
+
     }
 }

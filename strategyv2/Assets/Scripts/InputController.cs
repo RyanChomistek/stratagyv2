@@ -4,7 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ButtonHandler
+public class Handler
+{
+    public bool Cancel = false;
+}
+
+public class ButtonHandler : Handler
 {
     public string ButtonName;
     public Action<ButtonHandler, Vector3> OnButtonDownCallBack;
@@ -30,7 +35,7 @@ public class ButtonHandler
     }
 }
 
-public class HoverHandler
+public class HoverHandler : Handler
 {
     public Action<HoverHandler, Vector3> OnHoverWarmupEnterCallBack;
     public Action<HoverHandler, Vector3> OnHoverWarmupExitCallBack;
@@ -219,6 +224,16 @@ public class InputController : MonoBehaviour {
             }
         }
 
+        for (int i = 0; i < _buttonHandlers.Count; i++)
+        {
+            ButtonHandler handler = _buttonHandlers[i];
+            if (handler.Cancel)
+            {
+                _buttonHandlers.RemoveAt(i);
+                i--;
+            }
+        }
+
         foreach (AxisHandler handler in _axisHandlers)
         {
             if (Input.GetAxis(handler.AxisName) != 0)
@@ -290,6 +305,10 @@ public class InputController : MonoBehaviour {
     public void RegisterButtonHandler(ButtonHandler handler)
     {
         _buttonHandlers.Add(handler);
+    }
+    public void UnRegisterButtonHandler(ButtonHandler handler)
+    {
+        _buttonHandlers.Remove(handler);
     }
 
     public void RegisterAxisHandler(AxisHandler handler)
