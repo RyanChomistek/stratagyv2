@@ -58,7 +58,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: 142561055
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &5593441005141416660
@@ -306,11 +306,18 @@ MonoBehaviour:
       orderId: 229
       HasStarted: 0
       IsBackgroundOrder: 0
+      IsCancelable: 0
+      Canceled: 0
+      HasFinished: 0
     Speed: 0
     MaxSightDistance: 0
     TotalHealth: 0
     NumSoldiers: 0
     DamageOutput: 0
+    MaxHitRange: 0
+    Supply: 0
+    MaxSupply: 0
+    MessageCommunicationRange: 0
     HasBeenDestroyed: 0
     Controller: {fileID: 0}
   DivisionDisplayContainer: {fileID: 3725762245528958285}

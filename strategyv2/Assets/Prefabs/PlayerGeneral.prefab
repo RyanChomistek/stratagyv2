@@ -158,18 +158,22 @@ MonoBehaviour:
       orderId: 569
       HasStarted: 0
       IsBackgroundOrder: 0
+      IsCancelable: 0
+      Canceled: 0
+      HasFinished: 0
     Speed: 0
     MaxSightDistance: 0
     TotalHealth: 0
     NumSoldiers: 25
     DamageOutput: 0
+    MaxHitRange: 0
     Supply: 0
     MaxSupply: 0
+    MessageCommunicationRange: 0
     HasBeenDestroyed: 0
     Controller: {fileID: 2244712348670738544}
   DivisionDisplayContainer: {fileID: 9023536625135000828}
   Controller: {fileID: 0}
-  DivisionPrefab: {fileID: 2244712348670738545}
   VisibleControllers: []
 --- !u!114 &49975143545782417
 MonoBehaviour:
@@ -438,7 +442,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: 142561055
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &7744612140041900928
