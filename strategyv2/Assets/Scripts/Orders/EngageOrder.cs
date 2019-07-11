@@ -6,7 +6,7 @@ public class EngageOrder : MultiOrder
 {
     private int RememberedTargetId;
 
-    LocalPlayerController.responseToUI UICallback;
+    LocalPlayerController.UnitSelectDelegate UICallback;
 
     public EngageOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId)
         : base(controller, commanderSendingOrderId, "Engage", new List<Order>())

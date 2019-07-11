@@ -7,7 +7,7 @@ public class AttackOrder : TargetingOrder
     //public int RememberedTargetId;
     private bool IsFinished = false;
 
-    LocalPlayerController.responseToUI UICallback;
+    LocalPlayerController.UnitSelectDelegate UICallback;
 
     public AttackOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId, float thresholdDistance = .5f)
         : base(controller, commanderSendingOrderId, "Attack", rememberedTargetId, thresholdDistance)

@@ -276,6 +276,7 @@ public class ControlledDivision : Division
         this.PossibleOrders.Add(new EngageOrder(this, -1, -1));
         this.PossibleOrders.Add(new RecruitOrder(this, -1));
         this.PossibleOrders.Add(new GatherSuppliesOrder(this, -1));
+        this.PossibleOrders.Add(new ZoneOrder(this, -1, null));
     }
 
     public void AddAutoRunBackgroundOrders()

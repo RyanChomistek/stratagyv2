@@ -9,20 +9,21 @@ public class LocalPlayerController : PlayerController {
     private BaseDivisionController Selected;
 
     [SerializeField]
-    bool UIwaitingForSelection = false;
-    public delegate void responseToUI(RememberedDivision division);
-    responseToUI UnitSelectCallback;
+    bool UIwaitingForUnitSelection = false;
+    public delegate void UnitSelectDelegate(RememberedDivision division);
+    UnitSelectDelegate UnitSelectCallback;
+    public delegate void ZoneSelectDelegate(ZoneDisplay zoneDisplay);
+    ZoneSelectDelegate ZoneSelectCallback;
 
     private Dictionary<int, RememberedDivisionController> RememberedDivisionControllers = new Dictionary<int, RememberedDivisionController>();
     public GameObject RememberedDivisionControllerPrefab;
     
     public Light GeneralLight;
 
-    public GameObject ZoneDisplayPrefab;
-
     void Start () {
         Instance = this;
         MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
+        ZoneDisplayManager.Instance.RegisterZoneDisplayCallback(SelectZoneDisplay);
     }
 	
 	void Update () {
@@ -92,7 +93,7 @@ public class LocalPlayerController : PlayerController {
     public void Select(Division division)
     {
         Debug.Log($"select  {division} {division is ControlledDivision}");
-        if (!UIwaitingForSelection)
+        if (!UIwaitingForUnitSelection)
         {
             if(division.Controller.Controller.TeamId != TeamId)
             {
@@ -129,38 +130,54 @@ public class LocalPlayerController : PlayerController {
         Select(divisionController.AttachedDivision);
     }
 
-    public void RegisterUnitSelectCallback(responseToUI callback)
+    public void RegisterUnitSelectCallback(UnitSelectDelegate callback)
     {
         UnitSelectCallback += callback;
-        UIwaitingForSelection = true;
+        UIwaitingForUnitSelection = true;
     }
 
-    public void UnRegisterUnitSelectCallback(responseToUI callback)
+    public void UnRegisterUnitSelectCallback(UnitSelectDelegate callback)
     {
         UnitSelectCallback -= callback;
-        UIwaitingForSelection = false;
+        UIwaitingForUnitSelection = false;
+    }
+
+    public void SelectZoneDisplay(ZoneDisplay zoneDisplay)
+    {
+        ZoneSelectCallback?.Invoke(zoneDisplay);
+    }
+
+    public void RegisterZoneSelectCallback(ZoneSelectDelegate callback)
+    {
+        ZoneSelectCallback += callback;
+        UIwaitingForUnitSelection = true;
+    }
+
+    public void UnRegisterZoneSelectCallback(ZoneSelectDelegate callback)
+    {
+        ZoneSelectCallback -= callback;
+        UIwaitingForUnitSelection = false;
     }
 
     public void BeginCreateZone()
     {
-        Zone zone = new Zone(new Rect(Vector2.zero, Vector2.zero), Color.white);
-        ZoneDisplay zoneDisplay = Instantiate(ZoneDisplayPrefab).GetComponent<ZoneDisplay>();
-        zoneDisplay.Init(zone);
+        var zoneDisplay = ZoneDisplayManager.Instance.CreateZoneDisplay();
+
         Vector3 start = Vector3.zero;
         InputController.Instance.RegisterButtonHandler(new DragHandler("Fire1",
             (handler, mousePosition) => 
             {
-                zoneDisplay.Change(mousePosition,mousePosition);
+                zoneDisplay.Change(mousePosition,mousePosition,0);
                 start = mousePosition;
             },
             (handler, mousePosition, delta) =>
             {
-                zoneDisplay.Change(start, mousePosition);
+                zoneDisplay.Change(start, mousePosition,0);
             },
             (handler, point) => 
             {
                 handler.Cancel = true;
-                Debug.Log(zone.GetRect());
+                //TODO need to check for collisions between rects and merge them
             }));
     }
 }

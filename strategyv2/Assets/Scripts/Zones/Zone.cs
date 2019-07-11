@@ -2,25 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Zone : IZone
+public class Zone
 {
-    Rect BoundingBox;
+    public List<Rect> BoundingBoxes { get; set; }
     Color OutlineColor;
 
-
-    public Zone(Rect boundingBox, Color outlineColor)
+    public Zone(List<Rect> boundingBoxes, Color outlineColor)
     {
-        BoundingBox = boundingBox;
+        BoundingBoxes = boundingBoxes;
         OutlineColor = outlineColor;
     }
 
-    public Rect GetRect()
+    public bool Contains(Vector3 point)
     {
-        return BoundingBox;
+        return Contains(new Vector2(point.x, point.y));
     }
 
-    public void SetRect(Rect boundingBox)
+    public bool Contains(Vector2 point)
     {
-        BoundingBox = boundingBox;
+        foreach(Rect rect in BoundingBoxes)
+        {
+            if (rect.Contains(point))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

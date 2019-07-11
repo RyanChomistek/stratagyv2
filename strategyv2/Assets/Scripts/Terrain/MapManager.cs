@@ -49,7 +49,7 @@ public class MapManager : MonoBehaviour
         CreateGraph();
         SetUpAjdacentTiles();
         StartCoroutine(UpdateTileValues());
-        InputController.Instance.RegisterOnClickCallBack(PrintTile);
+        //InputController.Instance.RegisterOnClickCallBack(PrintTile);
         LocalPlayerController.Instance.GeneralDivision.AttachedDivision.OnDiscoveredMapChanged += x => Rerender();
     }
 
