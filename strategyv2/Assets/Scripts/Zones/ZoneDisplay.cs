@@ -9,12 +9,27 @@ public class ZoneDisplay : MonoBehaviour
     [SerializeField]
     private GameObject _display;
     [SerializeField]
-    private Color _color;
+    private Color _FillColor;
+    [SerializeField]
+    private Color _OutlineColor;
     private void Awake()
     {
         transform.position = Vector3.zero;
-        _color = new Color(Random.Range(.5f, 1), Random.Range(.5f, 1), Random.Range(.5f, 1), 1);
-        _display.GetComponent<Renderer>().material.SetColor("Color_890189E8", _color);
+        _FillColor = new Color(Random.Range(.5f, 1), Random.Range(.5f, 1), Random.Range(.5f, 1), .5f);
+        
+        _OutlineColor = InvertColor(_FillColor);
+        _OutlineColor.a = .5f;
+        _display.GetComponent<Renderer>().material.SetColor("_OutlineColor", _OutlineColor);
+        _display.GetComponent<Renderer>().material.SetColor("_FillColor", _FillColor);
+        
+        _display.GetComponent<Renderer>().material.SetVector("_ObjectScale", _display.transform.localScale);
+    }
+
+    public Color InvertColor(Color color)
+    {
+        int r = (int) (color.r * 255), g = (int)(color.g * 255), b = (int)(color.b * 255);
+        Debug.Log($"{r} {0xff ^ r} | {g} {0xff ^ g} | {b} {0xff ^ b}");
+        return new Color((0xff ^ r) / 255f, (0xff ^ g) / 255f, (0xff ^ b) / 255f);
     }
 
     public void Init(Zone zone)
@@ -59,10 +74,10 @@ public class ZoneDisplay : MonoBehaviour
 
         _display.transform.position = middle;
 
-        size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), .1f);
+        size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), 1f);
         //add a one vector to account for the display starting in the middle of a tile
-        _display.transform.localScale = size + new Vector3(1,1);
-
+        _display.transform.localScale = size + new Vector3(1,1,0);
+        _display.GetComponent<Renderer>().material.SetVector("_ObjectScale", _display.transform.localScale);
     }
     
     public void Destroy()

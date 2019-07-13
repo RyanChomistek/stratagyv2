@@ -45,6 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _display: {fileID: 7238300372128378615}
+  _FillColor: {r: 0, g: 0, b: 0, a: 0}
+  _OutlineColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1001 &6300713841204590243
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52,11 +54,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3967596087386336110}
     m_Modifications:
-    - target: {fileID: 3675845551496681556, guid: 9a938df5483c8d34aa5c962e80fe0193,
-        type: 3}
-      propertyPath: m_Name
-      value: Cube
-      objectReference: {fileID: 0}
     - target: {fileID: 9115599671344797178, guid: 9a938df5483c8d34aa5c962e80fe0193,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -112,6 +109,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3675845551496681556, guid: 9a938df5483c8d34aa5c962e80fe0193,
+        type: 3}
+      propertyPath: m_Name
+      value: Cube
+      objectReference: {fileID: 0}
+    - target: {fileID: 5362477461597562732, guid: 9a938df5483c8d34aa5c962e80fe0193,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9a938df5483c8d34aa5c962e80fe0193, type: 3}
 --- !u!1 &7238300372128378615 stripped

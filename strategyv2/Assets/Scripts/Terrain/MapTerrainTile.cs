@@ -21,6 +21,7 @@ public class MapTerrainTile
     private float _populationGrowthRate = .1f;
     [SerializeField]
     private float _populationSpreadRate = .1f;
+    [HideInInspector]
     private List<MapTerrainTile> _adjacentTiles;
 
     public uint MoveCost = 1;
