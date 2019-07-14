@@ -320,6 +320,12 @@ public class InputController : MonoBehaviour {
         OnClickDel += callback;
     }
 
+    public void UnregisterOnClickCallBack(OnClick callback)
+    {
+        Debug.Log("unregistering click");
+        OnClickDel -= callback;
+    }
+
     //use this so when you click on a ui element it cancles the previous click delegate
     public void RegisterOnClickCallBackWithUICancel(OnClick callback)
     {
@@ -334,10 +340,14 @@ public class InputController : MonoBehaviour {
         OnUIClickDel += x => { OnClickDel -= callback; };
     }
 
-    public void UnregisterOnClickCallBack(OnClick callback)
+    public void RegisterOnUiClickCallBack(OnClick callback)
     {
-        Debug.Log("unregistering click");
-        OnClickDel -= callback;
+        OnUIClickDel += callback;
+    }
+
+    public void UnRegisterOnUiClickCallBack(OnClick callback)
+    {
+        OnUIClickDel -= callback;
     }
 
     public void RegisterButtonHandler(ButtonHandler handler)

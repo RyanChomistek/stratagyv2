@@ -12,6 +12,9 @@ public class LocalPlayerController : PlayerController {
     bool UIwaitingForUnitSelection = false;
     public delegate void UnitSelectDelegate(RememberedDivision division);
     UnitSelectDelegate UnitSelectCallback;
+
+    [SerializeField]
+    bool UIwaitingForZoneSelection = false;
     public delegate void ZoneSelectDelegate(ZoneDisplay zoneDisplay);
     ZoneSelectDelegate ZoneSelectCallback;
 
@@ -92,7 +95,7 @@ public class LocalPlayerController : PlayerController {
 
     public void Select(Division division)
     {
-        Debug.Log($"select  {division} {division is ControlledDivision}");
+        Debug.Log($"select  {division} {division is ControlledDivision} | {UIwaitingForUnitSelection}");
         if (!UIwaitingForUnitSelection)
         {
             if(division.Controller.Controller.TeamId != TeamId)
@@ -116,7 +119,7 @@ public class LocalPlayerController : PlayerController {
         }
         else
         {
-            UnitSelectCallback(new RememberedDivision(division));
+            UnitSelectCallback?.Invoke(new RememberedDivision(division));
         }
     }
 
@@ -150,13 +153,31 @@ public class LocalPlayerController : PlayerController {
     public void RegisterZoneSelectCallback(ZoneSelectDelegate callback)
     {
         ZoneSelectCallback += callback;
-        UIwaitingForUnitSelection = true;
+        UIwaitingForZoneSelection = true;
+        StartCoroutine(ZoneUICancelHelper(callback));
+    }
+    
+    /// <summary>
+    /// this function will wait for one frame after the register zone select callback happens 
+    /// so that we clear the click and dont unregister it the same frame we register
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    private IEnumerator ZoneUICancelHelper(ZoneSelectDelegate callback)
+    {
+        yield return new WaitForEndOfFrame();
+        InputController.OnClick onClick = null;
+        onClick = x => {
+            InputController.Instance.UnRegisterOnUiClickCallBack(onClick);
+            ZoneSelectCallback -= callback;
+        };
+        InputController.Instance.RegisterOnUiClickCallBack(onClick);
     }
 
     public void UnRegisterZoneSelectCallback(ZoneSelectDelegate callback)
     {
         ZoneSelectCallback -= callback;
-        UIwaitingForUnitSelection = false;
+        UIwaitingForZoneSelection = false;
     }
 
     public void BeginCreateZone()

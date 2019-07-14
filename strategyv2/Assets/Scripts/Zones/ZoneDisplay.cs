@@ -34,6 +34,15 @@ public class ZoneDisplay : MonoBehaviour
     public void Init(Zone zone)
     {
         DisplayedZone = zone;
+        
+        InputController.Instance.RegisterOnClickCallBack(mousePosition =>
+        {
+            var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePosition);
+            if (DisplayedZone.Contains(tileCoordinate))
+            {
+                ZoneDisplayManager.Instance.OnZoneSelected(this);
+            }
+        });
 
         HoverHandler handler = new ConditionalHoverHandler(
             //warmups
