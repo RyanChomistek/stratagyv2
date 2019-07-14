@@ -50,6 +50,15 @@ public class HoverHandler : Handler
     public bool IsCurrentlyHovering = false;
     public Vector3 LastMousePosition;
 
+    /// <summary>
+    /// create a hover handler that triggers when the mouse is still for an amount of time
+    /// </summary>
+    /// <param name="onHoverWarmupEnter"></param>
+    /// <param name="onHoverWarmupExit"></param>
+    /// <param name="onHoverStart"></param>
+    /// <param name="onHover"></param>
+    /// <param name="onHoverEnd"></param>
+    /// <param name="hoverWarmupTime"></param>
     public HoverHandler(Action<HoverHandler, Vector3> onHoverWarmupEnter,
         Action<HoverHandler, Vector3> onHoverWarmupExit,
         Action<HoverHandler, Vector3> onHoverStart, 
@@ -66,6 +75,12 @@ public class HoverHandler : Handler
         this.IsCurrentlyWarmingup = false;
         this._warmupTimestamp = Time.time;
         this.hoverWarmupTime = hoverWarmupTime;
+    }
+
+    public virtual bool IsTemporarilyHovering()
+    {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        return mousePos == LastMousePosition;
     }
 
     public virtual void OnHoverWarmupEnter()
@@ -108,6 +123,29 @@ public class HoverHandler : Handler
     public bool IsDoneWarmingup()
     {
         return IsCurrentlyWarmingup && (Time.time - _warmupTimestamp > hoverWarmupTime);
+    }
+}
+
+public class ConditionalHoverHandler : HoverHandler
+{
+    Func<ConditionalHoverHandler, bool> TemporaryHoverCondition;
+
+    public ConditionalHoverHandler(
+        Action<HoverHandler, Vector3> onHoverWarmupEnter,
+        Action<HoverHandler, Vector3> onHoverWarmupExit, 
+        Action<HoverHandler, Vector3> onHoverStart,
+        Action<HoverHandler, Vector3> onHover, 
+        Action<HoverHandler, Vector3> onHoverEnd,
+        Func<ConditionalHoverHandler, bool> temporaryHoverCondition,
+        float hoverWarmupTime = 1) 
+        : base(onHoverWarmupEnter, onHoverWarmupExit, onHoverStart, onHover, onHoverEnd, hoverWarmupTime)
+    {
+        TemporaryHoverCondition = temporaryHoverCondition;
+    }
+
+    public override bool IsTemporarilyHovering()
+    {
+        return TemporaryHoverCondition(this);
     }
 }
 
@@ -244,7 +282,7 @@ public class InputController : MonoBehaviour {
 
         foreach (HoverHandler handler in _hoverHandlers)
         {
-            if (mousePos == handler.LastMousePosition)
+            if (handler.IsTemporarilyHovering())
             {
                 if (!handler.IsCurrentlyHovering)
                 {

@@ -15,17 +15,6 @@ public class ZoneDisplayManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
-        InputController.Instance.RegisterOnClickCallBack( mousePosition => 
-        {
-            var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePosition);
-            foreach(ZoneDisplay zone in Zones)
-            {
-                if(zone.DisplayedZone.Contains(tileCoordinate))
-                {
-                    ZoneDisplaySelectCallback?.Invoke(zone);
-                }
-            }
-        });
     }
 
     public ZoneDisplay CreateZoneDisplay()
@@ -45,6 +34,11 @@ public class ZoneDisplayManager : MonoBehaviour
     public void UnRegisterZoneDisplay(ZoneDisplay zone)
     {
         Zones.Remove(zone);
+    }
+
+    public void OnZoneSelected(ZoneDisplay display)
+    {
+        ZoneDisplaySelectCallback?.Invoke(display);
     }
 
     public void RegisterZoneDisplayCallback(Action<ZoneDisplay> zoneDisplaySelectCallback)

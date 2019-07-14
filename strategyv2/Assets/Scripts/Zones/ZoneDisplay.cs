@@ -15,13 +15,12 @@ public class ZoneDisplay : MonoBehaviour
     private void Awake()
     {
         transform.position = Vector3.zero;
-        _FillColor = new Color(Random.Range(.5f, 1), Random.Range(.5f, 1), Random.Range(.5f, 1), .5f);
+        _FillColor = new Color(Random.Range(.25f, 1), Random.Range(.25f, 1), Random.Range(.25f, 1), .5f);
         
         _OutlineColor = InvertColor(_FillColor);
         _OutlineColor.a = .5f;
         _display.GetComponent<Renderer>().material.SetColor("_OutlineColor", _OutlineColor);
         _display.GetComponent<Renderer>().material.SetColor("_FillColor", _FillColor);
-        
         _display.GetComponent<Renderer>().material.SetVector("_ObjectScale", _display.transform.localScale);
     }
 
@@ -35,6 +34,31 @@ public class ZoneDisplay : MonoBehaviour
     public void Init(Zone zone)
     {
         DisplayedZone = zone;
+
+        HoverHandler handler = new ConditionalHoverHandler(
+            //warmups
+            (x, y) => {  }, (x, y) => {},
+            //start
+            (x, y) => {
+                //reverse the fill and outline colors
+                _display.GetComponent<Renderer>().material.SetColor("_OutlineColor", _FillColor);
+                _display.GetComponent<Renderer>().material.SetColor("_FillColor", _OutlineColor);
+            }, 
+            (x, y) => {}, 
+            //end
+            (x, y) => {
+                _display.GetComponent<Renderer>().material.SetColor("_OutlineColor", _OutlineColor);
+                _display.GetComponent<Renderer>().material.SetColor("_FillColor", _FillColor);
+            },
+            //condition for when hovering should trigger
+            (x) => {
+                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePosition);
+                return DisplayedZone.Contains(tileCoordinate);
+            },
+            .5f);
+
+        InputController.Instance.RegisterHoverHandler(handler);
     }
 
     public void Change(Vector3 topLeft, Vector3 bottomRight, int rectIndex)
