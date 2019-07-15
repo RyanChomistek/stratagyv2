@@ -199,6 +199,16 @@ public class LocalPlayerController : PlayerController {
             {
                 handler.Cancel = true;
                 //TODO need to check for collisions between rects and merge them
+                for (int i = 0; i < ZoneDisplayManager.Instance.Zones.Count; i++)
+                {
+                    ZoneDisplay otherZoneDisplay = ZoneDisplayManager.Instance.Zones[i];
+                    if (otherZoneDisplay != zoneDisplay && otherZoneDisplay.DisplayedZone.Overlaps(zoneDisplay.DisplayedZone))
+                    {
+                        //will remove otherzonedisplay from zonedisplaymanager
+                        zoneDisplay.MergeZone(otherZoneDisplay);
+                        i--;
+                    }
+                }
             }));
     }
 }

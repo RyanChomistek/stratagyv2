@@ -6,7 +6,7 @@ using UnityEngine;
 public class ZoneDisplayManager : MonoBehaviour
 {
     public static ZoneDisplayManager Instance { get; set; }
-    private List<ZoneDisplay> Zones = new List<ZoneDisplay>();
+    public List<ZoneDisplay> Zones = new List<ZoneDisplay>();
 
     private Action<ZoneDisplay> ZoneDisplaySelectCallback;
 
@@ -24,6 +24,13 @@ public class ZoneDisplayManager : MonoBehaviour
         zoneDisplay.Init(zone);
         RegisterZoneDisplay(zoneDisplay);
         return zoneDisplay;
+    }
+
+    public void DestroyZoneDisplay(ZoneDisplay zone)
+    {
+        UnRegisterZoneDisplay(zone);
+        Destroy(zone.gameObject);
+        //TODO need to remove the ZD handelers
     }
 
     public void RegisterZoneDisplay(ZoneDisplay zone)

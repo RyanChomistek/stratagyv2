@@ -320,7 +320,7 @@ public class InputController : MonoBehaviour {
         OnClickDel += callback;
     }
 
-    public void UnregisterOnClickCallBack(OnClick callback)
+    public void UnRegisterOnClickCallBack(OnClick callback)
     {
         Debug.Log("unregistering click");
         OnClickDel -= callback;
@@ -367,5 +367,9 @@ public class InputController : MonoBehaviour {
     public void RegisterHoverHandler(HoverHandler handler)
     {
         _hoverHandlers.Add(handler);
+    }
+    public void UnRegisterHoverHandler(HoverHandler handler)
+    {
+        _hoverHandlers.Remove(handler);
     }
 }

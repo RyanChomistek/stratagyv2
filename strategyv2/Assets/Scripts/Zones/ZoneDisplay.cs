@@ -20,17 +20,26 @@ public class ZoneDisplay : MonoBehaviour
     [SerializeField]
     private Color _OutlineColor;
     private string _outlineColorShaderProperty = "_BaseColor";
+
+    InputController.OnClick OnClickCallback;
+    HoverHandler HoverHandler;
     private void Awake()
     {
         transform.position = Vector3.zero;
         _FillColor = new Color(Random.Range(.25f, 1), Random.Range(.25f, 1), Random.Range(.25f, 1), .5f);
         _OutlineColor = InvertColor(_FillColor);
         _OutlineColor.a = .5f;
-
-
-
+        
         _fill.GetComponent<Renderer>().material.SetColor(_fillColorShaderProperty, _FillColor);
         _outline.GetComponent<Renderer>().material.SetColor(_outlineColorShaderProperty, _OutlineColor);
+    }
+
+    public void MergeZone(ZoneDisplay Other)
+    {
+        Debug.Log("merging");
+        DisplayedZone.BoundingBoxes.AddRange(Other.DisplayedZone.BoundingBoxes);
+        ZoneDisplayManager.Instance.DestroyZoneDisplay(Other);
+        CreateMeshes();
     }
 
     public void CreateMeshes()
@@ -44,11 +53,19 @@ public class ZoneDisplay : MonoBehaviour
         List<int> tri = new List<int>();
         List<Vector3> normals = new List<Vector3>();
         List<Vector2> uv = new List<Vector2>();
+        
+        foreach(Rect boundingBox in DisplayedZone.BoundingBoxes)
+        {
+            //Rect rect = DisplayedZone.BoundingBoxes[0];
+            Rect rect = Rect.MinMaxRect(boundingBox.xMin, boundingBox.yMin, boundingBox.xMax, boundingBox.yMax);
+            //rect.position += new Vector2(-.5f, -.5f);
+            //rect.width += 1;
+            //rect.height += 1;
+            //List<Vector3> edgeVerts = new List<Vector3>();
+            CreateFillQuad(rect, -_outlineThickness + .5f, ref verts, ref edgeVerts, ref tri, ref normals, ref uv);
 
-        Rect rect = DisplayedZone.BoundingBoxes[0];
-        rect = Rect.MinMaxRect(rect.xMin, rect.yMin, rect.xMax-1, rect.yMax); 
+        }
 
-        CreateQuad(rect, -_outlineThickness + .5f, ref verts, ref edgeVerts, ref tri, ref normals, ref uv);
         mesh.vertices = verts.ToArray();
         mesh.triangles = tri.ToArray();
         mesh.normals = normals.ToArray();
@@ -74,13 +91,9 @@ public class ZoneDisplay : MonoBehaviour
         List<Vector2> uv = new List<Vector2>();
         
         //make rects
-        for (int i = 0; i < edgeVerts.Count; i++)
+        for (int i = 0; i < edgeVerts.Count-1; i++)
         {
             int nextVert = i + 1; 
-            if(i == edgeVerts.Count - 1)
-            {
-                nextVert = 0;
-            }
 
             Vector3 v1 = edgeVerts[i], v2 = edgeVerts[nextVert];
             float minX = Mathf.Min(v1.x, v2.x), maxX = Mathf.Max(v1.x, v2.x),
@@ -106,13 +119,18 @@ public class ZoneDisplay : MonoBehaviour
             }
 
             Rect line = Rect.MinMaxRect(minX, minY, maxX, maxY);
-            CreateQuad(line, 0, ref verts, ref outlineEdgeVerts, ref tris, ref normals, ref uv);
+            //CreateQuad(line, 0, ref verts, ref outlineEdgeVerts, ref tris, ref normals, ref uv);
         }
 
         mesh.vertices = verts.ToArray();
         mesh.triangles = tris.ToArray();
         mesh.normals = normals.ToArray();
         mesh.uv = uv.ToArray();
+    }
+
+    struct AjacentNodes
+    {
+        public int Up, Right, Down, Left;
     }
 
     /// <summary>
@@ -124,37 +142,62 @@ public class ZoneDisplay : MonoBehaviour
     /// <param name="tri"></param>
     /// <param name="normals"></param>
     /// <param name="uv"></param>
-    public void CreateQuad(Rect rect, float padding, ref List<Vector3> vertices, ref List<Vector3> edgeVertices, ref List<int> tri, ref List<Vector3> normals, ref List<Vector2> uv)
+    public void CreateFillQuad(Rect rect, float padding, ref List<Vector3> vertices, ref List<Vector3> edgeVertices, ref List<int> tri, ref List<Vector3> normals, ref List<Vector2> uv)
     {
+        int width = Mathf.RoundToInt(rect.width);
+        int height = Mathf.RoundToInt(rect.height);
+        Vector3 bottomLeft = rect.min;
         int startVert = vertices.Count;
 
-        vertices.Add(new Vector3(rect.xMin - padding, rect.yMin - padding, 0));
-        vertices.Add(new Vector3(rect.xMax + padding, rect.yMin -padding, 0));
-        vertices.Add(new Vector3(rect.xMin - padding, rect.yMax + padding, 0));
-        vertices.Add(new Vector3(rect.xMax + padding, rect.yMax + padding, 0));
+        //Debug.Log($"{width}, {height} | {bottomLeft} ");
+        Dictionary<int, AjacentNodes> adjMap = new Dictionary<int, AjacentNodes>();
+        
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                vertices.Add(new Vector3(bottomLeft.x + x, bottomLeft.y + y, 0)); //0,0        | 0
+                vertices.Add(new Vector3(bottomLeft.x + x + 1, bottomLeft.y + y, 0));//1,0     | 1
+                vertices.Add(new Vector3(bottomLeft.x + x, bottomLeft.y + y + 1, 0));//0,1     | 2
+                vertices.Add(new Vector3(bottomLeft.x + x + 1, bottomLeft.y + y + 1, 0));//1,1 | 3
+                /*
+                AjacentNodes v0_adj = new AjacentNodes() { Up = 2, Right = };
+                AjacentNodes v1_adj = new AjacentNodes();
+                AjacentNodes v2_adj = new AjacentNodes();
+                AjacentNodes v3_adj = new AjacentNodes();
+                */
+                uv.Add(new Vector2(0, 0));
+                uv.Add(new Vector2(1f, 0));
+                uv.Add(new Vector2(0, 1));
+                uv.Add(new Vector2(1f, 1));
+
+                tri.Add(startVert);
+                tri.Add(startVert + 2);
+                tri.Add(startVert + 1);
+
+                tri.Add(startVert + 2);
+                tri.Add(startVert + 3);
+                tri.Add(startVert + 1);
+                
+                //reset startvert for the next quad
+                startVert = vertices.Count;
+            }
+        }
+
+        //remove duplicate vert values
+
+
+        foreach(var vert in vertices)
+        {
+            normals.Add(-Vector3.forward);
+        }
 
         edgeVertices.Add(new Vector3(rect.xMin - padding, rect.yMin - padding, 0));
         edgeVertices.Add(new Vector3(rect.xMax + padding, rect.yMin - padding, 0));
         edgeVertices.Add(new Vector3(rect.xMax + padding, rect.yMax + padding, 0));
         edgeVertices.Add(new Vector3(rect.xMin - padding, rect.yMax + padding, 0));
-
-        tri.Add(startVert);
-        tri.Add(startVert + 2);
-        tri.Add(startVert + 1);
-
-        tri.Add(startVert + 2);
-        tri.Add(startVert + 3);
-        tri.Add(startVert + 1);
-
-        normals.Add(-Vector3.forward);
-        normals.Add(-Vector3.forward);
-        normals.Add(-Vector3.forward);
-        normals.Add(-Vector3.forward);
-        
-        uv.Add(new Vector2(0,0));
-        uv.Add(new Vector2(1,0));
-        uv.Add(new Vector2(0,1));
-        uv.Add(new Vector2(1,1));
+        //add first one again to make full loop
+        edgeVertices.Add(new Vector3(rect.xMin - padding, rect.yMin - padding, 0));
     }
 
     public Color InvertColor(Color color)
@@ -167,17 +210,18 @@ public class ZoneDisplay : MonoBehaviour
     public void Init(Zone zone)
     {
         DisplayedZone = zone;
-        
-        InputController.Instance.RegisterOnClickCallBack(mousePosition =>
+        OnClickCallback = mousePosition =>
         {
             var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePosition);
             if (DisplayedZone.Contains(tileCoordinate))
             {
                 ZoneDisplayManager.Instance.OnZoneSelected(this);
             }
-        });
+        };
 
-        HoverHandler handler = new ConditionalHoverHandler(
+        InputController.Instance.RegisterOnClickCallBack(OnClickCallback);
+
+        HoverHandler = new ConditionalHoverHandler(
             //warmups
             (x, y) => {  }, (x, y) => {},
             //start
@@ -191,6 +235,8 @@ public class ZoneDisplay : MonoBehaviour
             (x, y) => {
                 _fill.GetComponent<Renderer>().material.SetColor(_fillColorShaderProperty, _FillColor);
                 _outline.GetComponent<Renderer>().material.SetColor(_outlineColorShaderProperty, _OutlineColor);
+
+                
             },
             //condition for when hovering should trigger
             (x) => {
@@ -200,7 +246,7 @@ public class ZoneDisplay : MonoBehaviour
             },
             .1f);
 
-        InputController.Instance.RegisterHoverHandler(handler);
+        InputController.Instance.RegisterHoverHandler(HoverHandler);
     }
 
     public void Change(Vector3 topLeft, Vector3 bottomRight, int rectIndex)
@@ -231,14 +277,18 @@ public class ZoneDisplay : MonoBehaviour
             bottomRight = new Vector3(worldxMax, worldyMin);
         
         rect.position = bottomLeft;
+        rect.position += new Vector2(-.5f, -.5f);
+        //rect.size += new Vector2(1, 1);
         //need to add 1 to x to fix obo error in the rect contains function
-        rect.size = topRight - bottomLeft + new Vector3(1,0,0);
+        rect.size = topRight - bottomLeft + new Vector3(1,1,0);
         DisplayedZone.BoundingBoxes[rectIndex] = rect;
         CreateMeshes();
     }
     
-    public void Destroy()
+    public void OnDestroy()
     {
-
+        //free input handelers
+        InputController.Instance.UnRegisterOnClickCallBack(OnClickCallback);
+        InputController.Instance.UnRegisterHoverHandler(HoverHandler);
     }
 }

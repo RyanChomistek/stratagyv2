@@ -30,4 +30,20 @@ public class Zone
 
         return false;
     }
+
+    public bool Overlaps(Zone other)
+    {
+        foreach(Rect r1 in BoundingBoxes)
+        {
+            foreach (Rect r2 in other.BoundingBoxes)
+            {
+                if(r1.Overlaps(r2))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

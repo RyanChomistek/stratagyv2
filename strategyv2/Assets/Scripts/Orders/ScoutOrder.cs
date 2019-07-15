@@ -22,7 +22,7 @@ public class ScoutOrder : Order
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
     {
         finish = new Vector3(mousePos.x, mousePos.y);
-        InputController.Instance.UnregisterOnClickCallBack(UICallback);
+        InputController.Instance.UnRegisterOnClickCallBack(UICallback);
         OrderDisplayManager.Instance.ClearOrders();
         var scout = Host.CreateNewDivision();
         scout.name = "scout";

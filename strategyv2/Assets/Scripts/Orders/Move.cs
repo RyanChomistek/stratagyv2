@@ -68,7 +68,7 @@ public class Move : Order {
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
     {
         finish = new Vector3(mousePos.x, mousePos.y);
-        InputController.Instance.UnregisterOnClickCallBack(UICallback);
+        InputController.Instance.UnRegisterOnClickCallBack(UICallback);
         //clear ui
         OrderDisplayManager.Instance.ClearOrders();
         //need to get 
