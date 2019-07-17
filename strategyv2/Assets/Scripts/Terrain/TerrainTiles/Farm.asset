@@ -9,19 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 752719300a52ba54f9bfb29ec6fc02ec, type: 3}
   m_Name: Farm
-  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  m_EditorClassIdentifier: 
   tile:
-    Supply: 400
-    MaxSupply: 1000
-    _supplyGrowthRate: 0.04
-    _supplySpreadRate: 0.2
-    Population: 100
-    MaxPopulation: 1000
+    Supply: 50
+    MaxSupply: 200
+    _supplyGrowthRate: 0.02
+    _supplySpreadRate: 0.02
+    Population: 50
+    MaxPopulation: 200
     _populationGrowthRate: 0.02
-    _populationSpreadRate: 0.01
-    MoveCost: 1300
+    _populationSpreadRate: 0.02
+    MoveCost: 2500
     TerrainType: 4
     tile: {fileID: 11400000, guid: 4453ae3a5600d50448bdf564b72742f6, type: 2}
-    SimpleDisplayColor: {r: 0.9528302, g: 0.95071113, b: 0, a: 1}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

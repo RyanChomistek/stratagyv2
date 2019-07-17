@@ -13,4 +13,9 @@ public class TargetingOrder : Order
         RememberedTargetId = rememberedTargetId;
         _thresholdDistance = thresholdDistance;
     }
+
+    public override string ToString()
+    {
+        return base.ToString() + $"{RememberedTargetId}";
+    }
 }

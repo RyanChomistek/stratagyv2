@@ -9,19 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 752719300a52ba54f9bfb29ec6fc02ec, type: 3}
   m_Name: River
-  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  m_EditorClassIdentifier: 
   tile:
-    Supply: 5
-    MaxSupply: 1000
-    _supplyGrowthRate: 0.01
-    _supplySpreadRate: 0.01
-    Population: 0
-    MaxPopulation: 5
-    _populationGrowthRate: 0.01
-    _populationSpreadRate: 0.01
+    Supply: 50
+    MaxSupply: 200
+    _supplyGrowthRate: 0.02
+    _supplySpreadRate: 0.02
+    Population: 50
+    MaxPopulation: 200
+    _populationGrowthRate: 0.02
+    _populationSpreadRate: 0.02
     MoveCost: 5000
     TerrainType: 3
     tile: {fileID: 11400000, guid: 3bac961e89a45b14ca43316c0409a0dd, type: 2}
-    SimpleDisplayColor: {r: 0, g: 0.4398012, b: 0.6603774, a: 1}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

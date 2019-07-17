@@ -53,6 +53,18 @@ public class DivisionControllerEditor : CustomEditorBase
 
             Debug.Log(str);
         }
+
+        if (GUILayout.Button("print orders"))
+        {
+            string str = "orders : ";
+            str += myTarget.AttachedDivision.OngoingOrder?.ToString() + " | ";
+            foreach (Order order in myTarget.AttachedDivision.OrderQueue)
+            {
+                str += order.ToString() + " | ";
+            }
+
+            Debug.Log(str);
+        }
     }
 
 

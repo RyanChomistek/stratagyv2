@@ -9,19 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 752719300a52ba54f9bfb29ec6fc02ec, type: 3}
   m_Name: Town
-  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  m_EditorClassIdentifier: 
   tile:
-    Supply: 600
-    MaxSupply: 1000
-    _supplyGrowthRate: 0.01
-    _supplySpreadRate: 0.2
-    Population: 500
-    MaxPopulation: 1000
-    _populationGrowthRate: 0.03
-    _populationSpreadRate: 0.2
-    MoveCost: 1200
+    Supply: 50
+    MaxSupply: 200
+    _supplyGrowthRate: 0.02
+    _supplySpreadRate: 0.02
+    Population: 50
+    MaxPopulation: 200
+    _populationGrowthRate: 0.02
+    _populationSpreadRate: 0.02
+    MoveCost: 2500
     TerrainType: 5
     tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}
-    SimpleDisplayColor: {r: 0.64615923, g: 0, b: 0.7735849, a: 1}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

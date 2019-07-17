@@ -36,7 +36,21 @@ public class FindDivision : MultiOrder
         RememberedDivision rememberedTarget;
         if (TryGetRememberedDivisionFromHost(Host, RememberedTargetId, out rememberedTarget))
         {
-            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition, _thresholdDistance * .5f));
+            if(rememberedTarget.HasBeenDestroyed)
+            {
+                RememberedTargetId = rememberedTarget.Commander;
+                if(RememberedTargetId == rememberedTarget.Commander)
+                {
+                    //the command chain is dead so give up
+                    Canceled = true;
+                }
+
+                AddMoveToTarget(Host);
+            }
+            else
+            {
+                this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition, _thresholdDistance * .5f));
+            }
         }
         else
         {

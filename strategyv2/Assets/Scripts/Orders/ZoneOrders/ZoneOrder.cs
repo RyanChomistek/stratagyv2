@@ -5,10 +5,10 @@ using UnityEngine;
 public class ZoneOrder : MultiOrder
 {
     public Zone AssignedZone;
-    LocalPlayerController.ZoneSelectDelegate UICallback;
+    protected LocalPlayerController.ZoneSelectDelegate UICallback;
 
-    public ZoneOrder(Division controller, int commanderSendingOrderId, Zone zone)
-        : base(controller, commanderSendingOrderId, "Zone", new List<Order>())
+    public ZoneOrder(Division controller, int commanderSendingOrderId, Zone zone, string name = "Zone")
+        : base(controller, commanderSendingOrderId, name, new List<Order>())
     {
         AssignedZone = zone;
         MoveToZone(controller);
@@ -29,7 +29,7 @@ public class ZoneOrder : MultiOrder
         LocalPlayerController.Instance.RegisterZoneSelectCallback(UICallback);
     }
     
-    public void OnZoneSelected(Division Host, PlayerController playerController, Zone zone)
+    public virtual void OnZoneSelected(Division Host, PlayerController playerController, Zone zone)
     {
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterZoneSelectCallback(UICallback);

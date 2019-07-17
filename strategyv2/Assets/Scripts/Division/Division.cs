@@ -16,8 +16,16 @@ public class Division : IEquatable<Division>
     public int TeamId = -1;
     public string Name;
     public int Commander;
+
+    /// <summary>
+    /// tells other divisions not to send other messengers to this unit for mass orders
+    /// </summary>
+    public bool IsMessenger;
+
     public ObservableCollection<Soldier> Soldiers = new ObservableCollection<Soldier>();
     public HashSet<int> Subordinates = new HashSet<int>();
+
+    public Dictionary<int, Zone> Zones = new Dictionary<int, Zone>();
     
     public List<Order> OrderQueue = new List<Order>();
     public List<Order> BackgroundOrderList = new List<Order>();
@@ -454,6 +462,41 @@ public class Division : IEquatable<Division>
 
         newDivision = Controller.CreateChild(soldiersToGive);
         return true;
+    }
+
+    /// <summary>
+    /// merges zones from a list into the ones currently present in the division
+    /// </summary>
+    /// <param name="zones"></param>
+    /// <returns> returns whether there was any change to the zones</returns>
+    public virtual bool MergeZones(List<Zone> newZones)
+    {
+        bool changed = false;
+        foreach(var newZone in newZones)
+        {
+            if(Zones.ContainsKey(newZone.id))
+            {
+                var oldZone = Zones[newZone.id];
+                //use hashcode to see if the two zones are different
+                if(oldZone.GetHashCode() != newZone.GetHashCode())
+                {
+                    Zones[newZone.id] = new Zone(newZone);
+                    changed = true;
+                }
+            }
+            else
+            {
+                changed = true;
+                Zones.Add(newZone.id, newZone);
+            }
+        }
+
+        return changed;
+    }
+
+    public virtual void AddZone(Zone zone)
+    {
+        Zones.Add(zone.id, zone);
     }
 
     public override string ToString()

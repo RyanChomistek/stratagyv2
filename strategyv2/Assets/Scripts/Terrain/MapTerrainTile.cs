@@ -107,11 +107,3 @@ public class MapTerrainTile
         return $" {TerrainType.ToString()} supply : {Supply}/{MaxSupply} \n Population : {Population}/{MaxPopulation}";
     }
 }
-
-[System.Serializable]
-[CreateAssetMenu(fileName = "NewTerrainTile", menuName = "TerrainTile", order = 0)]
-public class TerrainTileSettings : ScriptableObject
-{
-    [SerializeField]
-    public MapTerrainTile tile;
-}

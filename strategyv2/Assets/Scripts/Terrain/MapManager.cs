@@ -243,7 +243,6 @@ public class MapManager : MonoBehaviour
 
     public void Rerender()
     {
-        Debug.Log("rerender");
         RenderMap(CurrentlyDisplayingMapType);
     }
 
@@ -264,7 +263,6 @@ public class MapManager : MonoBehaviour
                 this.RenderMapWithTiles();
                 break;
             case MapDisplays.TilesWithVision:
-                Debug.Log("visibility");
                 //RenderAllTilesGray();
                 RenderDiscoveredTiles(LocalPlayerController.Instance.GeneralDivision.AttachedDivision);
                 RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);

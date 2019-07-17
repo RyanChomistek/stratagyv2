@@ -31,9 +31,10 @@ public class ControlledDivision : Division
     
     public void DestroyDivision(ControlledDivision other)
     {
-        //Debug.Log($"Destorying division {other}, from {this}");
+        Debug.Log($"Destorying division {other}, from {this}, notifying {other.VisibleDivisions.Count}");
         other.HasBeenDestroyed = true;
         FindAndRemoveSubordinateById(other.DivisionId, ref RememberedDivisions);
+        RememberedDivisions[other.DivisionId] = new RememberedDivision(other);
         other.NotifyAllVisibleDivisionsOfDestruction();
         GameObject.Destroy(other.Controller.gameObject);
     }
@@ -277,6 +278,7 @@ public class ControlledDivision : Division
         this.PossibleOrders.Add(new RecruitOrder(this, -1));
         this.PossibleOrders.Add(new GatherSuppliesOrder(this, -1));
         this.PossibleOrders.Add(new ZoneOrder(this, -1, null));
+        this.PossibleOrders.Add(new PatrolZoneOrder(this, -1, null));
     }
 
     public void AddAutoRunBackgroundOrders()
@@ -439,11 +441,59 @@ public class ControlledDivision : Division
     {
         //create a new division
         DivisionController messenger = CreateNewDivision();
+        messenger.AttachedDivision.IsMessenger = true;
         messenger.name = "messenger";
-        //todo discover location of to
         messenger.AttachedDivision.ReceiveOrder(new FindDivision(messenger.AttachedDivision, DivisionId, to.DivisionId));
         messenger.AttachedDivision.ReceiveOrder(new SendMessage(messenger.AttachedDivision, DivisionId, orders, to.DivisionId, endTarget.DivisionId));
     }
 
+    public void SendMessengerToAllSubordinates(List<Order> orders, bool ignoreMessengers = true)
+    {
+        //copy so that when we make messengers they dont mess up the loop
+        HashSet<int> subordinates_copy = new HashSet<int>(Subordinates);
+        //send out messengers to all subordinates
+        foreach (var subordinateId in subordinates_copy)
+        {
+            if (RememberedDivisions.TryGetValue(subordinateId, out RememberedDivision subordinate))
+            {
+                //if we are ignoring messengers skip
+                if((ignoreMessengers && subordinate.IsMessenger) || subordinate.HasBeenDestroyed)
+                {
+                    continue;
+                }
+
+                SendMessenger(subordinate, subordinate, orders);
+            }
+        }
+    }
+
     #endregion
+
+    public List<Zone> ConvertZonesToList()
+    {
+        List<Zone> zonesList = new List<Zone>();
+        foreach(var zone in Zones)
+        {
+            zonesList.Add(zone.Value);
+        }
+
+        return zonesList;
+    }
+
+    public override bool MergeZones(List<Zone> newZones)
+    {
+        bool changed = base.MergeZones(newZones);
+        if(changed)
+        {
+            SendMessengerToAllSubordinates(new List<Order>() { new ShareZoneInfoOrder(this, this.DivisionId, ConvertZonesToList()) }, true );
+        }
+
+        return changed;
+    }
+
+    public override void AddZone(Zone zone)
+    {
+        base.AddZone(zone);
+        SendMessengerToAllSubordinates(new List<Order>() { new ShareZoneInfoOrder(this, this.DivisionId, ConvertZonesToList()) }, true);
+    }
 }

@@ -9,19 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 752719300a52ba54f9bfb29ec6fc02ec, type: 3}
   m_Name: Forest
-  m_EditorClassIdentifier: Assembly-CSharp::TerrainTileSettings
+  m_EditorClassIdentifier: 
   tile:
-    Supply: 100
-    MaxSupply: 500
-    _supplyGrowthRate: 0.01
-    _supplySpreadRate: 0.01
-    Population: 100
-    MaxPopulation: 400
-    _populationGrowthRate: 0.01
-    _populationSpreadRate: 0.01
-    MoveCost: 2000
+    Supply: 50
+    MaxSupply: 200
+    _supplyGrowthRate: 0.02
+    _supplySpreadRate: 0.02
+    Population: 50
+    MaxPopulation: 200
+    _populationGrowthRate: 0.02
+    _populationSpreadRate: 0.02
+    MoveCost: 5000
     TerrainType: 7
     tile: {fileID: 11400000, guid: b685597f9dcf17744b0c5bbc9cc7d8df, type: 2}
-    SimpleDisplayColor: {r: 0, g: 0.3679245, b: 0.14808266, a: 1}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

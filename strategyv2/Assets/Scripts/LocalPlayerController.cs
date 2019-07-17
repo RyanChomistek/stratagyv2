@@ -183,7 +183,7 @@ public class LocalPlayerController : PlayerController {
     public void BeginCreateZone()
     {
         var zoneDisplay = ZoneDisplayManager.Instance.CreateZoneDisplay();
-
+        
         Vector3 start = Vector3.zero;
         InputController.Instance.RegisterButtonHandler(new DragHandler("Fire1",
             (handler, mousePosition) => 
@@ -198,7 +198,7 @@ public class LocalPlayerController : PlayerController {
             (handler, point) => 
             {
                 handler.Cancel = true;
-                //TODO need to check for collisions between rects and merge them
+                //check for collisions between rects and merge them
                 for (int i = 0; i < ZoneDisplayManager.Instance.Zones.Count; i++)
                 {
                     ZoneDisplay otherZoneDisplay = ZoneDisplayManager.Instance.Zones[i];
@@ -209,6 +209,8 @@ public class LocalPlayerController : PlayerController {
                         i--;
                     }
                 }
+
+                GeneralDivision.AttachedDivision.AddZone(zoneDisplay.DisplayedZone);
             }));
     }
 }

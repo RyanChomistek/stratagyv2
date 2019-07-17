@@ -35,7 +35,7 @@ public class Move : Order {
         */
         
         _ai.destination = finish;
-        _ai.endReachedDistance = _thresholdDistance * .5f;
+        _ai.endReachedDistance = _thresholdDistance * .25f;
         UpdateCalculatedValues(Host);
     }
 

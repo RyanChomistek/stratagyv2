@@ -102,4 +102,9 @@ public class Order
     {
         return this.orderId;
     }
+
+    public override string ToString()
+    {
+        return $"{name} ";
+    }
 }
