@@ -289,7 +289,7 @@ public class ControlledDivision : Division
             new RememberedDivision(this),
             new UseSuppliesOrder(this, DivisionId), ref RememberedDivisions);
     }
-
+    /* TODO use a multi order here
     public void DoOrders()
     {
         if(OngoingOrder.Canceled)
@@ -340,7 +340,7 @@ public class ControlledDivision : Division
     }
 
     //in a normal controlled division this will do nothing, but the ai controller will override
-    virtual protected void OnEmptyOrder()
+    virtual public void OnEmptyOrder()
     {
     }
 
@@ -388,15 +388,17 @@ public class ControlledDivision : Division
         OngoingOrder.Proceed(this);
     }
 
+    */
+
     public void ReceiveOrder(Order order)
     {
         if (order.IsBackgroundOrder)
         {
-            BackgroundOrderList.Add(order);
+            OrderSystem.BackgroundOrderList.Add(order);
         }
         else
         {
-            OrderQueue.Add(order);
+            OrderSystem.OrderQueue.Add(order);
         }
 
         OnChange();
@@ -411,30 +413,10 @@ public class ControlledDivision : Division
 
         OnChange();
     }
-    
-    private void CancelOrder(Order order, HashSet<int> orderIdsToCancel)
-    {
-        if (order.IsCancelable && orderIdsToCancel.Contains(order.orderId))
-        {
-            order.Canceled = true;
-        }
-    }
-
-    private void CancelOrders(List<Order> orders, HashSet<int> orderIdsToCancel)
-    {
-        for (int i = 0; i < orders.Count; i++)
-        {
-            var order = BackgroundOrderList[i];
-            CancelOrder(order, orderIdsToCancel);
-        }
-    }
 
     public void CancelOrders(HashSet<int> orderIdsToCancel)
     {
-        CancelOrders(OrderQueue, orderIdsToCancel);
-        CancelOrders(BackgroundOrderList, orderIdsToCancel);
-        CancelOrder(OngoingOrder, orderIdsToCancel);
-        DoOrders();
+        OrderSystem.CancelOrders(this, orderIdsToCancel);
     }
 
     public void SendMessenger(RememberedDivision to, RememberedDivision endTarget, List<Order> orders)

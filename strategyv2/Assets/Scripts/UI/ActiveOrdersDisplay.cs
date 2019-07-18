@@ -20,17 +20,17 @@ public class ActiveOrdersDisplay : MonoBehaviour
         //try to see if the division is visible
         if (localPlayer.VisibleDivisions.TryGetValue(divisionId, out ControlledDivision division))
         {
-            orders.Add(division.OngoingOrder);
-            orders.AddRange(division.OrderQueue);
-            orders.AddRange(division.BackgroundOrderList);
+            orders.Add(division.OrderSystem.OngoingOrder);
+            orders.AddRange(division.OrderSystem.OrderQueue);
+            orders.AddRange(division.OrderSystem.BackgroundOrderList);
         }
         else
         {
             //else grab its remembered info
             var rememberedDivision = localPlayer.RememberedDivisions[divisionId];
-            orders.Add(rememberedDivision.OngoingOrder);
-            orders.AddRange(rememberedDivision.OrderQueue);
-            orders.AddRange(rememberedDivision.BackgroundOrderList);
+            orders.Add(rememberedDivision.OrderSystem.OngoingOrder);
+            orders.AddRange(rememberedDivision.OrderSystem.OrderQueue);
+            orders.AddRange(rememberedDivision.OrderSystem.BackgroundOrderList);
         }
 
         RefreshCards(orders);

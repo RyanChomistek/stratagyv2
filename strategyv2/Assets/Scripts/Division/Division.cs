@@ -27,10 +27,8 @@ public class Division : IEquatable<Division>
 
     public Dictionary<int, Zone> Zones = new Dictionary<int, Zone>();
     
-    public List<Order> OrderQueue = new List<Order>();
-    public List<Order> BackgroundOrderList = new List<Order>();
     public List<Order> PossibleOrders = new List<Order>();
-    public Order OngoingOrder = null;
+    public MultiOrder OrderSystem;
 
     public List<DivisionModifier> DivisionModifiers = new List<DivisionModifier>();
 
@@ -63,15 +61,14 @@ public class Division : IEquatable<Division>
         this.PossibleOrders = new List<Order>(division.PossibleOrders);
         this.Subordinates = new HashSet<int>(division.Subordinates);
 
-        this.OrderQueue = new List<Order>();
-        this.BackgroundOrderList = new List<Order>();
-        this.OngoingOrder = division.OngoingOrder;
-
         this.Soldiers = new ObservableCollection<Soldier>(division.Soldiers);
         this.NumSoldiers = division.NumSoldiers;
 
         this.DivisionId = division.DivisionId;
         this.TeamId = division.TeamId;
+
+        OrderSystem = new MultiOrder(this, DivisionId, "division order queues", new List<Order>(), false);
+        this.OrderSystem.OngoingOrder = division.OrderSystem.OngoingOrder;
 
         this.Name = "Division " + DivisionId;
         this.Controller = controller;
@@ -91,9 +88,8 @@ public class Division : IEquatable<Division>
 
         this.PossibleOrders = new List<Order>();
         this.Subordinates = new HashSet<int>();
-        this.OrderQueue = new List<Order>();
-        this.BackgroundOrderList = new List<Order>();
         this.Soldiers = new ObservableCollection<Soldier>();
+
         Init(controller);
         this.Soldiers.CollectionChanged += OnSoldiersChanged;
 
@@ -108,8 +104,8 @@ public class Division : IEquatable<Division>
 
         this.Name = "Division " + DivisionId;
         this.Controller = controller;
-        this.OngoingOrder = new EmptyOrder();
-        //SetupOrders();
+        this.OrderSystem = new MultiOrder(this, DivisionId, "division order queues", new List<Order>(), false);
+        this.OrderSystem.OngoingOrder = new EmptyOrder();
     }
 
     #endregion

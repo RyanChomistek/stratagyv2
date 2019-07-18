@@ -11,7 +11,7 @@ public class RememberedDivision : Division
     public Vector3 PredictedPosition {
         get
         {
-            return OngoingOrder.GetPredictedPosition(this);
+            return OrderSystem.GetPredictedPosition(this);
         }
     }
     
@@ -60,6 +60,6 @@ public class RememberedDivision : Division
             str += remembered + ", ";
         }
         
-        return $"({DivisionId}, {OngoingOrder}, <{str}>, {TimeStamp}, {HasBeenDestroyed})";
+        return $"({DivisionId}, {OrderSystem}, <{str}>, {TimeStamp}, {HasBeenDestroyed})";
     }
 }

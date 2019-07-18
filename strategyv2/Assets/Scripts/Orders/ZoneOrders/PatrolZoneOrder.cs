@@ -9,20 +9,24 @@ public class PatrolZoneOrder : ZoneOrder
     {
     }
 
-    protected override void StartNextOrder(ControlledDivision Host)
+    protected override bool TryStartNextOrder(ControlledDivision Host)
     {
-        base.StartNextOrder(Host);
+        base.TryStartNextOrder(Host);
         if (Host.Zones.TryGetValue(AssignedZoneId, out Zone AssignedZone))
         {
             //pick a random point in the zone 
             Vector3 nextPoint = AssignedZone.GetRandomPoint();
             //go there
-            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, nextPoint, .5f));
+            this.OrderQueue.Add(new Move(Host, CommanderSendingOrderId, nextPoint, .5f));
         }
         else
         {
+            Debug.Log("patroll canceled because invalid zone");
             Canceled = true;
+            return false;
         }
+
+        return true;
     }
 
     public override void OnZoneSelected(Division Host, PlayerController playerController, Zone zone)

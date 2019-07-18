@@ -25,7 +25,7 @@ public class FindDivision : MultiOrder
     
     public override void Proceed(ControlledDivision Host)
     {
-        if(SubOrders.Count == 0)
+        if(OrderQueue.Count == 0)
             AddMoveToTarget(Host);
         base.Proceed(Host);
     }
@@ -49,13 +49,13 @@ public class FindDivision : MultiOrder
             }
             else
             {
-                this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition, _thresholdDistance * .5f));
+                this.OrderQueue.Add(new Move(Host, CommanderSendingOrderId, rememberedTarget.PredictedPosition, _thresholdDistance * .5f));
             }
         }
         else
         {
             //add wait order to wait until we find the remembered division
-            this.SubOrders.Add(new WaitOrder(Host, CommanderSendingOrderId, .1f));
+            this.OrderQueue.Add(new WaitOrder(Host, CommanderSendingOrderId, .1f));
         }
     }
     

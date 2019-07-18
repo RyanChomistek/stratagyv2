@@ -25,7 +25,7 @@ public class ZoneOrder : MultiOrder
 
         if (Host.Zones.TryGetValue(AssignedZoneId, out Zone AssignedZone))
         {
-            this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, AssignedZone.BoundingBoxes[0].center, Host.MaxSightDistance));
+            this.OrderQueue.Add(new Move(Host, CommanderSendingOrderId, AssignedZone.BoundingBoxes[0].center, Host.MaxSightDistance));
         }
     }
 

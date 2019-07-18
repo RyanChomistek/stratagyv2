@@ -10,8 +10,8 @@ public class AIControlledDivision : ControlledDivision
     }
 
     //just randomly moves for now
-    protected override void OnEmptyOrder()
-    {
+    //public override void OnEmptyOrder()
+    //{
         /*
         //move to random spot
         var finish = Controller.transform.position + new Vector3(Random.value * 10 - 5, Random.value * 10 - 5);
@@ -19,5 +19,5 @@ public class AIControlledDivision : ControlledDivision
         RememberedDivision rememberedThis = new RememberedDivision(this);
         rememberedThis.SendOrderTo(rememberedThis, new Move(this, DivisionId, finish), ref RememberedDivisions);
         */
-    }
+    //}
 }

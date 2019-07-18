@@ -54,8 +54,8 @@ public class DivisionController : BaseDivisionController {
         //AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
         //AttachedDivision.UseSupply();
         FindVisibleDivisions();
-        AttachedDivision.DoOrders();
-        AttachedDivision.DoBackgroundOrders();
+        AttachedDivision.OrderSystem.DoOrders(AttachedDivision);
+        AttachedDivision.OrderSystem.DoBackgroundOrders(AttachedDivision);
         AttachedDivision.CheckRefresh();
         //AttachedDivision.RecalculateAggrigateValues();
         //SightCollider.radius = AttachedDivision.MaxSightDistance;

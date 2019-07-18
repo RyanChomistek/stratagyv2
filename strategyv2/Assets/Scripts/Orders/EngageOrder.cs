@@ -12,25 +12,20 @@ public class EngageOrder : MultiOrder
         : base(controller, commanderSendingOrderId, "Engage", new List<Order>())
     {
         this.RememberedTargetId = rememberedTargetId;
-        AddFindTarget(controller);
     }
 
-    private void AddFindTarget(Division Host)
+    protected override bool TryStartNextOrder(ControlledDivision Host)
     {
-        this.SubOrders.Add(new FindDivision(Host, CommanderSendingOrderId, RememberedTargetId, Host.MaxSightDistance));
-    }
-
-    protected override void StartNextOrder(ControlledDivision Host)
-    {
-        base.StartNextOrder(Host);
+        //base.TryStartNextOrder(Host);
 
         var rememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
 
         //if the target has been destroyed do nothing and to end the order
         if(rememberedTarget.HasBeenDestroyed)
         {
-            OngoingOrder = null;
-            return;
+            OngoingOrder = new EmptyOrder();
+            Canceled = true;
+            return false;
         }
 
         if (Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
@@ -41,20 +36,22 @@ public class EngageOrder : MultiOrder
             if (distanceToTarget > Host.MaxHitRange)
             {
                 Debug.Log(Host.MaxHitRange * .5f);
-                this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, division.Position, Host.MaxHitRange * .5f));
+                StartOrder(Host, new Move(Host, CommanderSendingOrderId, division.Position, Host.MaxHitRange * .5f));
             }
             else
             {
                 //if the target is within range attack
-                this.SubOrders.Add(new AttackOrder(Host, CommanderSendingOrderId, division.DivisionId, Host.MaxHitRange));
+                StartOrder(Host, new AttackOrder(Host, CommanderSendingOrderId, division.DivisionId, Host.MaxHitRange));
             }
         }
         else
         {
             //else go find him again
             Debug.Log("not visible");
-            AddFindTarget(Host);
+            StartOrder(Host, new FindDivision(Host, CommanderSendingOrderId, RememberedTargetId, Host.MaxSightDistance));
         }
+
+        return true;
     }
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)

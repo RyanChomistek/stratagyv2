@@ -19,7 +19,7 @@ public class RememberedDivisionControllerEditor : CustomEditorBase
 
         if (GUILayout.Button("print order details"))
         {
-            Debug.Log(myTarget.AttachedDivision.OngoingOrder.ToString());
+            Debug.Log(myTarget.AttachedDivision.OrderSystem.OngoingOrder.ToString());
         }
 
         if (GUILayout.Button("print predicted location"))
