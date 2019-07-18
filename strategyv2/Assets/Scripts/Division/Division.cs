@@ -77,6 +77,7 @@ public class Division : IEquatable<Division>
         this.Controller = controller;
 
         this.Zones = division.Zones;
+        this.IsMessenger = division.IsMessenger;
 
         SetupModifiers();
         RecalculateAggrigateValues();
