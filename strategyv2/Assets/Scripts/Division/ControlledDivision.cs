@@ -194,7 +194,7 @@ public class ControlledDivision : Division
     private void FixCommanders(ControlledDivision other)
     {
         //if they are on seperate command trees join them
-        if(this.Commander == this.DivisionId && other.Commander == other.DivisionId)
+        if(AreSameTeam(this,other) && this.Commander == this.DivisionId && other.Commander == other.DivisionId)
         {
             if(this.NumSoldiers > other.NumSoldiers)
             {
@@ -218,7 +218,7 @@ public class ControlledDivision : Division
             UpdateRememberedDivision(new RememberedDivision(VisibleDivisions[key]));
 
             //only share info with same team
-            if (VisibleDivisions[key].Controller.Controller.TeamId == Controller.Controller.TeamId)
+            if (AreSameTeam(VisibleDivisions[key], this))
             {
                 var rememberedDivisionKeys = VisibleDivisions[key].RememberedDivisions.Keys.ToList();
                 //foreach (var kvp in VisibleDivisions[key].RememberedDivisions)

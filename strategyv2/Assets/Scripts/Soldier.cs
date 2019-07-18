@@ -26,7 +26,7 @@ public class CombatResult
 
 public enum SoldierType
 {
-    Melee, Ranged, Seige
+    Officer, Melee, Ranged, Seige
 }
 
 [System.Serializable]

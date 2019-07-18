@@ -503,6 +503,11 @@ public class Division : IEquatable<Division>
         Zones.Add(zone.id, zone);
     }
 
+    static public bool AreSameTeam(Division d1, Division d2)
+    {
+        return d1.TeamId == d2.TeamId;
+    }
+
     public override string ToString()
     {
         return $"({DivisionId}, {Commander})";

@@ -11,11 +11,15 @@ public class DivisionControllerDebugStartup : MonoBehaviour
     {
         if (GameManager.DEBUG)
         {
+            Officer officer = new Officer();
+            officer.Type = SoldierType.Officer;
+            Controller.AttachedDivision.Soldiers.Add(officer);
+
             for (int i = 0; i < NumSoldiers; i++)
             {
 
                 Soldier random = new Soldier();
-                int value = Mathf.RoundToInt(Random.Range(0, 2.5f));
+                int value = Mathf.RoundToInt(Random.Range(1, 3.5f));
                 random.Type = (SoldierType)value;
                 Controller.AttachedDivision.Soldiers.Add(random);
             }
