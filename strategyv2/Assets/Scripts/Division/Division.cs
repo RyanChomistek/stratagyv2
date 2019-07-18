@@ -75,6 +75,9 @@ public class Division : IEquatable<Division>
 
         this.Name = "Division " + DivisionId;
         this.Controller = controller;
+
+        this.Zones = division.Zones;
+
         SetupModifiers();
         RecalculateAggrigateValues();
         this.Soldiers.CollectionChanged += OnSoldiersChanged;

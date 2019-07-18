@@ -488,12 +488,16 @@ public class ControlledDivision : Division
             SendMessengerToAllSubordinates(new List<Order>() { new ShareZoneInfoOrder(this, this.DivisionId, ConvertZonesToList()) }, true );
         }
 
+        Debug.Log($"{Name} zone size after sending {Zones.Count}");
+
         return changed;
     }
 
     public override void AddZone(Zone zone)
     {
         base.AddZone(zone);
+        
         SendMessengerToAllSubordinates(new List<Order>() { new ShareZoneInfoOrder(this, this.DivisionId, ConvertZonesToList()) }, true);
+        Debug.Log($"Adding zone {Name} {zone.id} | {Zones.Count}");
     }
 }

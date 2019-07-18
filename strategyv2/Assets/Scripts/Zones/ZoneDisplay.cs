@@ -97,7 +97,7 @@ public class ZoneDisplay : MonoBehaviour
         List<Vector2> uv = new List<Vector2>();
         HashSet<Edge> Edges = new HashSet<Edge>();
         Dictionary<Vector3, int> vertPositionMap = new Dictionary<Vector3, int>();
-        Dictionary<Vector3, List<Edge>> edgesIntoPoint = new Dictionary<Vector3, List<Edge>>();
+        Dictionary<Vector3, HashSet<Edge>> edgesIntoPoint = new Dictionary<Vector3, HashSet<Edge>>();
         List<List<Vector3>> OrderedEdgeVerts = new List<List<Vector3>>();
 
         CreateMeshesHelper(DisplayedZone.BoundingBoxes, ref verts, ref vertPositionMap, ref Edges, ref edgesIntoPoint, ref OrderedEdgeVerts, ref tri, ref normals, ref uv);
@@ -117,7 +117,7 @@ public class ZoneDisplay : MonoBehaviour
         ref List<Vector3> verts, 
         ref Dictionary<Vector3, int> vertPositionMap,
         ref HashSet<Edge> Edges, 
-        ref Dictionary<Vector3, List<Edge>> edgesIntoPoint,
+        ref Dictionary<Vector3, HashSet<Edge>> edgesIntoPoint,
         ref List<List<Vector3>> OrderedEdgeVerts,
         ref List<int> tri, ref List<Vector3> normals, ref List<Vector2> uv)
     {
@@ -175,12 +175,14 @@ public class ZoneDisplay : MonoBehaviour
                 edgeVertsSet.Add(position);
             }
         }
-
+        
         //get edgeloops
         while (edgeVertsSet.Count > 0)
         {
             OrderedEdgeVerts.Add(FindEdgeLoop(ref edgeVertsSet, ref Edges, ref edgesIntoPoint));
         }
+
+        Debug.Log(OrderedEdgeVerts.Count);
     }
 
     /// <summary>
@@ -190,12 +192,15 @@ public class ZoneDisplay : MonoBehaviour
     /// <param name="edges"></param>
     /// <param name="edgesIntoPoint"></param>
     /// <returns></returns>
-    static public List<Vector3> FindEdgeLoop(ref HashSet<Vector3> edgeVertsSet, ref HashSet<Edge> edges, ref Dictionary<Vector3, List<Edge>> edgesIntoPoint)
+    static public List<Vector3> FindEdgeLoop(ref HashSet<Vector3> edgeVertsSet,
+        ref HashSet<Edge> edges,
+        ref Dictionary<Vector3, HashSet<Edge>> edgesIntoPoint)
     {
         Vector3 currentVert = edgeVertsSet.First();
         var beginning = currentVert;
         List<Vector3> OrderedEdgeVerts = new List<Vector3>();
-        OrderedEdgeVerts.AddRange(FindEdgeLoopHelper(currentVert, new HashSet<Vector3>(edgeVertsSet), ref edges, ref edgesIntoPoint));
+        OrderedEdgeVerts.AddRange(FindEdgeLoopHelper(currentVert, currentVert, beginning,
+            new HashSet<Vector3>(edgeVertsSet), ref edges, ref edgesIntoPoint));
         foreach(Vector3 vert in OrderedEdgeVerts)
         {
             edgeVertsSet.Remove(vert);
@@ -214,95 +219,86 @@ public class ZoneDisplay : MonoBehaviour
     /// <param name="edges"></param>
     /// <param name="edgesIntoVert"></param>
     /// <returns></returns>
-    public static List<Vector3> FindEdgeLoopHelper(Vector3 currentVert, HashSet<Vector3> edgeVertsSet, ref HashSet<Edge> edges, ref Dictionary<Vector3, List<Edge>> edgesIntoVert)
+    public static List<Vector3> FindEdgeLoopHelper(Vector3 currentVert, Vector3 LastVert, Vector3 beginningVert,
+        HashSet<Vector3> edgeVertsSet, 
+        ref HashSet<Edge> edges, 
+        ref Dictionary<Vector3, HashSet<Edge>> edgesIntoVert)
     {
         List<Vector3> path = new List<Vector3>();
         path.Add(currentVert);
         edgeVertsSet.Remove(currentVert);
 
-        Edge edgeUp = new Edge(currentVert, currentVert + Vector3.up),
-            edgeRight = new Edge(currentVert, currentVert + Vector3.right),
-            edgeDown = new Edge(currentVert, currentVert + Vector3.down),
-            edgeLeft = new Edge(currentVert, currentVert + Vector3.left);
-
-        bool up = edgeVertsSet.Contains(currentVert + Vector3.up) && edges.Contains(edgeUp);
-        bool right = edgeVertsSet.Contains(currentVert + Vector3.right) && edges.Contains(edgeRight);
-        bool down = edgeVertsSet.Contains(currentVert + Vector3.down) && edges.Contains(edgeDown);
-        bool left = edgeVertsSet.Contains(currentVert + Vector3.left) && edges.Contains(edgeLeft);
-        
-        List<Vector3> options = new List<Vector3>();
-
-        //find the possible next moves
-        if (up || right || left || down)
-        {
-            if (up)
-            {
-                options.Add(currentVert + Vector3.up);
-            }
-
-            if (right)
-            {
-                options.Add(currentVert + Vector3.right);
-            }
-
-            if (down)
-            {
-                options.Add(currentVert + Vector3.down);
-            }
-
-            if (left)
-            {
-                options.Add(currentVert + Vector3.left);
-            }
-        }
-
-        //if we have no options return back
-        if(options.Count == 0)
-        {
-            return path;
-        }
-
         //find edgeNormal, sum all other incident edges on this vert and normalize
         Vector3 edgeNormal = Vector3.zero;
-        List<Edge> incidentEdges = edgesIntoVert[currentVert];
+        HashSet<Edge> incidentEdges = edgesIntoVert[currentVert];
 
-        foreach(var edge in incidentEdges)
+        foreach (var edge in incidentEdges)
         {
             edgeNormal += edge.GetDisplacement();
         }
 
         edgeNormal = edgeNormal.normalized;
 
+        List<Vector3> potentialOptions = new List<Vector3>() { currentVert + Vector3.up, currentVert + Vector3.right, currentVert + Vector3.down, currentVert + Vector3.left};
+        List<Vector3> options = new List<Vector3>();
         float smallestAngle = 360;
-        Vector3 bestOption = options[0];
-        //find the edge that has the smallest angle to edge normal
-        //this works in every case except when theres two one by one holes next to each other
-        //like this HXH, will result in a like like this H_H not sure how to fix but doesnt seem too bad of a problem
-        foreach(var nextVert in options)
+        Vector3 bestOption = potentialOptions[0];
+
+        for (int i =0; i < potentialOptions.Count; i++)
         {
-            float angle = Vector3.Angle(edgeNormal, nextVert - currentVert);
-            if (angle < smallestAngle)
+            Vector3 option = potentialOptions[i];
+            Edge edge = new Edge(currentVert, option);
+            float angle = Vector3.Angle(edgeNormal, option - currentVert);
+
+            //always choose to go back to beginning if available
+            if(LastVert != beginningVert && option == beginningVert)
             {
-                bestOption = nextVert;
-                smallestAngle = angle;
+                //dont add beginning because that will be handled by caller
+                return path;
+            }
+
+            if (edgeVertsSet.Contains(option) && edges.Contains(edge) && Mathf.Abs(angle) < 140)
+            {
+                options.Add(option);
+                if (angle < smallestAngle)
+                {
+                    bestOption = option;
+                    smallestAngle = angle;
+                }
             }
         }
+
+        //if we have no options return back
+        if (options.Count == 0)
+        {
+            return path;
+        }
         
-        List<Vector3> subpath = FindEdgeLoopHelper(bestOption, edgeVertsSet, ref edges, ref edgesIntoVert);
+        List<Vector3> subpath = FindEdgeLoopHelper(bestOption, currentVert, beginningVert, edgeVertsSet, ref edges, ref edgesIntoVert);
         path.AddRange(subpath);
 
         return path;
     }
 
-    private static void AddEdgeToMap(Vector3 vert, Edge edge, ref HashSet<Edge> Edges, ref Dictionary<Vector3, List<Edge>> edgesIntoPoint)
+    private static void AddEdgeToMap(Vector3 vert, Edge edge, ref HashSet<Edge> Edges, ref Dictionary<Vector3, HashSet<Edge>> edgesIntoPoint)
     {
         if(!edgesIntoPoint.ContainsKey(vert))
         {
-            edgesIntoPoint[vert] = new List<Edge>();
+            edgesIntoPoint[vert] = new HashSet<Edge>();
         }
 
         edgesIntoPoint[vert].Add(edge);
         Edges.Add(edge);
+    }
+
+    private static void AddEdgeToMap(Vector3 vert, Edge edge, ref Dictionary<Vector3, HashSet<Edge>> edgesIntoPoint)
+    {
+        if (!edgesIntoPoint.ContainsKey(vert))
+        {
+            edgesIntoPoint[vert] = new HashSet<Edge>();
+        }
+
+        edgesIntoPoint[vert].Add(edge);
     }
 
     /// <summary>
@@ -362,7 +358,7 @@ public class ZoneDisplay : MonoBehaviour
         ref Dictionary<Vector3, int> vertPositionMap,
         ref List<Vector3> vertices,
         ref HashSet<Edge> Edges,
-        ref Dictionary<Vector3, List<Edge>> edgesIntoPoint,
+        ref Dictionary<Vector3, HashSet<Edge>> edgesIntoPoint,
         ref List<int> tri,
         ref List<Vector3> normals,
         ref List<Vector2> uv)

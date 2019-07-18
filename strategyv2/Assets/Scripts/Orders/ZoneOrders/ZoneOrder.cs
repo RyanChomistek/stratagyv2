@@ -4,19 +4,26 @@ using UnityEngine;
 
 public class ZoneOrder : MultiOrder
 {
-    public Zone AssignedZone;
+    public int AssignedZoneId;
     protected LocalPlayerController.ZoneSelectDelegate UICallback;
 
     public ZoneOrder(Division controller, int commanderSendingOrderId, Zone zone, string name = "Zone")
         : base(controller, commanderSendingOrderId, name, new List<Order>())
     {
-        AssignedZone = zone;
-        MoveToZone(controller);
+        if (zone != null)
+        {
+            AssignedZoneId = zone.id;
+            MoveToZone(controller);
+        }
     }
 
     private void MoveToZone(Division Host)
     {
-        if (AssignedZone != null)
+        Debug.Log($"{Host.Name} moving to zone {AssignedZoneId}");
+
+        
+
+        if (Host.Zones.TryGetValue(AssignedZoneId, out Zone AssignedZone))
         {
             this.SubOrders.Add(new Move(Host, CommanderSendingOrderId, AssignedZone.BoundingBoxes[0].center, Host.MaxSightDistance));
         }
@@ -34,7 +41,8 @@ public class ZoneOrder : MultiOrder
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterZoneSelectCallback(UICallback);
         OrderDisplayManager.Instance.ClearOrders();
-
+        Debug.Log("zone" + " " +zone);
+        Debug.Log($"{Host.Zones.Count}");
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host),
             new ZoneOrder(Host, CommanderSendingOrder.DivisionId, zone), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
     }
