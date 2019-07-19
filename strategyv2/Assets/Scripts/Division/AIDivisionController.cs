@@ -11,6 +11,5 @@ public class AIDivisionController : DivisionController
     {
         InitAwake();
         base.AttachedDivision = new AIControlledDivision(base.AttachedDivision.TeamId, this);
-        AttachedDivision.Init(this);
     }
 }

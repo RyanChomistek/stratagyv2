@@ -1256,6 +1256,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
+      propertyPath: Controller
+      value: 
+      objectReference: {fileID: 592116456}
+    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
+      propertyPath: AttachedDivision.TeamId
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
+      propertyPath: AttachedDivision.Commander
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 4331171978721746637, guid: 57675555e02d79b419571897d6e1c239,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1310,18 +1322,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
-      propertyPath: Controller
-      value: 
-      objectReference: {fileID: 592116456}
-    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
-      propertyPath: AttachedDivision.TeamId
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
-      propertyPath: AttachedDivision.Commander
-      value: -1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57675555e02d79b419571897d6e1c239, type: 3}
@@ -3157,8 +3157,12 @@ PrefabInstance:
     - target: {fileID: 4574684478244263188, guid: 57675555e02d79b419571897d6e1c239,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
+      propertyPath: Controller
+      value: 
+      objectReference: {fileID: 592116456}
     - target: {fileID: 4331171978721746637, guid: 57675555e02d79b419571897d6e1c239,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3214,10 +3218,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
-      propertyPath: Controller
-      value: 
-      objectReference: {fileID: 592116456}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57675555e02d79b419571897d6e1c239, type: 3}
 --- !u!1 &999951950
@@ -3356,8 +3356,12 @@ PrefabInstance:
     - target: {fileID: 4574684478244263188, guid: 57675555e02d79b419571897d6e1c239,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
+      propertyPath: Controller
+      value: 
+      objectReference: {fileID: 592116456}
     - target: {fileID: 4331171978721746637, guid: 57675555e02d79b419571897d6e1c239,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3413,10 +3417,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2016376229, guid: 57675555e02d79b419571897d6e1c239, type: 3}
-      propertyPath: Controller
-      value: 
-      objectReference: {fileID: 592116456}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57675555e02d79b419571897d6e1c239, type: 3}
 --- !u!1 &1134612844
@@ -96895,7 +96895,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Controller: {fileID: 4904470737461096126}
-  NumSoldiers: 25
+  NumSoldiers: 5
 --- !u!1001 &6572722019586633422
 PrefabInstance:
   m_ObjectHideFlags: 0

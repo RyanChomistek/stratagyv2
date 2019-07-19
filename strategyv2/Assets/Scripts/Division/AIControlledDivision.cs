@@ -7,6 +7,7 @@ public class AIControlledDivision : ControlledDivision
     public AIControlledDivision(int teamId = -1, DivisionController controller = null)
         : base(teamId, controller)
     {
+        ReceiveOrder(new AIOrder(this, DivisionId));
     }
 
     //just randomly moves for now

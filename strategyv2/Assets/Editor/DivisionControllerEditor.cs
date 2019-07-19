@@ -57,8 +57,15 @@ public class DivisionControllerEditor : CustomEditorBase
         if (GUILayout.Button("print orders"))
         {
             string str = "orders : ";
-            str += myTarget.AttachedDivision.OrderSystem.OngoingOrder?.ToString() + " | ";
+            str += myTarget.AttachedDivision.OrderSystem.OngoingOrder?.ToString() + " :: ";
             foreach (Order order in myTarget.AttachedDivision.OrderSystem.OrderQueue)
+            {
+                str += order.ToString() + " | ";
+            }
+
+            str += "||";
+
+            foreach (Order order in myTarget.AttachedDivision.OrderSystem.BackgroundOrderList)
             {
                 str += order.ToString() + " | ";
             }

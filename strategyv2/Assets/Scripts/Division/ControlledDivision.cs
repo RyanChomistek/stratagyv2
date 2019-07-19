@@ -13,6 +13,8 @@ public class ControlledDivision : Division
 
     public Action<ControlledDivision> OnDiscoveredMapChanged;
 
+    public Action<List<ControlledDivision>> OnEnemiesSeen;
+
     public override Vector3 Position { get { return Controller.transform.position; } }
 
     public ControlledDivision(Division division, DivisionController controller = null)
@@ -182,13 +184,23 @@ public class ControlledDivision : Division
     public void RefreshVisibleDivisions(List<DivisionController> visibleControllers)
     {
         VisibleDivisions.Clear();
+        List<ControlledDivision> enemies = new List<ControlledDivision>();
         foreach (var controller in visibleControllers)
         {
             VisibleDivisions.Add(controller.AttachedDivision.DivisionId, controller.AttachedDivision);
             FixCommanders(controller.AttachedDivision);
+            if(!AreSameTeam(this, controller.AttachedDivision))
+            {
+                enemies.Add(controller.AttachedDivision);
+            }
         }
 
         RefreshRememberedDivisionsFromVisibleDivisions();
+
+        if(enemies.Count > 0)
+        {
+            OnEnemiesSeen?.Invoke(enemies);
+        }
     }
 
     private void FixCommanders(ControlledDivision other)
@@ -289,106 +301,6 @@ public class ControlledDivision : Division
             new RememberedDivision(this),
             new UseSuppliesOrder(this, DivisionId), ref RememberedDivisions);
     }
-    /* TODO use a multi order here
-    public void DoOrders()
-    {
-        if(OngoingOrder.Canceled)
-        {
-            OngoingOrder.End(this);
-            TryStartNextOrder();
-        }
-        else if (GameManager.Instance.IsPaused)
-        {
-            OngoingOrder.Pause(this);
-        }
-        else if (OngoingOrder.GetType() != typeof(EmptyOrder))
-        {
-            //if we are finished stop
-            if (OngoingOrder.TestIfFinished(this))
-            {
-                OngoingOrder.End(this);
-                OngoingOrder = new EmptyOrder();
-                OnChange();
-            }
-            else
-            {
-                ContinueOrder();
-            }
-        }
-        //grab a new order
-        else if (TryStartNextOrder())
-        {}
-    }
-
-    private bool TryStartNextOrder()
-    {
-        if (OrderQueue.Count > 0)
-        {
-            OngoingOrder = OrderQueue[0];
-            OrderQueue.RemoveAt(0);
-            OngoingOrder.Start(this);
-            ContinueOrder();
-            OnChange();
-            return true;
-        }
-
-        if(!(OngoingOrder is EmptyOrder))
-            OngoingOrder = new EmptyOrder();
-
-        OnEmptyOrder();
-        return false;
-    }
-
-    //in a normal controlled division this will do nothing, but the ai controller will override
-    virtual public void OnEmptyOrder()
-    {
-    }
-
-    public void DoBackgroundOrders()
-    {
-        if (GameManager.Instance.IsPaused)
-        {
-            BackgroundOrderList.ForEach(x => x.Pause(this));
-        }
-        else
-        {
-            for (int i = 0; i < BackgroundOrderList.Count; i++)
-            {
-                var order = BackgroundOrderList[i];
-
-                if(order.Canceled)
-                {
-                    order.End(this);
-                    BackgroundOrderList.RemoveAt(i);
-                    i--;
-                    OnChange();
-                }
-
-                if (!order.HasStarted)
-                {
-                    order.Start(this);
-                    OnChange();
-                }
-
-                order.Proceed(this);
-
-                if (order.TestIfFinished(this))
-                {
-                    order.End(this);
-                    BackgroundOrderList.RemoveAt(i);
-                    i--;
-                    OnChange();
-                }
-            }
-        }
-    }
-
-    private void ContinueOrder()
-    {
-        OngoingOrder.Proceed(this);
-    }
-
-    */
 
     public void ReceiveOrder(Order order)
     {
@@ -481,5 +393,15 @@ public class ControlledDivision : Division
         
         SendMessengerToAllSubordinates(new List<Order>() { new ShareZoneInfoOrder(this, this.DivisionId, ConvertZonesToList()) }, true);
         Debug.Log($"Adding zone {Name} {zone.id} | {Zones.Count}");
+    }
+
+    public void RegisterOnEnemiesSeenCallback(Action<List<ControlledDivision>> callback)
+    {
+        OnEnemiesSeen += callback;
+    }
+
+    public void UnRegisterOnEnemiesSeenCallback(Action<List<ControlledDivision>> callback)
+    {
+        OnEnemiesSeen -= callback;
     }
 }

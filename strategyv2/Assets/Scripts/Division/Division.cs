@@ -504,6 +504,41 @@ public class Division : IEquatable<Division>
         return d1.TeamId == d2.TeamId;
     }
 
+    static private float CalculateDamageStatistic(Division d)
+    {
+        float damage = 0;
+        float range = 0;
+        foreach(Soldier soldier in d.Soldiers)
+        {
+            damage += soldier.HitStrength;
+            range += soldier.MaxRange;
+        }
+
+        return damage * range;
+    }
+
+    /// <summary>
+    /// returns the probability of d1 winning combat against d2
+    /// </summary>
+    /// <param name="d1"></param>
+    /// <param name="d2"></param>
+    /// <returns>probability of d1 winning combat against d2</returns>
+    static public float PredictCombatResult(Division d1, Division d2)
+    {
+        return CalculateDamageStatistic(d1) / CalculateDamageStatistic(d2);
+    }
+
+    /// <summary>
+    /// returns the probability of d1 winning combat against d2
+    /// </summary>
+    /// <param name="d1"></param>
+    /// <param name="d2"></param>
+    /// <returns>probability of d1 winning combat against d2</returns>
+    static public float PredictCombatResult(Division d1, List<Division> enemies)
+    {
+        return CalculateDamageStatistic(d1) / enemies.Sum(x => CalculateDamageStatistic(x));
+    }
+
     public override string ToString()
     {
         return $"({DivisionId}, {Commander})";
