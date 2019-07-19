@@ -31,15 +31,6 @@ public class MultiOrder : Order
 
     public override void Proceed(ControlledDivision Host)
     {
-        /*
-        OngoingOrder.Proceed(Host);
-        if(OngoingOrder.TestIfFinished(Host))
-        {
-            OngoingOrder.End(Host);
-            OngoingOrder = null;
-            StartNextOrder(Host);
-        }
-        */
         DoOrders(Host);
         DoBackgroundOrders(Host);
     }
