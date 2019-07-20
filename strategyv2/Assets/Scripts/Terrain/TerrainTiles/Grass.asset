@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Grass
   m_EditorClassIdentifier: 
   tile:
-    Supply: 50
+    Supply: 25
     MaxSupply: 200
     _supplyGrowthRate: 0.02
     _supplySpreadRate: 0.02
-    Population: 50
-    MaxPopulation: 200
-    _populationGrowthRate: 0.02
+    Population: 25
+    MaxPopulation: 100
+    _populationGrowthRate: 0.01
     _populationSpreadRate: 0.02
     MoveCost: 2500
     TerrainType: 1

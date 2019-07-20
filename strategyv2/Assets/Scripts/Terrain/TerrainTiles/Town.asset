@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: Town
   m_EditorClassIdentifier: 
   tile:
-    Supply: 50
+    Supply: 75
     MaxSupply: 200
-    _supplyGrowthRate: 0.02
-    _supplySpreadRate: 0.02
-    Population: 50
-    MaxPopulation: 200
-    _populationGrowthRate: 0.02
-    _populationSpreadRate: 0.02
+    _supplyGrowthRate: 0.04
+    _supplySpreadRate: 0.1
+    Population: 100
+    MaxPopulation: 500
+    _populationGrowthRate: 0.1
+    _populationSpreadRate: 0.05
     MoveCost: 2500
     TerrainType: 5
     tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}

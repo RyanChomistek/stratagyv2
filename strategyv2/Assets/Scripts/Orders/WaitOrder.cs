@@ -19,6 +19,6 @@ public class WaitOrder : Order
 
     public override bool TestIfFinished(ControlledDivision Host)
     {
-        return TimeRemaining > 0;
+        return TimeRemaining < 0;
     }
 }

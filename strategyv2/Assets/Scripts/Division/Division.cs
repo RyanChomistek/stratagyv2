@@ -34,6 +34,8 @@ public class Division : IEquatable<Division>
 
     public virtual Vector3 Position { get; set; }
 
+    public bool[,] discoveredMapLocations;
+
     //calculated values
     public float Speed = 10;
     public float MaxSightDistance = 0;
@@ -537,6 +539,71 @@ public class Division : IEquatable<Division>
     static public float PredictCombatResult(Division d1, List<Division> enemies)
     {
         return CalculateDamageStatistic(d1) / enemies.Sum(x => CalculateDamageStatistic(x));
+    }
+
+    private bool MatchPred(Func<MapTerrainTile, bool> pred, int x, int y, out Vector3 foundPosition)
+    {
+        if (MapManager.InBounds(MapManager.Instance.map, x, y))
+        {
+            //Debug.Log($"{x},{y} in bounds | {discoveredMapLocations[x, y]}");
+            MapTerrainTile left = MapManager.Instance.map[x, y];
+            if (discoveredMapLocations[x, y] && pred(left))
+            {
+                foundPosition = new Vector3(x, y);
+                return true;
+            }
+        }
+
+        foundPosition = new Vector3(-1, -1);
+        return false;
+    }
+
+    public bool TryFindKnownTileMatchingPred(Func<MapTerrainTile, bool> pred, out Vector3 foundPosition)
+    {
+        HashSet<Vector3> checkedPositions = new HashSet<Vector3>();
+        Vector2Int tilePos = MapManager.Instance.GetTilePositionFromPosition(Position);
+        //MapManager.Instance.map.GetUpperBound(0)
+        for (int boxSize = 1; boxSize <= 10; boxSize++)
+        {
+            List<int> xPositions = new List<int>();
+            List<int> yPositions = new List<int>();
+
+            int xLeft = -boxSize + tilePos.x;
+            int xRight = boxSize + tilePos.x;
+
+            int yBottom = -boxSize + tilePos.y;
+            int yTop = boxSize + tilePos.y;
+
+            //check edges
+            for (int i = -boxSize; i <= boxSize; i++)
+            {
+                int y = i + tilePos.y;
+                int x = i + tilePos.x;
+
+                if (MatchPred(pred, xLeft, y, out foundPosition))
+                {
+                    return true;
+                }
+
+                if (MatchPred(pred, xRight, y, out foundPosition))
+                {
+                    return true;
+                }
+
+                if (MatchPred(pred, x, yBottom, out foundPosition))
+                {
+                    return true;
+                }
+
+                if (MatchPred(pred, x, yTop, out foundPosition))
+                {
+                    return true;
+                }
+            }
+        }
+
+        foundPosition = new Vector3(-1, -1);
+        return false;
     }
 
     public override string ToString()

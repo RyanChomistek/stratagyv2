@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: River
   m_EditorClassIdentifier: 
   tile:
-    Supply: 50
-    MaxSupply: 200
+    Supply: 1
+    MaxSupply: 5
     _supplyGrowthRate: 0.02
     _supplySpreadRate: 0.02
-    Population: 50
-    MaxPopulation: 200
+    Population: 1
+    MaxPopulation: 5
     _populationGrowthRate: 0.02
     _populationSpreadRate: 0.02
-    MoveCost: 5000
+    MoveCost: 10000
     TerrainType: 3
     tile: {fileID: 11400000, guid: 3bac961e89a45b14ca43316c0409a0dd, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

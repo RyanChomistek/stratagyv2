@@ -17,8 +17,8 @@ MonoBehaviour:
   tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}
   randomSeed: 1
   seed: 0
-  iterations: 4
-  radius: 3
+  iterations: 10
+  radius: 5
   terrainTile: {fileID: 11400000, guid: 397b37f915f38be4bb1d45471e077c00, type: 2}
   IsEnabled: 1
   PerlinNoiseScale: 2.5

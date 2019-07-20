@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,8 +27,46 @@ public class AIOrder : MultiOrder
     {
         base.OnEmptyOrder(Host);
 
-        //Move randomly
-        Vector3 pos = Random.insideUnitCircle * 2;
+        /*
+        
+        */
+
+        //resupply if we need to
+
+        //recruit if we have nothing better to do
+        Recruit(Host);
+    }
+
+    public void Resupply()
+    {
+        //find closest supply dump
+    }
+
+    public void Recruit(ControlledDivision Host)
+    {
+        Func<MapTerrainTile, bool> findPopTile = tile => {
+            return tile.Population > 100;
+        };
+
+        Debug.Log($"trying to resupply");
+        //find closest populations
+        if (Host.TryFindKnownTileMatchingPred(findPopTile, out Vector3 foundPosition))
+        {
+            Debug.Log($"resupply position : {foundPosition}");
+            this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
+            // add the recruit to Host 
+            Host.ReceiveOrder(new RecruitOrder(Host, Host.DivisionId));
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 10));
+        }
+        else
+        {
+            RandomMove(Host);
+        }
+    }
+
+    public void RandomMove(ControlledDivision Host)
+    {
+        Vector3 pos = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(2,10);
         pos.z = 0;
         pos += Host.Position;
         StartOrder(Host, new Move(Host, Host.DivisionId, pos));
@@ -45,6 +84,9 @@ public class AIOrder : MultiOrder
         else
         {
             Debug.Log("RUN AWAY");
+            Vector3 delta = (Host.Position - enemies[0].Position) * 5;
+            Vector3 retreatPos = Host.Position + delta;
+            StartOrder(Host, new Move(Host, Host.DivisionId, retreatPos));
         }
         //descide whether to attack or not
 

@@ -9,8 +9,6 @@ public class ControlledDivision : Division
     public Dictionary<int, RememberedDivision> RememberedDivisions = new Dictionary<int, RememberedDivision>();
     public Dictionary<int, ControlledDivision> VisibleDivisions = new Dictionary<int, ControlledDivision>();
 
-    public bool[,] discoveredMapLocations;
-
     public Action<ControlledDivision> OnDiscoveredMapChanged;
 
     public Action<List<ControlledDivision>> OnEnemiesSeen;
@@ -304,16 +302,7 @@ public class ControlledDivision : Division
 
     public void ReceiveOrder(Order order)
     {
-        if (order.IsBackgroundOrder)
-        {
-            OrderSystem.BackgroundOrderList.Add(order);
-        }
-        else
-        {
-            OrderSystem.OrderQueue.Add(order);
-        }
-
-        OnChange();
+        OrderSystem.ReceiveOrder(this, order);
     }
 
     public void ReceiveOrders(List<Order> orders)

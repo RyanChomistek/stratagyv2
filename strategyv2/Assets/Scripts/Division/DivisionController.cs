@@ -37,9 +37,11 @@ public class DivisionController : BaseDivisionController {
             VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         });
         */
+        AttachedDivision.RefreshDiscoveredTiles();
         FindVisibleDivisions();
         RefreshVisibleDivisions();
         AttachedDivision.AddAutoRunBackgroundOrders();
+        
     }
 
     private void OnDestroy()

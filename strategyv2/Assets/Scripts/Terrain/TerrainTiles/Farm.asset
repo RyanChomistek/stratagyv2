@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Farm
   m_EditorClassIdentifier: 
   tile:
-    Supply: 50
-    MaxSupply: 200
-    _supplyGrowthRate: 0.02
-    _supplySpreadRate: 0.02
+    Supply: 100
+    MaxSupply: 500
+    _supplyGrowthRate: 0.1
+    _supplySpreadRate: 0.03
     Population: 50
     MaxPopulation: 200
     _populationGrowthRate: 0.02

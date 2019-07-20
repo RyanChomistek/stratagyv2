@@ -35,6 +35,32 @@ public class MultiOrder : Order
         DoBackgroundOrders(Host);
     }
 
+    public void ReceiveOrder(ControlledDivision Host, Order order)
+    {
+        if (order.IsBackgroundOrder)
+        {
+            //make sure theres no duplicates of this type of order
+            foreach(Order backgroundOrder in BackgroundOrderList)
+            {
+                if(order.GetType() == backgroundOrder.GetType())
+                {
+                    Debug.Log(order.GetType() + " " + backgroundOrder.GetType());
+                    //dup dont add
+                    Debug.Log("DUUUPPPPPPP");
+                    return;
+                }
+            }
+            var orderType = order.GetType();
+            BackgroundOrderList.Add(order);
+        }
+        else
+        {
+            OrderQueue.Add(order);
+        }
+
+        Host.OnChange();
+    }
+
     public void DoOrders(ControlledDivision Host)
     {
         if (OngoingOrder.Canceled)

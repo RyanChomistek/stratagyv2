@@ -20,6 +20,6 @@ MonoBehaviour:
   iterations: 1
   radius: 4
   terrainTile: {fileID: 11400000, guid: c12fda807e3951e40af7cff14033fd82, type: 2}
-  IsEnabled: 0
+  IsEnabled: 1
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.5
