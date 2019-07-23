@@ -35,7 +35,7 @@ public class MultiOrder : Order
         DoBackgroundOrders(Host);
     }
 
-    public void ReceiveOrder(ControlledDivision Host, Order order)
+    public virtual void ReceiveOrder(ControlledDivision Host, Order order)
     {
         if (order.IsBackgroundOrder)
         {
@@ -61,7 +61,7 @@ public class MultiOrder : Order
         Host.OnChange();
     }
 
-    public void DoOrders(ControlledDivision Host)
+    public virtual void DoOrders(ControlledDivision Host)
     {
         if (OngoingOrder.Canceled)
         {
@@ -91,9 +91,25 @@ public class MultiOrder : Order
         { }
     }
 
-    private void ContinueOrder(ControlledDivision Host)
+    protected virtual void ContinueOrder(ControlledDivision Host)
     {
+        Debug.Log(OngoingOrder);
         OngoingOrder.Proceed(Host);
+    }
+
+    /// <summary>
+    /// starts a new order
+    /// </summary>
+    /// <param name="Host"></param>
+    /// <param name="order"></param>
+    protected virtual void StartOrder(ControlledDivision Host, Order order)
+    {
+        OngoingOrder = order;
+        OngoingOrder.Start(Host);
+        //DOES not use continueOrder to proceed the order, this is because sub classes of multi use the continue order to start new orders and can cause infinite recursion
+        OngoingOrder.Proceed(Host);
+        Host.OnChange();
+        name = $"{_baseName} {OngoingOrder.name}";
     }
 
     protected virtual bool TryStartNextOrder(ControlledDivision Host)
@@ -113,17 +129,8 @@ public class MultiOrder : Order
         return false;
     }
 
-    protected virtual void StartOrder(ControlledDivision Host, Order order)
-    {
-        OngoingOrder = order;
-        OngoingOrder.Start(Host);
-        ContinueOrder(Host);
-        Host.OnChange();
-        name = $"{_baseName} {OngoingOrder.name}";
-    }
-
     //in a normal controlled division this will do nothing, but the ai controller will override
-    virtual public void OnEmptyOrder(ControlledDivision Host)
+    public virtual void OnEmptyOrder(ControlledDivision Host)
     {
         if (EndOnEmptyOrder)
         {
@@ -131,7 +138,7 @@ public class MultiOrder : Order
         }
     }
 
-    public void DoBackgroundOrders(ControlledDivision Host)
+    public virtual void DoBackgroundOrders(ControlledDivision Host)
     {
         if (GameManager.Instance.IsPaused)
         {

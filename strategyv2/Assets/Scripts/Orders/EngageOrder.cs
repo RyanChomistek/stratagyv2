@@ -9,23 +9,38 @@ public class EngageOrder : MultiOrder
     LocalPlayerController.UnitSelectDelegate UICallback;
 
     public EngageOrder(Division controller, int commanderSendingOrderId, int rememberedTargetId)
-        : base(controller, commanderSendingOrderId, "Engage", new List<Order>())
+        : base(controller, commanderSendingOrderId, "Engage", new List<Order>(), false)
     {
         this.RememberedTargetId = rememberedTargetId;
     }
 
-    protected override bool TryStartNextOrder(ControlledDivision Host)
+    public override void Start(ControlledDivision Host)
     {
-        //base.TryStartNextOrder(Host);
+        base.Start(Host);
+        EngageDivision(Host);
+    }
 
+    public override void Proceed(ControlledDivision Host)
+    {
+        base.Proceed(Host);
+    }
+
+    protected override void ContinueOrder(ControlledDivision Host)
+    {
+        EngageDivision(Host);
+        base.ContinueOrder(Host);
+    }
+
+    private void EngageDivision(ControlledDivision Host)
+    {
         var rememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
 
         //if the target has been destroyed do nothing and to end the order
-        if(rememberedTarget.HasBeenDestroyed)
+        if (rememberedTarget.HasBeenDestroyed)
         {
             OngoingOrder = new EmptyOrder();
             Canceled = true;
-            return false;
+            return;
         }
 
         if (Host.FindVisibleDivision(RememberedTargetId, out ControlledDivision division))
@@ -50,8 +65,6 @@ public class EngageOrder : MultiOrder
             Debug.Log("not visible");
             StartOrder(Host, new FindDivision(Host, CommanderSendingOrderId, RememberedTargetId, Host.MaxSightDistance));
         }
-
-        return true;
     }
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)
