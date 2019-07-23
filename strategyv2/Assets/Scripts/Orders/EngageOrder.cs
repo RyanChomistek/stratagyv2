@@ -50,7 +50,6 @@ public class EngageOrder : MultiOrder
             //need to move closer
             if (distanceToTarget > Host.MaxHitRange)
             {
-                Debug.Log(Host.MaxHitRange * .5f);
                 StartOrder(Host, new Move(Host, CommanderSendingOrderId, division.Position, Host.MaxHitRange * .5f));
             }
             else
@@ -62,7 +61,6 @@ public class EngageOrder : MultiOrder
         else
         {
             //else go find him again
-            Debug.Log("not visible");
             StartOrder(Host, new FindDivision(Host, CommanderSendingOrderId, RememberedTargetId, Host.MaxSightDistance));
         }
     }

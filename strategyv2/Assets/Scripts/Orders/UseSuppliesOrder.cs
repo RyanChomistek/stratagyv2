@@ -13,9 +13,10 @@ public class UseSuppliesOrder : TickingOrder
 
     public override void OnTick(ControlledDivision Host)
     {
+        Officer officer = Host.CommandingOfficer;
         foreach (var soldier in Host.Soldiers)
         {
-            soldier.UseSupply();
+            soldier.UseSupply(officer);
         }
 
         Host.RecalculateAggrigateValues();

@@ -9,7 +9,9 @@ public class DivisionController : BaseDivisionController {
 
     [SerializeField]
     public List<DivisionController> VisibleControllers = new List<DivisionController>();
-    
+
+    public bool Hide = false;
+
     void Awake ()
     {
         InitAwake();
@@ -63,7 +65,7 @@ public class DivisionController : BaseDivisionController {
         //SightCollider.radius = AttachedDivision.MaxSightDistance;
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
         
-        if (generalDivision == this || generalDivision.VisibleControllers.Contains(this))
+        if (generalDivision == this || generalDivision.VisibleControllers.Contains(this) || GameManager.DEBUG)
         {
             Display(true);
         }
@@ -113,7 +115,6 @@ public class DivisionController : BaseDivisionController {
                 }
             }
         }
-
     }
 
     public DivisionController CreateChild(List<Soldier> soldiersForChild)
@@ -122,8 +123,10 @@ public class DivisionController : BaseDivisionController {
         DivisionController newController = newDivision.GetComponent<DivisionController>();
         newController.transform.position = transform.position;
         newController.Controller = Controller;
+        newController.AttachedDivision.TeamId = Controller.TeamId;
         newController.AttachedDivision.Soldiers.Clear();
         newController.AttachedDivision.TransferSoldiers(soldiersForChild);
+        newController.AttachedDivision.PromoteOfficer();
         newController.AttachedDivision.Commander = AttachedDivision.DivisionId;
         AttachedDivision.AddSubordinate(new RememberedDivision(newController.AttachedDivision));
         DivisionControllerManager.Instance.AddDivision(newController);
@@ -175,6 +178,11 @@ public class DivisionController : BaseDivisionController {
         for (int i = 0; i < divisions.Count; i++)
         {
             var division = divisions[i];
+            if(division.Hide)
+            {
+                continue;
+            }
+
             var isInSight = (transform.position - division.transform.position).magnitude < AttachedDivision.MaxSightDistance;
             
             if (isInSight && !VisibleControllers.Contains(division))

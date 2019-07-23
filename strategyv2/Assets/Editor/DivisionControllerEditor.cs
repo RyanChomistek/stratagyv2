@@ -21,6 +21,16 @@ public class DivisionControllerEditor : CustomEditorBase
             myTarget.AttachedDivision.TransferSoldiers(soldiers);
         }
 
+        if (GUILayout.Button("print soldiers"))
+        {
+            var subStr = $"{myTarget.AttachedDivision.CommandingOfficer.ToString()} =| ";
+            foreach(Soldier soldier in myTarget.AttachedDivision.Soldiers)
+            {
+                subStr += soldier.ToString() + " | ";
+            }
+            Debug.Log(subStr);
+        }
+
         if (GUILayout.Button("print subordinates"))
         {
             var subStr = myTarget.AttachedDivision.SerializeSubordinates(myTarget.AttachedDivision, myTarget.AttachedDivision);

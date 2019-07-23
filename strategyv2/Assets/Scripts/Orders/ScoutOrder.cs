@@ -24,7 +24,7 @@ public class ScoutOrder : Order
         finish = new Vector3(mousePos.x, mousePos.y);
         InputController.Instance.UnRegisterOnClickCallBack(UICallback);
         OrderDisplayManager.Instance.ClearOrders();
-        var scout = Host.CreateNewDivision();
+        var scout = Host.CreateNewDivision((int) Host.CommandingOfficer.ScoutDivisionSoldierCnt);
         scout.name = "scout";
 
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);

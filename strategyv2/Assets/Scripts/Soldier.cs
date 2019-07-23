@@ -44,12 +44,21 @@ public class Soldier : IEquatable<Soldier>
     public float Supply = 0;
     public float SupplyUsePerSec = .1f;
     public float MaxSupply = 10;
+    public float Experience = 0;
     public SoldierType Type = SoldierType.Melee;
+
+    public Soldier(Soldier Other)
+    {
+        Id = Other.Id;
+        Supply = Other.Supply;
+        Experience = Other.Experience;
+    }
 
     public Soldier()
     {
         Id = IdCount++;
         Supply = MaxSupply * .5f;
+        Experience = UnityEngine.Random.Range(0, 10);
     }
     
     public virtual CombatResult Attack(ref ControlledDivision division, float distanceToTarget)
@@ -93,9 +102,9 @@ public class Soldier : IEquatable<Soldier>
     }
 
     //should be called once per second
-    public virtual void UseSupply()
+    public virtual void UseSupply(Officer officer)
     {
-        Supply -= SupplyUsePerSec;
+        Supply -= SupplyUsePerSec * officer.SupplyUsage;
     }
 
     public virtual void GatherSupplies(MapTerrainTile tile)
@@ -121,5 +130,10 @@ public class Soldier : IEquatable<Soldier>
     public override int GetHashCode()
     {
         return this.Id;
+    }
+
+    public override string ToString()
+    {
+        return Type.ToString();
     }
 }

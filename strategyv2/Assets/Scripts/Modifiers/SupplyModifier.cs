@@ -6,8 +6,8 @@ public class SupplyModifier : DivisionModifier
 {
     public float MovementSpeedModifier = 1f;
 
-    float LowSupplyPerSoldier = 1;
-    float HighSupplyPerSoldier = 8;
+    static public float LowSupplyPerSoldier = 1;
+    static public float HighSupplyPerSoldier = 8;
 
     public override DivisionModifier ModifyDivision(Division divisionToModify)
     {

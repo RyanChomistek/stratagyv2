@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AIOrder : MultiOrder
@@ -17,7 +18,6 @@ public class AIOrder : MultiOrder
     {
         //generate zones
         //startup background orders to look for enemies/may just make this a controlled division thing with a callback
-        Debug.Log("AI START");
         base.Start(Host);
         OnEnemiesSeenCallback = enemies => OnEnemiesSeen(Host, enemies);
         Host.RegisterOnEnemiesSeenCallback(OnEnemiesSeenCallback);
@@ -27,19 +27,39 @@ public class AIOrder : MultiOrder
     {
         base.OnEmptyOrder(Host);
 
-        /*
-        
-        */
-
         //resupply if we need to
-
-        //recruit if we have nothing better to do
-        Recruit(Host);
+        if(Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
+        {
+            Resupply(Host);
+        }
+        else
+        {
+            //recruit if we have nothing better to do
+            Recruit(Host);
+        }
+        
     }
 
-    public void Resupply()
+    public void Resupply(ControlledDivision Host)
     {
         //find closest supply dump
+        Func<MapTerrainTile, bool> findSupplyTile = tile => {
+            return tile.Supply > 100;
+        };
+
+        //find closest supply
+        if (Host.TryFindKnownTileMatchingPred(findSupplyTile, out Vector3 foundPosition))
+        {
+            //Debug.Log($"resupply position : {foundPosition}");
+            this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
+            // add the supply to Host 
+            Host.ReceiveOrder(new GatherSuppliesOrder(Host, Host.DivisionId));
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2));
+        }
+        else
+        {
+            RandomMove(Host);
+        }
     }
 
     public void Recruit(ControlledDivision Host)
@@ -48,15 +68,15 @@ public class AIOrder : MultiOrder
             return tile.Population > 100;
         };
 
-        Debug.Log($"trying to resupply");
+        //Debug.Log($"trying to recruit");
         //find closest populations
         if (Host.TryFindKnownTileMatchingPred(findPopTile, out Vector3 foundPosition))
         {
-            Debug.Log($"resupply position : {foundPosition}");
+            //Debug.Log($"resupply position : {foundPosition}");
             this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
             // add the recruit to Host 
             Host.ReceiveOrder(new RecruitOrder(Host, Host.DivisionId));
-            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 10));
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2));
         }
         else
         {
@@ -69,24 +89,34 @@ public class AIOrder : MultiOrder
         Vector3 pos = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(2,10);
         pos.z = 0;
         pos += Host.Position;
+        pos = MapManager.Instance.ClampPositionToInBounds(pos);
         StartOrder(Host, new Move(Host, Host.DivisionId, pos));
     }
 
     public void OnEnemiesSeen(ControlledDivision Host, List<ControlledDivision> enemies)
     {
-        Debug.Log("ENEMY!!!!!!!!!!!!!!!");
+        //Debug.Log("ENEMY!!!!!!!!!!!!!!!");
 
-        if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > .5f)
+        if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > Host.CommandingOfficer.EngagementThreshold)
         {
-            Debug.Log("ATTACK");
+            //Debug.Log("ATTACK");
             StartOrder(Host, new EngageOrder(Host,Host.DivisionId, enemies[0].DivisionId));
         }
         else
         {
-            Debug.Log("RUN AWAY");
-            Vector3 delta = (Host.Position - enemies[0].Position) * 5;
+            //Debug.Log("RUN AWAY");
+            Vector3 enemiesCentoid = Vector3.zero;
+
+            foreach(var enemy in enemies)
+            {
+                enemiesCentoid += enemy.Position;
+            }
+
+            enemiesCentoid /= enemies.Count;
+
+            Vector3 delta = (Host.Position - enemiesCentoid) * Host.CommandingOfficer.RunAwayDistance;
             Vector3 retreatPos = Host.Position + delta;
-            StartOrder(Host, new Move(Host, Host.DivisionId, retreatPos));
+            StartOrder(Host, new Move(Host, Host.DivisionId, MapManager.Instance.ClampPositionToInBounds(retreatPos)));
         }
         //descide whether to attack or not
 
@@ -94,6 +124,8 @@ public class AIOrder : MultiOrder
 
         //run if we cant win also send messengers to nearby units to call for help
     }
+
+
 
     public virtual void GenerateZones(ControlledDivision Host)
     {

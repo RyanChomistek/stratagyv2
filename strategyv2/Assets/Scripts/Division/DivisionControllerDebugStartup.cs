@@ -11,10 +11,11 @@ public class DivisionControllerDebugStartup : MonoBehaviour
     {
         if (GameManager.DEBUG)
         {
+            /*
             Officer officer = new Officer();
             officer.Type = SoldierType.Officer;
             Controller.AttachedDivision.Soldiers.Add(officer);
-
+            */
             for (int i = 0; i < NumSoldiers; i++)
             {
 
@@ -23,6 +24,8 @@ public class DivisionControllerDebugStartup : MonoBehaviour
                 random.Type = (SoldierType)value;
                 Controller.AttachedDivision.Soldiers.Add(random);
             }
+
+            Controller.AttachedDivision.PromoteOfficer();
         }
     }
 }

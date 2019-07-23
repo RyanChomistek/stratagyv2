@@ -23,6 +23,8 @@ public class Division : IEquatable<Division>
     public bool IsMessenger;
 
     public ObservableCollection<Soldier> Soldiers = new ObservableCollection<Soldier>();
+    public Officer CommandingOfficer;
+
     public HashSet<int> Subordinates = new HashSet<int>();
 
     public Dictionary<int, Zone> Zones = new Dictionary<int, Zone>();
@@ -30,7 +32,7 @@ public class Division : IEquatable<Division>
     public List<Order> PossibleOrders = new List<Order>();
     public MultiOrder OrderSystem;
 
-    public List<DivisionModifier> DivisionModifiers = new List<DivisionModifier>();
+    public Dictionary<Type, DivisionModifier> DivisionModifiers = new Dictionary<Type, DivisionModifier>();
 
     public virtual Vector3 Position { get; set; }
 
@@ -114,8 +116,8 @@ public class Division : IEquatable<Division>
 
     public void SetupModifiers()
     {
-        DivisionModifiers.Add(new TileModifier());
-        DivisionModifiers.Add(new SupplyModifier());
+        DivisionModifiers.Add(typeof(TileModifier), new TileModifier());
+        DivisionModifiers.Add(typeof(SupplyModifier),new SupplyModifier());
     }
 
     public virtual void SetupOrders()
@@ -244,18 +246,21 @@ public class Division : IEquatable<Division>
         MaxSightDistance /= cnt;
         NumSoldiers = cnt;
 
-        for (int i = 0; i < DivisionModifiers.Count; i++)
+        var keys = DivisionModifiers.Keys.ToList();
+
+        for (int i = 0; i < keys.Count; i++)
         {
-            DivisionModifier divisionModifier = DivisionModifiers[i];
+            var key = keys[i];
+            DivisionModifier divisionModifier = DivisionModifiers[key];
             DivisionModifier newModifier = divisionModifier.ModifyDivision(this);
             if(newModifier != null)
             {
-                DivisionModifiers[i] = newModifier;
+                DivisionModifiers.Remove(key);
+                DivisionModifiers.Add(newModifier.GetType(), newModifier);
             }
             else
             {
-                DivisionModifiers.RemoveAt(i);
-                i--;
+                DivisionModifiers.Remove(key);
             }
 
         }
@@ -435,12 +440,15 @@ public class Division : IEquatable<Division>
         return soldier;
     }
 
-    public DivisionController CreateNewDivision()
+    public DivisionController CreateNewDivision(int numSoldiersToGive)
     {
-        List<Soldier> soldiersToGive = new List<Soldier>
+        List<Soldier> soldiersToGive = new List<Soldier>();
+        
+        for(int i = 0; i < numSoldiersToGive; i++)
         {
-            PopSoldier()
-        };
+            soldiersToGive.Add(PopSoldier());
+        }
+
         return Controller.CreateChild(soldiersToGive);
     }
 
@@ -464,6 +472,31 @@ public class Division : IEquatable<Division>
 
         newDivision = Controller.CreateChild(soldiersToGive);
         return true;
+    }
+
+    /// <summary>
+    /// if there are no officers present in the division promote one
+    /// </summary>
+    /// <returns></returns>
+    public Officer PromoteOfficer()
+    {
+        if (Soldiers.Count == 0)
+        {
+            return null;
+        }
+        
+        Soldier HighestExperience = Soldiers[0];
+        foreach (var soldier in Soldiers)
+        {
+            if (HighestExperience.Experience < soldier.Experience)
+            {
+                HighestExperience = soldier;
+            }
+        }
+        
+        CommandingOfficer = Officer.PromoteSoldier(HighestExperience);
+        Soldiers.Remove(HighestExperience);
+        return CommandingOfficer;
     }
 
     /// <summary>

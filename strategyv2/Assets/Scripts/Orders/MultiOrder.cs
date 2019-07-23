@@ -44,9 +44,6 @@ public class MultiOrder : Order
             {
                 if(order.GetType() == backgroundOrder.GetType())
                 {
-                    Debug.Log(order.GetType() + " " + backgroundOrder.GetType());
-                    //dup dont add
-                    Debug.Log("DUUUPPPPPPP");
                     return;
                 }
             }
@@ -93,7 +90,6 @@ public class MultiOrder : Order
 
     protected virtual void ContinueOrder(ControlledDivision Host)
     {
-        Debug.Log(OngoingOrder);
         OngoingOrder.Proceed(Host);
     }
 

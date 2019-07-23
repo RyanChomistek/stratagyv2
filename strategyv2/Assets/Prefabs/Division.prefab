@@ -93,6 +93,7 @@ GameObject:
   - component: {fileID: 1067205346625854692}
   - component: {fileID: 2016376223}
   - component: {fileID: 2016376229}
+  - component: {fileID: 388260145}
   m_Layer: 0
   m_Name: Division
   m_TagString: Untagged
@@ -222,22 +223,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttachedDivision:
     DivisionId: 0
-    TeamId: 1
+    TeamId: -1
     Name: 
-    Commander: 0
-    OrderQueue: []
-    BackgroundOrderList: []
+    Commander: -1
+    IsMessenger: 0
     PossibleOrders: []
-    OngoingOrder:
-      HostId: 0
-      CommanderSendingOrderId: 0
-      name: 
-      orderId: 0
-      HasStarted: 0
-      IsBackgroundOrder: 0
-      IsCancelable: 0
-      Canceled: 0
-      HasFinished: 0
     Speed: 0
     MaxSightDistance: 0
     TotalHealth: 0
@@ -252,6 +242,21 @@ MonoBehaviour:
   DivisionDisplayContainer: {fileID: 6728466315703208345}
   Controller: {fileID: 0}
   VisibleControllers: []
+  _enableAI: 1
+--- !u!114 &388260145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574684478244263188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eecbe0e20337d1149b324bced09f13c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Controller: {fileID: 2016376229}
+  NumSoldiers: 15
 --- !u!1 &5262780603511204795
 GameObject:
   m_ObjectHideFlags: 0

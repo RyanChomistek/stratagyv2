@@ -166,6 +166,21 @@ public class MapManager : MonoBehaviour
         return rounded;
     }
 
+    public Vector2Int ClampTilePositionToInBounds(Vector2Int position)
+    {
+        int x = (int) Mathf.Clamp(position.x, 0, map.GetUpperBound(0));
+        int y = (int) Mathf.Clamp(position.y, 0, map.GetUpperBound(1));
+        return new Vector2Int(x, y);
+    }
+
+    public Vector3 ClampPositionToInBounds(Vector3 position)
+    {
+        var gridStart = Tilemap.transform.position;
+        float x = Mathf.Clamp(position.x, -gridStart.x, map.GetUpperBound(0) - gridStart.x);
+        float y = Mathf.Clamp(position.y, -gridStart.y, map.GetUpperBound(1) - gridStart.y);
+        return new Vector3(x, y);
+    }
+
     public static bool InBounds<T>(T[,] map, int x, int y)
     {
         //Debug.Log($"{position}{map.GetUpperBound(0)} {position.x <= map.GetUpperBound(0)} { position.y <= map.GetUpperBound(1)} { position.x > 0} { position.y > 0} ");
