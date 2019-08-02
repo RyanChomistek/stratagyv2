@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: TownLayerSettings
   m_EditorClassIdentifier: 
   terrain: 5
-  algorithm: 2
-  tile: {fileID: 11400000, guid: 42c5fdd05a6722c4b8715e884db136df, type: 2}
+  algorithm: 3
+  tile: {fileID: 11400000, guid: 9e9b3525e9886d14b89ce02f562912f7, type: 2}
   randomSeed: 1
   seed: 0
-  iterations: 10
+  iterations: 1
   radius: 5
   terrainTile: {fileID: 11400000, guid: 397b37f915f38be4bb1d45471e077c00, type: 2}
   IsEnabled: 1
-  PerlinNoiseScale: 2.5
-  PerlinNoiseThreshold: 0.5
+  PerlinNoiseScale: 10
+  PerlinNoiseThreshold: 0.8

@@ -23,5 +23,5 @@ MonoBehaviour:
     _populationSpreadRate: 0.02
     MoveCost: 10000
     TerrainType: 3
-    tile: {fileID: 11400000, guid: 3bac961e89a45b14ca43316c0409a0dd, type: 2}
+    tile: {fileID: 11400000, guid: ad8803c16cd12d34c8406a2644198ed4, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

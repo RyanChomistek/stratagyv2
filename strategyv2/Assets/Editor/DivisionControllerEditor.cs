@@ -90,9 +90,9 @@ public class DivisionControllerEditor : CustomEditorBase
     {
         string str = "";
 
-        foreach (var remembered in division.RememberedDivisions)
+        foreach (KeyValuePair<int, RememberedDivision> remembered in division.RememberedDivisions)
         {
-            str += $"<{remembered}> \n";
+            str += $"<{remembered.Value.ToString()}> \n";
         }
 
         return str;

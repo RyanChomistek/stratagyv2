@@ -289,8 +289,11 @@ public class Division : IEquatable<Division>
             //look in each of my subordinates to see if they have it
             foreach (var subordinateId in Subordinates)
             {
-                var subordinate = rememberedDivisions[subordinateId];
-                subordinate.FindAndRemoveSubordinateById(divisionId, ref rememberedDivisions);
+                if(rememberedDivisions.ContainsKey(subordinateId))
+                {
+                    var subordinate = rememberedDivisions[subordinateId];
+                    subordinate.FindAndRemoveSubordinateById(divisionId, ref rememberedDivisions);
+                }
             }
         }
     }

@@ -49,7 +49,14 @@ public class MapManager : MonoBehaviour
         CreateGraph();
         SetUpAjdacentTiles();
         StartCoroutine(UpdateTileValues());
-        InputController.Instance.RegisterOnClickCallBack(PrintTile);
+        //InputController.Instance.RegisterOnClickCallBack(PrintTile);
+        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
+            (handler, mousePos) => {
+                PrintTile(mousePos);
+            });
+
+        InputController.Instance.RegisterButtonHandler(Handler);
+
         LocalPlayerController.Instance.GeneralDivision.AttachedDivision.OnDiscoveredMapChanged += x => Rerender();
     }
 
@@ -245,7 +252,15 @@ public class MapManager : MonoBehaviour
 
     private void ConvertMapGenerationToTerrainTiles()
     {
-        var terrainTileLookup = MapGen.LayerSettings.ToDictionary(x => x.terrain, x => x.terrainTile);
+        Dictionary<Terrain, TerrainTileSettings> terrainTileLookup = new Dictionary<Terrain, TerrainTileSettings>();//= MapGen.LayerSettings.ToDictionary(x => x.terrain, x => x.terrainTile);
+        foreach(var layer in MapGen.LayerSettings)
+        {
+            if(!terrainTileLookup.ContainsKey(layer.terrain))
+            {
+                terrainTileLookup[layer.terrain] = layer.terrainTile;
+            }
+        }
+
         map = new MapTerrainTile[MapGen.map.GetUpperBound(0)+1, MapGen.map.GetUpperBound(1)+1];
         for (int i =0; i <= MapGen.map.GetUpperBound(0); i++)
         {

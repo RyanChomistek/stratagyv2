@@ -166,12 +166,17 @@ public class LocalPlayerController : PlayerController {
     private IEnumerator ZoneUICancelHelper(ZoneSelectDelegate callback)
     {
         yield return new WaitForEndOfFrame();
+        /*
         InputController.OnClick onClick = null;
         onClick = x => {
             InputController.Instance.UnRegisterOnUiClickCallBack(onClick);
             ZoneSelectCallback -= callback;
         };
         InputController.Instance.RegisterOnUiClickCallBack(onClick);
+        */
+
+        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { x.Cancel = true; ZoneSelectCallback -= callback; }, (x, y) => { });
+        InputController.Instance.RegisterButtonHandler(Handler);
     }
 
     public void UnRegisterZoneSelectCallback(ZoneSelectDelegate callback)

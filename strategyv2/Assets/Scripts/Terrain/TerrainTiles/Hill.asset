@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tile:
     Supply: 25
-    MaxSupply: 100
+    MaxSupply: 200
     _supplyGrowthRate: 0.02
     _supplySpreadRate: 0.02
     Population: 25
@@ -23,5 +23,5 @@ MonoBehaviour:
     _populationSpreadRate: 0.02
     MoveCost: 2500
     TerrainType: 6
-    tile: {fileID: 11400000, guid: 3bac961e89a45b14ca43316c0409a0dd, type: 2}
+    tile: {fileID: 11400000, guid: c95a2c95928fc834687b94ce54691bff, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

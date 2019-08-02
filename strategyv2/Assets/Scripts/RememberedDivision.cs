@@ -60,6 +60,6 @@ public class RememberedDivision : Division
             str += remembered + ", ";
         }
         
-        return $"({DivisionId}, {OrderSystem}, <{str}>, {TimeStamp}, {HasBeenDestroyed})";
+        return $"({DivisionId}, {OrderSystem}, <{str}>, {TimeStamp}, hasBeenDestroyed {HasBeenDestroyed})";
     }
 }

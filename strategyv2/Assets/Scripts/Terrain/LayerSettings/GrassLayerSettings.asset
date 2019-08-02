@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrain: 1
   algorithm: 0
-  tile: {fileID: 11400000, guid: 1526d0f8d445b5a46b6d144e58c6ac54, type: 2}
+  tile: {fileID: 11400000, guid: b9545bb8c4b2d9945805ebb61cb1cc7c, type: 2}
   randomSeed: 1
   seed: 234234
   iterations: 1

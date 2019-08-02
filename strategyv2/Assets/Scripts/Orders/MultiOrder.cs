@@ -224,4 +224,23 @@ public class MultiOrder : Order
         //Debug.Log((SubOrders.Count == 0) +" "+ (OngoingOrder == null) + " " + name);
         return OrderQueue.Count == 0 && OngoingOrder == null;
     }
+
+    public override string ToString()
+    {
+        string str = "orders : ";
+        str += OngoingOrder?.ToString() + " :: ";
+        foreach (Order order in OrderQueue)
+        {
+            str += order.ToString() + " | ";
+        }
+
+        str += "||";
+
+        foreach (Order order in BackgroundOrderList)
+        {
+            str += order.ToString() + " | ";
+        }
+
+        return base.ToString() + $"<{str}>";
+    }
 }
