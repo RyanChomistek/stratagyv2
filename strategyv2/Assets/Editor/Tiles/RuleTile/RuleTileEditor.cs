@@ -150,7 +150,7 @@ namespace UnityEditor
             {
                 string overrideTilePath = AssetDatabase.GUIDToAssetPath(overrideTileGuid);
                 RuleOverrideTile overrideTile = AssetDatabase.LoadAssetAtPath<RuleOverrideTile>(overrideTilePath);
-                if (overrideTile.m_Tile == target)
+                if (overrideTile && overrideTile.m_Tile == target)
                     overrideTile.Override();
             }
         }
