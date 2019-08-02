@@ -27,9 +27,23 @@ public class AIOrder : MultiOrder
     {
         base.OnEmptyOrder(Host);
 
-        //resupply if we need to
-        if(Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
+        //look at enemies and see if we can fight
+        List<ControlledDivision> enemies = new List<ControlledDivision>();
+        foreach (var kvp in Host.VisibleDivisions)
         {
+            if (!kvp.Value.HasBeenDestroyed && !Division.AreSameTeam(kvp.Value, Host))
+            {
+                enemies.Add(kvp.Value);
+            }
+        }
+
+        if(enemies.Count > 0)
+        {
+            OnEnemiesSeen(Host, enemies);
+        }
+        else if (Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
+        {
+            //resupply if we need to
             Resupply(Host);
         }
         else
@@ -47,6 +61,8 @@ public class AIOrder : MultiOrder
             return tile.Supply > 100;
         };
 
+        //UnityEngine.Profiling.Profiler.BeginSample("find supply");
+
         //find closest supply
         if (Host.TryFindKnownTileMatchingPred(findSupplyTile, out Vector3 foundPosition))
         {
@@ -60,6 +76,8 @@ public class AIOrder : MultiOrder
         {
             RandomMove(Host);
         }
+
+        //UnityEngine.Profiling.Profiler.EndSample();
     }
 
     public void Recruit(ControlledDivision Host)

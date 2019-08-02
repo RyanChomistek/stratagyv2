@@ -70,6 +70,24 @@ public class Officer : Soldier
     }
 
     /// <summary>
+    /// copy
+    /// </summary>
+    /// <param name="other"></param>
+    public Officer(Officer other)
+        : base(other)
+    {
+        RunAwayDistance = other.RunAwayDistance;
+        ResupplyPerSoldierThreshold = other.ResupplyPerSoldierThreshold;
+        SoldierCntSplitThreshold = other.SoldierCntSplitThreshold;
+        MessengerDivisionSoldierCnt = other.MessengerDivisionSoldierCnt;
+        ScoutDivisionSoldierCnt = other.ScoutDivisionSoldierCnt;
+        EngagementThreshold = other.EngagementThreshold;
+        SupplyUsage = other.SupplyUsage;
+        AidDistance = other.AidDistance;
+        MutationFactor = other.MutationFactor;
+    }
+
+    /// <summary>
     /// creates a new officer, and uses parent as a base for mutating the values
     /// </summary>
     /// <param name="parent"></param>

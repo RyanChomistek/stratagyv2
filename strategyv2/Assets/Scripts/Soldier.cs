@@ -58,9 +58,25 @@ public class Soldier : IEquatable<Soldier>
     {
         Id = IdCount++;
         Supply = MaxSupply * .5f;
-        Experience = UnityEngine.Random.Range(0, 10);
+        Experience = UnityEngine.Random.Range(.1f, .25f);
     }
     
+    public static float DoDamage(Soldier attacker, Soldier defender)
+    {
+        var damageDone = Mathf.Min(defender.Health, attacker.HitStrength * GameManager.DeltaTime);
+        damageDone *= UnityEngine.Random.Range(0, attacker.Experience);
+        attacker.Experience = Mathf.Min(1, attacker.Experience + damageDone);
+        defender.Health -= damageDone;
+
+        //to fix floating point errors
+        if(defender.Health < .01f)
+        {
+            defender.Health = -.01f;
+        }
+
+        return damageDone;
+    }
+
     public virtual CombatResult Attack(ref ControlledDivision division, float distanceToTarget)
     {
         CombatResult result = new CombatResult();
@@ -77,9 +93,7 @@ public class Soldier : IEquatable<Soldier>
         {
             if(defender.Health > 0)
             {
-                var damageDone = Mathf.Min(defender.Health, this.HitStrength * GameManager.DeltaTime) ;
-                defender.Health -= damageDone;
-                result.DamageToDefender = damageDone;
+                result.DamageToDefender = DoDamage(this, defender);
                 result.Defender = defender;
                 result.DamageToAttacker = defender.Defend(this, distanceToTarget);
                 break;
@@ -89,15 +103,15 @@ public class Soldier : IEquatable<Soldier>
         return result;
     }
     
-    public virtual float Defend(Soldier Attacker, float distanceToTarget)
+    public virtual float Defend(Soldier attacker, float distanceToTarget)
     {
         if (distanceToTarget < MinRange || distanceToTarget > MaxRange)
         {
             return 0;
         }
         
-        var damageDone = Mathf.Min(Attacker.Health, this.HitStrength * GameManager.DeltaTime);
-        Attacker.Health -= damageDone;
+        var damageDone = DoDamage(this, attacker);
+        attacker.Health -= damageDone;
         return damageDone;
     }
 
@@ -134,6 +148,6 @@ public class Soldier : IEquatable<Soldier>
 
     public override string ToString()
     {
-        return Type.ToString();
+        return Type.ToString() + " E:" + (int)(Experience*100);
     }
 }

@@ -58,6 +58,12 @@ public class Division : IEquatable<Division>
     protected bool RefreshFlag = true;
 
     #region constructors
+
+    /// <summary>
+    /// used when copying
+    /// </summary>
+    /// <param name="division"></param>
+    /// <param name="controller"></param>
     public Division(Division division, DivisionController controller = null)
     {
         this.Commander = division.Commander;
@@ -67,6 +73,8 @@ public class Division : IEquatable<Division>
 
         this.Soldiers = new ObservableCollection<Soldier>(division.Soldiers);
         this.NumSoldiers = division.NumSoldiers;
+        if(division.CommandingOfficer != null)
+            this.CommandingOfficer = new Officer(division.CommandingOfficer);
 
         this.DivisionId = division.DivisionId;
         this.TeamId = division.TeamId;

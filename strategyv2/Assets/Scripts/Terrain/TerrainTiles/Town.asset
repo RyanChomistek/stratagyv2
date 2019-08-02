@@ -19,7 +19,7 @@ MonoBehaviour:
     _supplySpreadRate: 0.1
     Population: 100
     MaxPopulation: 300
-    _populationGrowthRate: 0.1
+    _populationGrowthRate: 0.02
     _populationSpreadRate: 0.05
     MoveCost: 2500
     TerrainType: 5

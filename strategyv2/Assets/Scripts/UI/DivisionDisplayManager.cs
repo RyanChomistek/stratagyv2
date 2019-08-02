@@ -39,9 +39,6 @@ public class DivisionDisplayManager : MonoBehaviour
         var localPlayer = LocalPlayerController.Instance.GeneralDivision;
         RefreshDivisionCallback(divisionToDisplay);
         divisionToDisplay.AddRefreshDelegate(RefreshDivisionCallback);
-        
-        //InputController.Instance.RegisterOnClickCallBack(OnClickOff);
-
         ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
             (handler, mousePos) => {
                 handler.Cancel = true;

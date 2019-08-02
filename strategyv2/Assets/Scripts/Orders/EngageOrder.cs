@@ -26,6 +26,12 @@ public class EngageOrder : MultiOrder
         base.ContinueOrder(Host);
     }
 
+    public override void OnEmptyOrder(ControlledDivision Host)
+    {
+        EngageDivision(Host);
+        base.OnEmptyOrder(Host);
+    }
+
     private void EngageDivision(ControlledDivision Host)
     {
         var rememberedTarget = GetRememberedDivisionFromHost(Host, RememberedTargetId);
