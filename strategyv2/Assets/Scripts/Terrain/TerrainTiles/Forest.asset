@@ -18,9 +18,9 @@ MonoBehaviour:
     _supplyGrowthRate: 0.01
     _supplySpreadRate: 0.01
     Population: 25
-    MaxPopulation: 200
-    _populationGrowthRate: 0.01
-    _populationSpreadRate: 0.02
+    MaxPopulation: 100
+    _populationGrowthRate: 0.001
+    _populationSpreadRate: 0.002
     MoveCost: 5000
     TerrainType: 7
     tile: {fileID: 11400000, guid: 27a0d85afb2325c44b095d0931827fab, type: 2}

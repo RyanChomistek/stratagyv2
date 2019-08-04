@@ -30,7 +30,9 @@ public class RecruitOrder : TickingOrder
                 Host.Soldiers.Add(new Soldier());
             }
 
-            tile.Population -= 10;
+            tile.Population -= 100;
+
+            var tile2 = MapManager.Instance.GetTileFromPosition(Host.Controller.transform.position);
         }
     }
 }

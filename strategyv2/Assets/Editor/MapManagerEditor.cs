@@ -45,6 +45,12 @@ public class MapManagerEditor : CustomEditorBase
             mapManager.RenderMap(MapDisplays.Simple);
         }
 
+        if (GUILayout.Button("show area controll Map Mode"))
+        {
+            mapManager.RenderMap(MapDisplays.PlayerControlledAreas);
+        }
+
+
         if (GUILayout.Button("show vision"))
         {
             //var soldiers = new List<Soldier>() { new Soldier() };

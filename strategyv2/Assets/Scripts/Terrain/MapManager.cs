@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 
 public enum MapDisplays
 {
-    Tiles, TilesWithVision, Population, Supply, MovementSpeed, Simple
+    Tiles, TilesWithVision, Population, Supply, MovementSpeed, Simple, PlayerControlledAreas
 }
 
 public class MapManager : MonoBehaviour
@@ -183,8 +183,8 @@ public class MapManager : MonoBehaviour
     public Vector3 ClampPositionToInBounds(Vector3 position)
     {
         var gridStart = Tilemap.transform.position;
-        float x = Mathf.Clamp(position.x, -gridStart.x, map.GetUpperBound(0) - gridStart.x);
-        float y = Mathf.Clamp(position.y, -gridStart.y, map.GetUpperBound(1) - gridStart.y);
+        float x = Mathf.Clamp(position.x, - gridStart.x, map.GetUpperBound(0) - gridStart.x - 1);
+        float y = Mathf.Clamp(position.y, - gridStart.y, map.GetUpperBound(1) - gridStart.y - 1);
         return new Vector3(x, y);
     }
 
@@ -303,6 +303,9 @@ public class MapManager : MonoBehaviour
             case MapDisplays.Simple:
                 this.RenderSimple();
                 break;
+            case MapDisplays.PlayerControlledAreas:
+                this.RenderMapWithZoneOfControl();
+                break;
         }
         
         _onMapRerender?.Invoke();
@@ -385,6 +388,61 @@ public class MapManager : MonoBehaviour
     public static Vector2Int RoundVector(Vector2 vec)
     {
         return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
+    }
+
+    public void RenderMapWithZoneOfControl()
+    {
+        var controlColors = new List<Color>[map.GetUpperBound(0) + 1, map.GetUpperBound(1) + 1];
+        
+        foreach (var controller in DivisionControllerManager.Instance.Divisions)
+        {
+            int sightDistance = Mathf.RoundToInt(controller.AttachedDivision.MaxSightDistance);
+            Vector2 controllerPosition = controller.transform.position;
+            Vector3Int controllerPositionRounded = new Vector3Int(RoundVector(controller.transform.position).x, RoundVector(controller.transform.position).y, 0);
+            //for the x and ys we go one over so that we erase the old sight tiles as we walk past them
+            for (int x = -sightDistance - 1; x <= sightDistance + 1; x++)
+            {
+                for (int y = -sightDistance - 1; y <= sightDistance + 1; y++)
+                {
+
+                    var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
+                    var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance;
+                    var color = _notDiscovered;
+                    float percentDistance = 1 - (new Vector3(x, y, 0).magnitude / 1.5f / sightDistance);
+                    if (InBounds(map, position.x, position.y) && inVision)
+                    {
+                        if (controlColors[position.x, position.y] == null)
+                            controlColors[position.x, position.y] = new List<Color>();
+                        
+                        controlColors[position.x, position.y].Add(Color.Lerp(_FowGrey, controller.Controller.PlayerColor, percentDistance));
+                    }
+                }
+            }
+        }
+
+        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+        {
+            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            {
+                var position = new Vector3Int(x, y, 0);
+                Tilemap.SetTileFlags(position, TileFlags.None);
+                List<Color> colors = controlColors[x, y];
+                if (colors == null)
+                {
+                    Tilemap.SetColor(position, _FowGrey);
+                }
+                else
+                {
+                    Color blend = Color.black;
+                    foreach(var color in colors)
+                    {
+                        blend += color / colors.Count;
+                    }
+
+                    Tilemap.SetColor(position, blend);
+                }
+            }
+        }
     }
 
     public void RenderMapWithTilesAndVision(DivisionController controller, Color visionColor)

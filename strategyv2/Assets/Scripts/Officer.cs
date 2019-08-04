@@ -20,6 +20,11 @@ public class Officer : Soldier
     public float SoldierCntSplitThreshold;
 
     /// <summary>
+    /// the percentage of soldiers which will be split into the new unit
+    /// </summary>
+    public float PercentOfSoldiersToSplit;
+
+    /// <summary>
     /// the number of soldiers this division will send with messengers
     /// </summary>
     public float MessengerDivisionSoldierCnt;
@@ -79,6 +84,7 @@ public class Officer : Soldier
         RunAwayDistance = other.RunAwayDistance;
         ResupplyPerSoldierThreshold = other.ResupplyPerSoldierThreshold;
         SoldierCntSplitThreshold = other.SoldierCntSplitThreshold;
+        PercentOfSoldiersToSplit = other.PercentOfSoldiersToSplit;
         MessengerDivisionSoldierCnt = other.MessengerDivisionSoldierCnt;
         ScoutDivisionSoldierCnt = other.ScoutDivisionSoldierCnt;
         EngagementThreshold = other.EngagementThreshold;
@@ -99,6 +105,7 @@ public class Officer : Soldier
         RunAwayDistance = parent.RunAwayDistance;
         ResupplyPerSoldierThreshold = parent.ResupplyPerSoldierThreshold;
         SoldierCntSplitThreshold = parent.SoldierCntSplitThreshold;
+        PercentOfSoldiersToSplit = parent.PercentOfSoldiersToSplit;
         MessengerDivisionSoldierCnt = parent.MessengerDivisionSoldierCnt;
         ScoutDivisionSoldierCnt = parent.ScoutDivisionSoldierCnt;
         EngagementThreshold = parent.EngagementThreshold;
@@ -113,7 +120,8 @@ public class Officer : Soldier
     {
         MutateValue(ref RunAwayDistance, 1, 1, 20);
         MutateValue(ref ResupplyPerSoldierThreshold, 1, SupplyModifier.LowSupplyPerSoldier, SupplyModifier.HighSupplyPerSoldier);
-        MutateValue(ref SoldierCntSplitThreshold, 5, 25, 300);
+        MutateValue(ref SoldierCntSplitThreshold, 5, 25, 500);
+        MutateValue(ref PercentOfSoldiersToSplit, .05f, .25f, .75f);
         MutateValue(ref MessengerDivisionSoldierCnt, 1, 1, 10);
         MutateValue(ref ScoutDivisionSoldierCnt, 1, 1, 10);
         MutateValue(ref EngagementThreshold, .05f, .25f, .75f);
@@ -134,6 +142,7 @@ public class Officer : Soldier
         RunAwayDistance = Random.Range(2, 10);
         ResupplyPerSoldierThreshold = Random.Range(SupplyModifier.LowSupplyPerSoldier, SupplyModifier.HighSupplyPerSoldier);
         SoldierCntSplitThreshold = Random.Range(25, 300);
+        PercentOfSoldiersToSplit = Random.Range(.25f, .75f);
         MessengerDivisionSoldierCnt = Random.Range(1, 10);
         ScoutDivisionSoldierCnt = Random.Range(1, 10);
         EngagementThreshold = Random.Range(.25f, .75f);

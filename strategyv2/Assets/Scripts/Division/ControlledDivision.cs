@@ -31,7 +31,13 @@ public class ControlledDivision : Division
     
     public void DestroyDivision(ControlledDivision other)
     {
-        Debug.Log($"Destorying division {other}, from {this}, notifying {other.VisibleDivisions.Count}");
+        string str = "";
+        foreach (var kvp in VisibleDivisions)
+        {
+            str += kvp.Key +", ";
+        }
+
+        Debug.Log($"Destorying division {other}, from {this}, notifying {str}");
         other.HasBeenDestroyed = true;
         FindAndRemoveSubordinateById(other.DivisionId, ref RememberedDivisions);
         RememberedDivisions[other.DivisionId] = new RememberedDivision(other);

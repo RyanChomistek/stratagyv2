@@ -8,6 +8,8 @@ public class AIOrder : MultiOrder
 {
     private System.Action<List<ControlledDivision>> OnEnemiesSeenCallback;
 
+    private string _currentBehavior = "None";
+
     public AIOrder(Division controller, int commanderSendingOrderId, string name = "AI Order")
         : base(controller, commanderSendingOrderId, name, new List<Order>(), false)
     {
@@ -37,17 +39,24 @@ public class AIOrder : MultiOrder
             }
         }
 
-        if(enemies.Count > 0)
+        if (enemies.Count > 0)
         {
             OnEnemiesSeen(Host, enemies);
         }
+        else if (Host.Soldiers.Count > Host.CommandingOfficer.SoldierCntSplitThreshold)
+        {
+            _currentBehavior = "split";
+            this.ReceiveOrder(Host, new SplitDivision(Host, Host.DivisionId, Host.CommandingOfficer.PercentOfSoldiersToSplit));
+        }
         else if (Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
         {
+            _currentBehavior = "Resupply";
             //resupply if we need to
             Resupply(Host);
         }
         else
         {
+            _currentBehavior = "Recruit";
             //recruit if we have nothing better to do
             Recruit(Host);
         }
@@ -104,6 +113,7 @@ public class AIOrder : MultiOrder
 
     public void RandomMove(ControlledDivision Host)
     {
+        _currentBehavior = $"Random Move";
         Vector3 pos = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(2,10);
         pos.z = 0;
         pos += Host.Position;
@@ -118,11 +128,13 @@ public class AIOrder : MultiOrder
         if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > Host.CommandingOfficer.EngagementThreshold)
         {
             //Debug.Log("ATTACK");
+            _currentBehavior = $"Attack: {enemies[0].DivisionId}";
             StartOrder(Host, new EngageOrder(Host,Host.DivisionId, enemies[0].DivisionId));
         }
         else
         {
             //Debug.Log("RUN AWAY");
+            _currentBehavior = $"Running Away";
             Vector3 enemiesCentoid = Vector3.zero;
 
             foreach(var enemy in enemies)
@@ -143,8 +155,6 @@ public class AIOrder : MultiOrder
         //run if we cant win also send messengers to nearby units to call for help
     }
 
-
-
     public virtual void GenerateZones(ControlledDivision Host)
     {
         //make zones for things
@@ -159,5 +169,10 @@ public class AIOrder : MultiOrder
         base.End(Host);
         Host.UnRegisterOnEnemiesSeenCallback(OnEnemiesSeenCallback);
         Debug.Log("AI END");
+    }
+
+    public override string ToString()
+    {
+        return _currentBehavior + "-" + base.ToString();
     }
 }

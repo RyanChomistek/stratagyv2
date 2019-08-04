@@ -30,6 +30,27 @@ public class DivisionControllerManager : MonoBehaviour
         //Divisions.Remove(division);
     }
 
+    public bool TryGetDivisionsInTile(Vector2Int tilePos, out List<DivisionController> divisionsInTile)
+    {
+        divisionsInTile = GetDivisionsInTile(tilePos);
+        return divisionsInTile.Count != 0;
+    }
+
+    public List<DivisionController> GetDivisionsInTile(Vector2Int tilePos)
+    {
+        List<DivisionController> divisionsInTile = new List<DivisionController>();
+
+        foreach (var controller in _divisions)
+        {
+            if(MapManager.Instance.GetTilePositionFromPosition(controller.AttachedDivision.Position) == tilePos)
+            {
+                divisionsInTile.Add(controller);
+            }
+        }
+
+        return divisionsInTile;
+    }
+
     private void Update()
     {
         for (int i = 0; i < Divisions.Count; i++)

@@ -69,8 +69,8 @@ public class MapTerrainTile
     private void Spread(ref float value, ref float otherValue, float rate, float cap, float otherCap)
     {
         var average = (otherValue + value) / 2;
-        var deltaOther = (average - otherValue) * rate;
-        var deltaThis = (average - value) * rate;
+        var deltaOther = (average - otherValue) * rate * GameManager.DeltaTime;
+        var deltaThis = (average - value) * rate * GameManager.DeltaTime;
 
         //first add the average pop to each
         float excess = AddWithCap(ref otherValue, deltaOther, otherCap);
