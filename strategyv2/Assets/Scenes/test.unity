@@ -2170,6 +2170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GeneralDivision: {fileID: 4904470737461096126}
   _teamId: -1
+  PlayerColor: {r: 0, g: 0, b: 0, a: 0}
   Selected: {fileID: 0}
   UIwaitingForUnitSelection: 0
   UIwaitingForZoneSelection: 0
@@ -2570,7 +2571,7 @@ Camera:
   far clip plane: 5000
   field of view: 40
   orthographic: 1
-  orthographic size: 6.559941
+  orthographic size: 20.55991
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -95137,7 +95138,7 @@ MonoBehaviour:
   m_Follow: {fileID: 0}
   m_Lens:
     FieldOfView: 40
-    OrthographicSize: 6.559941
+    OrthographicSize: 20.55991
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0

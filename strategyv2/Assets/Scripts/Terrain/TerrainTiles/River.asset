@@ -15,8 +15,8 @@ MonoBehaviour:
   tile:
     Supply: 1
     MaxSupply: 5
-    _supplyGrowthRate: 0.02
-    _supplySpreadRate: 0.02
+    _supplyGrowthRate: 0.001
+    _supplySpreadRate: 0.001
     Population: 1
     MaxPopulation: 5
     _populationGrowthRate: 0.001

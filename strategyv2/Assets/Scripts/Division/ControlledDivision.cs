@@ -77,24 +77,7 @@ public class ControlledDivision : Division
 
     public bool TakeDamage(float damage, ControlledDivision from)
     {
-        for (int i = 0; i < Soldiers.Count; i++)
-        {
-            if (damage == 0)
-            {
-                break;
-            }
-
-            var soldier = Soldiers[i];
-            float damageToSoldier = Mathf.Min(damage, soldier.Health);
-            soldier.Health -= damageToSoldier;
-            damage -= damageToSoldier;
-
-            if (soldier.Health <= 0)
-            {
-                Soldiers.RemoveAt(i);
-                i--;
-            }
-        }
+        base.TakeDamage(damage, from);
 
         if (Soldiers.Count == 0)
         {
@@ -108,15 +91,7 @@ public class ControlledDivision : Division
 
     public bool CheckDamageDone(ControlledDivision from)
     {
-        for (int i = 0; i < Soldiers.Count; i++)
-        {
-            var soldier = Soldiers[i];
-            if (soldier.Health <= 0)
-            {
-                Soldiers.RemoveAt(i);
-                i--;
-            }
-        }
+        base.CheckDamageDone(from);
 
         if (Soldiers.Count == 0)
         {

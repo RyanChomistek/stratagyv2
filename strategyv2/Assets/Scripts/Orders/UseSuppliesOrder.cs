@@ -19,6 +19,11 @@ public class UseSuppliesOrder : TickingOrder
             soldier.UseSupply(officer);
         }
 
+        if(Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
+        {
+            Host.TakeDamage(1, Host);
+        }
+
         Host.RecalculateAggrigateValues();
 
 
