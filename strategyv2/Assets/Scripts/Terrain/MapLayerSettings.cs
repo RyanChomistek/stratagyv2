@@ -15,12 +15,19 @@ public enum Terrain
 }
 
 
+public enum MapLayer
+{
+    Terrain, Improvement
+}
+
+
 [System.Serializable]
 [CreateAssetMenu(fileName = "NewMapLayerSettings", menuName = "Map Layer Settings", order = 0)]
 public class MapLayerSettings : ScriptableObject
 {
     public Terrain terrain;
     public LayerFillAlgorithm algorithm;
+    public MapLayer Layer;
     [Tooltip("The Tile to draw (use a RuleTile for best results)")]
     public TileBase tile;
     public bool randomSeed;
@@ -45,6 +52,7 @@ public class MapLayerSettings_Editor : Editor
         EditorGUILayout.LabelField(mapLayer.name, EditorStyles.boldLabel);
 
         mapLayer.algorithm = (LayerFillAlgorithm)EditorGUILayout.EnumPopup(new GUIContent("Generation Method", "The generation method we want to use to generate the map"), mapLayer.algorithm);
+        mapLayer.Layer = (MapLayer)EditorGUILayout.EnumPopup(new GUIContent("Map Layer", "The layer on the map"), mapLayer.Layer);
         mapLayer.terrain = (Terrain)EditorGUILayout.EnumPopup(new GUIContent("Terrain type", ""), mapLayer.terrain);
         mapLayer.randomSeed = EditorGUILayout.Toggle("Random Seed", mapLayer.randomSeed);
         mapLayer.tile = EditorGUILayout.ObjectField("", mapLayer.tile, typeof(TileBase), false) as TileBase;

@@ -24,11 +24,6 @@ public class TerrainGenerator : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            ClearMap();
-            GenerateMap();
-        }
     }
 
     [ExecuteInEditMode]

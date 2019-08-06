@@ -21,12 +21,19 @@ public class MapTerrainTile
     private float _populationGrowthRate = .1f;
     [SerializeField]
     private float _populationSpreadRate = .1f;
-    [HideInInspector]
+
+    [System.NonSerialized]
     private List<MapTerrainTile> _adjacentTiles;
+    [System.NonSerialized]
+    public MapTerrainTile Improvement;
 
     public uint MoveCost = 1;
     public Terrain TerrainType;
+
+    [Tooltip("can this tile be improved")]
+    public bool Improvable = true;
     [Tooltip("The Tile to draw (use a RuleTile for best results)")]
+
     public TileBase tile;
     public Color SimpleDisplayColor;
 
