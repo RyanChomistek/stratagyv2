@@ -18,59 +18,24 @@ public class LayerMapFunctions : MonoBehaviour
         }
         return map;
     }
-    
-    public static void RenderMapWithTiles(Terrain[,] map, Tilemap tilemap, List<MapLayerSettings> layerSettings)
+
+    public static void FillHeightRange(ref Terrain[,] map,
+        ref float[,] heightMap,
+        Terrain currentTerrain,
+        float minHeight,
+        float maxHeight)
     {
-        tilemap.ClearAllTiles(); //Clear the map (ensures we dont overlap)
-        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+        for (int x = 0; x <= map.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            for (int y = 0; y <= map.GetUpperBound(1); y++)
             {
-                if(map[x, y] != Terrain.Empty)
+                if (heightMap[x,y] > minHeight && heightMap[x, y] < maxHeight)
                 {
-                    var settings = layerSettings.Find(terrain => terrain.terrain == map[x, y]);
-                    tilemap.SetTile(new Vector3Int(x, y, 0), settings.tile);
+                    map[x, y] = currentTerrain;
+                    heightMap[x, y] = minHeight;
                 }
             }
         }
-    }
-    
-    public static Terrain[,] RandomWalkLeftToRight(Terrain[,] map, float seed, Terrain currentTerrain)
-    {
-        //Seed our random
-        System.Random rand = new System.Random(seed.GetHashCode());
-
-        //Set our starting height
-        int lastHeight = Random.Range(0, map.GetUpperBound(1));
-
-        //Cycle through our width
-        for (int x = 0; x < map.GetUpperBound(0); x++)
-        {
-            //Flip a coin
-            int nextMove = rand.Next(2);
-            int lastLastHeight = lastHeight;
-            //If heads, and we aren't near the bottom, minus some height
-            if (nextMove == 0 && lastHeight > 2)
-            {
-                lastHeight--;
-            }
-            //If tails, and we aren't near the top, add some height
-            else if (nextMove == 1 && lastHeight < map.GetUpperBound(1) - 2)
-            {
-                lastHeight++;
-            }
-            //Debug.Log(lastLastHeight + " "+ lastHeight);
-            
-            map[x, lastHeight] = currentTerrain;
-
-            if (x > 0 && map[x - 1, lastHeight] != currentTerrain)
-            {
-                Debug.Log(map[x - 1, lastHeight] +" "+ currentTerrain);
-                map[x, lastLastHeight] = currentTerrain;
-            }
-        }
-        //Return the map
-        return map;
     }
 
     public static bool InBounds(Terrain[,] map, Vector2Int position)
@@ -110,9 +75,136 @@ public class LayerMapFunctions : MonoBehaviour
 
         return map;
     }
-    
-    public static Terrain[,] RandomWalk2D(Terrain[,] map, System.Random rand, Terrain currentTerrain, int width)
+
+    public static void FollowGradient(ref Terrain[,] map,
+        ref float[,] heightMap,
+        ref Vector2[,] gradientMap,
+        System.Random rand,
+        Terrain currentTerrain,
+        float minStartHeight,
+        float minStopHeight,
+        float maxWidth,
+        float widthChangeThrotle)
     {
+        //pick a random spot
+        Vector2Int start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
+
+        Debug.Log("start "+start);
+        //follow its gradient to the top
+        var currPos = start;
+        var momentum = gradientMap[currPos.x, currPos.y].normalized*0;
+
+        HashSet<Vector2Int> prevLocations = new HashSet<Vector2Int>();
+
+        //while(heightMap[currPos.x, currPos.y] < minStartHeight)
+        while(true)
+        {
+            //we reached a local maximum
+            if (prevLocations.Contains(currPos))
+            {
+                Debug.Log("HIT LOCAL MAX");
+                break;
+            }
+
+
+            prevLocations.Add(currPos);
+
+            var gradient = gradientMap[currPos.x, currPos.y].normalized + momentum;
+            currPos += RoundVector(gradient);
+            momentum = momentum * .9f;
+        }
+        Debug.Log("end " + currPos);
+        //once we reach the min start height, start going back down, but leave the terrain behind
+        float width = 0;
+        prevLocations.Clear();
+        while (heightMap[currPos.x, currPos.y] > minStopHeight)
+        {
+            map[currPos.x, currPos.y] = currentTerrain;
+            
+            var gradient = gradientMap[currPos.x, currPos.y].normalized;
+            width += gradientMap[currPos.x, currPos.y].magnitude * widthChangeThrotle;
+            width = Mathf.Clamp(width, 0, maxWidth);
+            Vector2 tangent = Vector2.Perpendicular(gradient).normalized;
+            for (float i = -width; i < width; i+= .1f)
+            {
+                Vector2 step = (currPos + tangent * i);
+                var stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
+                if (InBounds(map, stepRounded))
+                    map[stepRounded.x, stepRounded.y] = currentTerrain;
+            }
+            
+            //we reached a local min
+            if (prevLocations.Contains(currPos))
+            {
+                Debug.Log("HIT LOCAL MAX");
+                break;
+            }
+            prevLocations.Add(currPos);
+
+            var delta = RoundVector(gradient) * -1;
+            Debug.Log(delta + " " + (System.Math.Abs(delta.x) == System.Math.Abs(delta.y)));
+
+            //dont go diagonally, only keep one axis
+            if (System.Math.Abs(delta.x) == System.Math.Abs(delta.y))
+            {
+                var keepxOry = rand.Next(2);
+                if (keepxOry == 1)
+                {
+                    delta = new Vector2Int(delta.x, 0);
+                }
+                else
+                {
+                    delta = new Vector2Int(0, delta.y);
+                }
+            }
+
+            var nextStep = currPos + delta;
+            if(!MapManager.InBounds(heightMap, nextStep.x, nextStep.y))
+            {
+                break;
+            }
+
+            currPos = nextStep;
+        }
+
+        //fill everything at about that z level
+        prevLocations.Clear();
+        Stack<Vector2Int> nextLocations = new Stack<Vector2Int>();
+        nextLocations.Push(currPos);
+        float height = heightMap[currPos.x, currPos.y];
+        while (nextLocations.Count != 0)
+        {
+            currPos = nextLocations.Pop();
+            map[currPos.x, currPos.y] = currentTerrain;
+            heightMap[currPos.x, currPos.y] = height;
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    Vector2Int step = currPos + new Vector2Int(x, y);
+                    if (MapManager.InBounds(heightMap, step.x, step.y) &&
+                        !prevLocations.Contains(step) &&
+                        gradientMap[step.x,step.y].magnitude < .05f)
+                    {
+                        nextLocations.Push(step);
+                        prevLocations.Add(step);
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    public static Terrain[,] RandomWalk2D(ref Terrain[,] map,
+        ref Terrain[,] baseTerrainMap,
+        System.Random rand,
+        Terrain currentTerrain,
+        int width,
+        bool CheckForBlockers,
+        Dictionary<Terrain, TerrainTileSettings> terrainTileLookup)
+    {
+        #region setup start and target points
         //start on an edge
         var startOnXOrY = rand.Next(2);
         var startAtBeginingOrEnd = rand.Next(2);
@@ -122,7 +214,7 @@ public class LayerMapFunctions : MonoBehaviour
             if (startAtBeginingOrEnd == 1)
                 start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), 0);
             else
-                start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)),  map.GetUpperBound(1));
+                start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), map.GetUpperBound(1));
         }
         else
         {
@@ -133,17 +225,17 @@ public class LayerMapFunctions : MonoBehaviour
         }
 
         //pick a random point in the middle to go through
-        Vector2Int mid = new Vector2Int(map.GetUpperBound(0)/4, map.GetUpperBound(1)/4);
+        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) / 4, map.GetUpperBound(1) / 4);
 
         int midRadiusX = map.GetUpperBound(0) / 2;
         int midRadiusY = map.GetUpperBound(1) / 2;
-        mid += new Vector2Int(rand.Next(-midRadiusX, midRadiusX), 
+        mid += new Vector2Int(rand.Next(-midRadiusX, midRadiusX),
             rand.Next(-midRadiusY, midRadiusY));
 
         Vector2 dir = mid - start;
 
         //if we picked to start in the middle just pick a direction
-        if(dir == Vector2.zero)
+        if (dir == Vector2.zero)
         {
             var directions = new List<Vector2Int>(){ new Vector2Int(1, 1), new Vector2Int(1, -1),
                                                  new Vector2Int(-1, 1), new Vector2Int(-1, -1),
@@ -156,18 +248,47 @@ public class LayerMapFunctions : MonoBehaviour
         {
             dir = dir.normalized;
         }
+        #endregion
 
         Vector2Int gridPosition = start;
         Vector2 realPosition = start;
-        while (InBounds(map, gridPosition))
+        float maxSteps = map.GetUpperBound(0) * map.GetUpperBound(0);
+        int numSteps = 0;
+        while (InBounds(map, gridPosition) && numSteps < maxSteps)
         {
+            numSteps++;
             Vector2 tangent = Vector2.Perpendicular(dir).normalized;
-            //Debug.Log(tangent.magnitude);
+            #region check blockers
+            if(CheckForBlockers)
+            {
+                //check if any block ahead of us are impassible
+                bool isBlocked = false;
+                int lookAheadTiles = 5;
+                for (int i = 2; i < lookAheadTiles; i++)
+                {
+                    Vector2 nextMoveExtended = (realPosition + dir.normalized * i);
+                    Vector2Int nextMoveExtendedRounded = new Vector2Int(Mathf.RoundToInt(nextMoveExtended.x), Mathf.RoundToInt(nextMoveExtended.y));
+                    if (InBounds(baseTerrainMap, nextMoveExtendedRounded) &&
+                    !terrainTileLookup[baseTerrainMap[nextMoveExtendedRounded.x, nextMoveExtendedRounded.y]].tile.Improvable)
+                    {
+                        isBlocked = true;
+                    }
+                }
 
+                if (isBlocked)
+                {
+                    var tangentSign = rand.Next(2) == 0 ? -1 : 1;
+                    //if we cant go farther take a turn
+                    dir = Vector2.MoveTowards(dir, tangent * tangentSign, .1f);
+
+                    continue;
+                }
+            }
+            #endregion
             Vector2Int stepRounded = RoundVector(realPosition);
             map[stepRounded.x, stepRounded.y] = currentTerrain;
 
-            for (int i = -width; i < width; i++)
+            for (int i = -width; i <= width; i++)
             {
                 Vector2 step = (realPosition + tangent * i);
                 stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
@@ -176,11 +297,34 @@ public class LayerMapFunctions : MonoBehaviour
             }
 
             Vector2 nextMove = (realPosition + dir);
+            
             //add in a random amound of deveation from dir so that its more curvy
             Vector2Int nextMoveRounded = new Vector2Int(Mathf.RoundToInt(nextMove.x), Mathf.RoundToInt(nextMove.y));
             Vector2Int delta = nextMoveRounded - gridPosition;
-            dir += new Vector2((float)rand.NextDouble() - .5f, (float)rand.NextDouble() - .5f) * .01f;
-            dir = dir.normalized / 8;
+
+            //dont go diagonally, only keep one axis
+            if (System.Math.Abs(delta.x) == System.Math.Abs(delta.y))
+            {
+                var keepxOry = rand.Next(2);
+                if (keepxOry == 1)
+                {
+                    delta = new Vector2Int(delta.x, 0);
+                    nextMove = realPosition + new Vector2(dir.x, 0);
+                }
+                else
+                {
+                    delta = new Vector2Int(0, delta.y);
+                    nextMove = realPosition + new Vector2(0, dir.y);
+                }
+            }
+
+            //dir += new Vector2((float)rand.NextDouble() - .5f, (float)rand.NextDouble() - .5f) * .01f;
+            //dir = dir.normalized / 8;
+
+            var directionSign = rand.Next(2) == 0 ? -1 : 1;
+            //if we cant go farther take a turn
+            dir = Vector2.MoveTowards(dir, tangent * directionSign, .008f);
+
             gridPosition = gridPosition + delta;
             realPosition = nextMove;
         }

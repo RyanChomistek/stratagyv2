@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 
 public enum LayerFillAlgorithm
 {
-    Solid, RandomWalk, Square, PerlinNoise
+    Solid, RandomWalk, Square, PerlinNoise, RandomWalkBlocking, HeightRange, FollowGradient
 }
 
 public enum Terrain
@@ -38,6 +38,16 @@ public class MapLayerSettings : ScriptableObject
     public bool IsEnabled = true;
     public float PerlinNoiseScale = 2.5f;
     public float PerlinNoiseThreshold = .5f;
+
+    //for height range
+    public float MinHeight;
+    public float MaxHeight;
+
+    //for gradient follow
+    public float MinStartHeight;
+    public float MinStopHeight;
+    public float MaxWidth;
+    public float WidthChangeThrotle;
 }
 
 
@@ -72,6 +82,7 @@ public class MapLayerSettings_Editor : Editor
                 //No additional Variables
                 break;
             case LayerFillAlgorithm.RandomWalk:
+            case LayerFillAlgorithm.RandomWalkBlocking:
                 mapLayer.iterations = EditorGUILayout.IntField("Iterations", mapLayer.iterations);
                 mapLayer.radius = EditorGUILayout.IntField("Radius", mapLayer.radius);
                 break;
@@ -81,6 +92,16 @@ public class MapLayerSettings_Editor : Editor
             case LayerFillAlgorithm.PerlinNoise:
                 mapLayer.PerlinNoiseScale = EditorGUILayout.FloatField("Perlin Noise Scale", mapLayer.PerlinNoiseScale);
                 mapLayer.PerlinNoiseThreshold = EditorGUILayout.FloatField("Perlin Noise Threshold", mapLayer.PerlinNoiseThreshold);
+                break;
+            case LayerFillAlgorithm.HeightRange:
+                mapLayer.MinHeight = EditorGUILayout.FloatField("MinHeight", mapLayer.MinHeight);
+                mapLayer.MaxHeight = EditorGUILayout.FloatField("MaxHeight", mapLayer.MaxHeight);
+                break;
+            case LayerFillAlgorithm.FollowGradient:
+                mapLayer.MinStartHeight = EditorGUILayout.FloatField("minStartHeight", mapLayer.MinStartHeight);
+                mapLayer.MinStopHeight = EditorGUILayout.FloatField("MinStopHeight", mapLayer.MinStopHeight);
+                mapLayer.MaxWidth = EditorGUILayout.FloatField("MaxWidth", mapLayer.MaxWidth);
+                mapLayer.WidthChangeThrotle = EditorGUILayout.FloatField("WidthChangeThrotle", mapLayer.WidthChangeThrotle);
                 break;
         }
 

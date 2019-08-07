@@ -29,6 +29,8 @@ public class MapTerrainTile
 
     public uint MoveCost = 1;
     public Terrain TerrainType;
+    public float Height;
+    public Vector2 HeightGradient;
 
     [Tooltip("can this tile be improved")]
     public bool Improvable = true;
@@ -37,7 +39,7 @@ public class MapTerrainTile
     public TileBase tile;
     public Color SimpleDisplayColor;
 
-    public MapTerrainTile(TerrainTileSettings other)
+    public MapTerrainTile(TerrainTileSettings other, float height, Vector2 heightGradient)
     {
         this.Supply = other.tile.Supply;
         this.MaxSupply = other.tile.MaxSupply;
@@ -55,6 +57,9 @@ public class MapTerrainTile
         this.TerrainType = other.tile.TerrainType;
         this.tile = other.tile.tile;
         this.SimpleDisplayColor = other.tile.SimpleDisplayColor;
+
+        this.Height = height;
+        this.HeightGradient = heightGradient;
     }
 
     public void Update(float gameTime)
@@ -111,6 +116,6 @@ public class MapTerrainTile
     public override string ToString()
     {
 
-        return $" {TerrainType.ToString()} supply : {Supply}/{MaxSupply} \n Population : {Population}/{MaxPopulation}";
+        return $" {TerrainType.ToString()} supply : {Supply}/{MaxSupply}  Population : {Population}/{MaxPopulation}  height {Height}, {HeightGradient}";
     }
 }

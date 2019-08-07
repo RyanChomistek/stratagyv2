@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LakeLayerSettings
   m_EditorClassIdentifier: 
   terrain: 3
-  algorithm: 3
+  algorithm: 5
   Layer: 0
   tile: {fileID: 11400000, guid: ad8803c16cd12d34c8406a2644198ed4, type: 2}
   randomSeed: 1
@@ -21,6 +21,12 @@ MonoBehaviour:
   iterations: 1
   radius: 1
   terrainTile: {fileID: 11400000, guid: b484cfafaadefae4bbd61070b0b26365, type: 2}
-  IsEnabled: 1
+  IsEnabled: 0
   PerlinNoiseScale: 5
   PerlinNoiseThreshold: 0.8
+  MinHeight: 0
+  MaxHeight: 0.25
+  MinStartHeight: 0
+  MinStopHeight: 0
+  MaxWidth: 0
+  WidthChangeThrotle: 0
