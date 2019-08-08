@@ -118,7 +118,7 @@ public class Soldier : IEquatable<Soldier>
     //should be called once per second
     public virtual void UseSupply(Officer officer)
     {
-        Supply -= SupplyUsePerSec * officer.SupplyUsage;
+        Supply -= SupplyUsePerSec * officer.SupplyUsage.Value;
     }
 
     public virtual void GatherSupplies(MapTerrainTile tile)

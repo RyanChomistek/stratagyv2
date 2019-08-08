@@ -43,12 +43,12 @@ public class AIOrder : MultiOrder
         {
             OnEnemiesSeen(Host, enemies);
         }
-        else if (Host.Soldiers.Count > Host.CommandingOfficer.SoldierCntSplitThreshold)
+        else if (Host.Soldiers.Count > Host.CommandingOfficer.SoldierCntSplitThreshold.Value)
         {
             _currentBehavior = "split";
-            this.ReceiveOrder(Host, new SplitDivision(Host, Host.DivisionId, Host.CommandingOfficer.PercentOfSoldiersToSplit));
+            this.ReceiveOrder(Host, new SplitDivision(Host, Host.DivisionId, Host.CommandingOfficer.PercentOfSoldiersToSplit.Value));
         }
-        else if (Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
+        else if (Host.Supply < Host.CommandingOfficer.ResupplyPerSoldierThreshold.Value * Host.NumSoldiers)
         {
             _currentBehavior = "Resupply";
             //resupply if we need to
@@ -77,9 +77,12 @@ public class AIOrder : MultiOrder
         {
             //Debug.Log($"resupply position : {foundPosition}");
             this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
+            var supplyOrder = new GatherSuppliesOrder(Host, Host.DivisionId);
             // add the supply to Host 
-            Host.ReceiveOrder(new GatherSuppliesOrder(Host, Host.DivisionId));
-            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2));
+            Host.ReceiveOrder(supplyOrder);
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2, x => {
+                x.CancelOrder(supplyOrder.orderId);
+            }));
         }
         else
         {
@@ -102,8 +105,11 @@ public class AIOrder : MultiOrder
             //Debug.Log($"resupply position : {foundPosition}");
             this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
             // add the recruit to Host 
-            Host.ReceiveOrder(new RecruitOrder(Host, Host.DivisionId));
-            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2));
+            var recruitOrder = new RecruitOrder(Host, Host.DivisionId);
+            Host.ReceiveOrder(recruitOrder);
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2, x => {
+                x.CancelOrder(recruitOrder.orderId);
+            }));
         }
         else
         {
@@ -125,7 +131,7 @@ public class AIOrder : MultiOrder
     {
         //Debug.Log("ENEMY!!!!!!!!!!!!!!!");
 
-        if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > Host.CommandingOfficer.EngagementThreshold)
+        if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > Host.CommandingOfficer.EngagementThreshold.Value)
         {
             //Debug.Log("ATTACK");
             _currentBehavior = $"Attack: {enemies[0].DivisionId}";
@@ -144,7 +150,7 @@ public class AIOrder : MultiOrder
 
             enemiesCentoid /= enemies.Count;
 
-            Vector3 delta = (Host.Position - enemiesCentoid) * Host.CommandingOfficer.RunAwayDistance;
+            Vector3 delta = (Host.Position - enemiesCentoid) * Host.CommandingOfficer.RunAwayDistance.Value;
             Vector3 retreatPos = Host.Position + delta;
             StartOrder(Host, new Move(Host, Host.DivisionId, MapManager.Instance.ClampPositionToInBounds(retreatPos)));
         }

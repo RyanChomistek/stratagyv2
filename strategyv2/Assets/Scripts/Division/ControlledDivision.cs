@@ -296,6 +296,11 @@ public class ControlledDivision : Division
         OnChange();
     }
 
+    public void CancelOrder(int orderId)
+    {
+        CancelOrders(new HashSet<int>() { orderId });
+    }
+
     public void CancelOrders(HashSet<int> orderIdsToCancel)
     {
         OrderSystem.CancelOrders(this, orderIdsToCancel);
@@ -304,7 +309,7 @@ public class ControlledDivision : Division
     public void SendMessenger(RememberedDivision to, RememberedDivision endTarget, List<Order> orders)
     {
         //create a new division
-        DivisionController messenger = CreateNewDivision((int) CommandingOfficer.MessengerDivisionSoldierCnt);
+        DivisionController messenger = CreateNewDivision((int) CommandingOfficer.MessengerDivisionSoldierCnt.Value);
         messenger.AttachedDivision.IsMessenger = true;
         messenger.name = "messenger";
         messenger.AttachedDivision.ReceiveOrder(new FindDivision(messenger.AttachedDivision, DivisionId, to.DivisionId));

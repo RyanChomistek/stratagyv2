@@ -195,7 +195,7 @@ public class MultiOrder : Order
         CancelOrders(OrderQueue, orderIdsToCancel);
         CancelOrders(BackgroundOrderList, orderIdsToCancel);
         CancelOrder(OngoingOrder, orderIdsToCancel);
-        DoOrders(Host);
+        //DoOrders(Host);
     }
 
     public override Vector3 GetPredictedPosition(RememberedDivision rememberedDivision)

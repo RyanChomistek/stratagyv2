@@ -44,7 +44,7 @@ public class Move : Order {
         _ai.canMove = true;
         Host.RecalculateAggrigateValues();
         Host.RefreshDiscoveredTiles();
-        _ai.maxSpeed = Host.Speed * GameManager.GameSpeed * Host.CommandingOfficer.SupplyUsage;
+        _ai.maxSpeed = Host.Speed * GameManager.GameSpeed * Host.CommandingOfficer.SupplyUsage.Value;
     }
 
     public override void Pause(ControlledDivision Host)

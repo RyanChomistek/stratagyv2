@@ -20,7 +20,7 @@ MonoBehaviour:
     Population: 50
     MaxPopulation: 100
     InitialPopulation: 1
-    PopulationGrowthRate: 0.002
+    PopulationGrowthRate: 0.02
     PopulationSpreadRate: 0.002
     MoveCost: 1000
     TerrainType: 5
