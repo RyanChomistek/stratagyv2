@@ -13,14 +13,26 @@ MonoBehaviour:
   m_Name: RoadLayerSettings
   m_EditorClassIdentifier: 
   terrain: 2
-  algorithm: 4
+  algorithm: 1
   Layer: 1
   tile: {fileID: 11400000, guid: fc530990f841218469dd887a849f70ff, type: 2}
+  useLayeredGradients: 1
   randomSeed: 1
   seed: 651651
-  iterations: 3
+  iterations: 2
   radius: 0
   terrainTile: {fileID: 11400000, guid: 7b9d15a615d119d4c9651fae2ae806e1, type: 2}
-  IsEnabled: 0
+  IsEnabled: 1
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.5
+  MinHeight: 0
+  MaxHeight: 0
+  MinStartHeight: 0
+  MinStopHeight: 0
+  MaxWidth: 0
+  WidthChangeThrotle: 0
+  Width: 1
+  MinThreshold: 0
+  SpawnChance: 0
+  MaxGradient: 0
+  PercentCovered: 0

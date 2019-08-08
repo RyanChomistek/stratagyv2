@@ -8,7 +8,7 @@ public class LayerMapFunctions : MonoBehaviour
     public static Terrain[,] GenerateArray(int width, int height, Terrain defaultTerrain)
     {
         Terrain[,] map = new Terrain[width, height];
-        
+
         for (int x = 0; x <= map.GetUpperBound(0); x++)
         {
             for (int y = 0; y <= map.GetUpperBound(1); y++)
@@ -29,7 +29,7 @@ public class LayerMapFunctions : MonoBehaviour
         {
             for (int y = 0; y <= map.GetUpperBound(1); y++)
             {
-                if (heightMap[x,y] > minHeight && heightMap[x, y] < maxHeight)
+                if (heightMap[x, y] > minHeight && heightMap[x, y] < maxHeight)
                 {
                     map[x, y] = currentTerrain;
                     heightMap[x, y] = minHeight;
@@ -54,19 +54,19 @@ public class LayerMapFunctions : MonoBehaviour
 
     public static Terrain[,] RandomSquares(Terrain[,] map, System.Random rand, Terrain currentTerrain, int width)
     {
-        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) /2, map.GetUpperBound(1) / 2);
+        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) / 2, map.GetUpperBound(1) / 2);
 
         int midRadiusX = map.GetUpperBound(0) / 2;
         int midRadiusY = map.GetUpperBound(1) / 2;
         mid += new Vector2Int(rand.Next(-midRadiusX, midRadiusX),
             rand.Next(-midRadiusY, midRadiusY));
 
-        for(int i = -width; i < width; i++)
+        for (int i = -width; i < width; i++)
         {
             for (int j = -width; j < width; j++)
             {
                 var point = mid + new Vector2Int(i, j);
-                if(InBounds(map, point))
+                if (InBounds(map, point))
                 {
                     map[point.x, point.y] = currentTerrain;
                 }
@@ -76,7 +76,135 @@ public class LayerMapFunctions : MonoBehaviour
         return map;
     }
 
-    public static void FollowGradient(ref Terrain[,] map,
+    public static void AjdacentTiles(ref Terrain[,] map,
+    ref float[,] heightMap,
+    ref Vector2[,] gradientMap,
+    ref Terrain[,] baseTerrainMap,
+    ref Terrain[,] baseImprovementMap,
+    System.Random rand,
+    Terrain currentTerrain,
+    float minHabitability,
+    float maxGadient,
+    int radius,
+    float spawnChance,
+    Dictionary<Terrain, TerrainTileSettings> terrainTileLookup)
+    {
+        //float[,] HabitabilityMap = new float[baseTerrainMap.GetUpperBound(0) + 1, baseTerrainMap.GetUpperBound(1) + 1];
+
+        for (int x = 0; x <= baseTerrainMap.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= baseTerrainMap.GetUpperBound(1); y++)
+            {
+                if(!terrainTileLookup[baseTerrainMap[x,y]].tile.Improvable)
+                {
+                    continue;
+                }
+
+                float habitabilityScore = 0;
+
+                int numNeighborsChecked = 0;
+                int range = radius;
+                float maxScore = 0;
+                //loop through every tiles neighbors
+                for (int i = x - range; i <= x + range; i++)
+                {
+                    for (int j = y - range; j <= y + range; j++)
+                    {
+                        if (MapManager.InBounds(baseTerrainMap, i, j))
+                        {
+                            numNeighborsChecked++;
+                            var otherTerrainTile = baseTerrainMap[i, j];
+                            var otherImprovementTile = baseImprovementMap[i, j];
+                            var distance = new Vector2(i, j).magnitude;
+                            maxScore += 1 / distance;
+                            if (otherTerrainTile == Terrain.Water || otherImprovementTile == Terrain.Road)
+                            {
+                                habitabilityScore += 1/distance;
+                            }
+                        }
+                    }
+                }
+
+                habitabilityScore /= maxScore;
+
+                var TerrainTile = baseTerrainMap[x, y];
+                var ImprovementTile = baseImprovementMap[x, y];
+
+                if (habitabilityScore > minHabitability && gradientMap[x, y].magnitude < maxGadient &&
+                    (terrainTileLookup[TerrainTile].tile.Improvable && terrainTileLookup[ImprovementTile].tile.Improvable) &&
+                    rand.NextDouble() < spawnChance)
+                {
+                    map[x, y] = currentTerrain;
+                }
+
+            }
+        }
+    }
+
+    public static void Droplets(ref Terrain[,] map,
+        ref float[,] heightMap,
+        ref Vector2[,] gradientMap,
+        System.Random rand,
+        Terrain currentTerrain,
+        float percentCovered)
+    {
+        float[,] dropletMap = new float[heightMap.GetUpperBound(0) + 1, heightMap.GetUpperBound(1) + 1];
+        //float[,] dropletPathMap = new float[heightMap.GetUpperBound(0) + 1, heightMap.GetUpperBound(1) + 1];
+
+        int numDroplets = (int) (heightMap.GetUpperBound(0) * heightMap.GetUpperBound(1) * percentCovered);
+        //int numDroplets = 25;
+        
+        for(int i = 0; i < numDroplets; i++)
+        {
+            Vector2 start = new Vector2(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
+            var realPos = start;
+            var gridPos = RoundVector(start);
+            Vector2 momentum = gradientMap[gridPos.x, gridPos.y].normalized * 10;
+
+            int cnt = 0;
+            while (momentum.magnitude > 1 && cnt < 10000)
+            {
+                cnt++;
+                dropletMap[gridPos.x, gridPos.y] += 1;
+                var gradient = gradientMap[gridPos.x, gridPos.y].normalized;
+                
+
+                var delta = gradient * -1;
+                momentum += delta;
+                momentum *= .95f;
+
+                var nextStep = realPos + delta;
+                var gridNextStep = RoundVector(nextStep);
+                if (!MapManager.InBounds(heightMap, gridNextStep.x, gridNextStep.y))
+                {
+                    break;
+                }
+
+                realPos = nextStep;
+                gridPos = gridNextStep;
+            }
+
+            //Debug.Log($"{i}: {cnt} ending momentum {momentum} {momentum.magnitude}");
+
+            dropletMap[gridPos.x, gridPos.y] += 1;
+        }
+
+        Normalize(ref dropletMap);
+        Smooth(ref dropletMap);
+        //Smooth(ref dropletPathMap);
+
+        for (int x = 0; x <= dropletMap.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= dropletMap.GetUpperBound(1); y++)
+            {
+                if(dropletMap[x, y] > .01f)
+                //if(dropletMap[x, y] != 0 || dropletPathMap[x, y] != 0)
+                    map[x, y] = currentTerrain;
+            }
+        }
+    }
+
+    public static void GadientDescent(ref Terrain[,] map,
         ref float[,] heightMap,
         ref Vector2[,] gradientMap,
         System.Random rand,
@@ -88,8 +216,7 @@ public class LayerMapFunctions : MonoBehaviour
     {
         //pick a random spot
         Vector2Int start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
-
-        Debug.Log("start "+start);
+        
         //follow its gradient to the top
         var currPos = start;
         var momentum = gradientMap[currPos.x, currPos.y].normalized*0;
@@ -102,10 +229,8 @@ public class LayerMapFunctions : MonoBehaviour
             //we reached a local maximum
             if (prevLocations.Contains(currPos))
             {
-                Debug.Log("HIT LOCAL MAX");
                 break;
             }
-
 
             prevLocations.Add(currPos);
 
@@ -113,14 +238,15 @@ public class LayerMapFunctions : MonoBehaviour
             currPos += RoundVector(gradient);
             momentum = momentum * .9f;
         }
-        Debug.Log("end " + currPos);
+
         //once we reach the min start height, start going back down, but leave the terrain behind
         float width = 0;
         prevLocations.Clear();
+        int numSteps = 0;
         while (heightMap[currPos.x, currPos.y] > minStopHeight)
         {
             map[currPos.x, currPos.y] = currentTerrain;
-            
+            numSteps++;
             var gradient = gradientMap[currPos.x, currPos.y].normalized;
             width += gradientMap[currPos.x, currPos.y].magnitude * widthChangeThrotle;
             width = Mathf.Clamp(width, 0, maxWidth);
@@ -136,13 +262,16 @@ public class LayerMapFunctions : MonoBehaviour
             //we reached a local min
             if (prevLocations.Contains(currPos))
             {
-                Debug.Log("HIT LOCAL MAX");
                 break;
             }
             prevLocations.Add(currPos);
 
             var delta = RoundVector(gradient) * -1;
-            Debug.Log(delta + " " + (System.Math.Abs(delta.x) == System.Math.Abs(delta.y)));
+            //randomly add in a side step
+            var sideStep = rand.Next(3) - 1; // range -1, 0 , 1
+            delta = RoundVector(((sideStep * tangent) + delta).normalized);
+
+            //Debug.Log(delta + " " + (System.Math.Abs(delta.x) == System.Math.Abs(delta.y)));
 
             //dont go diagonally, only keep one axis
             if (System.Math.Abs(delta.x) == System.Math.Abs(delta.y))
@@ -192,12 +321,50 @@ public class LayerMapFunctions : MonoBehaviour
                 }
             }
         }
+    }
 
+    public static void FollowAlongGradient(ref Terrain[,] map,
+        ref float[,] heightMap,
+        ref Vector2[,] gradientMap,
+        System.Random rand,
+        Terrain currentTerrain,
+        float Width)
+    {
+        //pick a random spot
+        Vector2Int start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
 
+        Debug.Log("start " + start);
+        //follow its gradient to the top
+        var currPos = start;
+        var momentum = gradientMap[currPos.x, currPos.y].normalized * 0;
+
+        HashSet<Vector2Int> prevLocations = new HashSet<Vector2Int>();
+
+        //while(heightMap[currPos.x, currPos.y] < minStartHeight)
+        int cnt = 0;
+        while (MapManager.InBounds(heightMap, currPos.x, currPos.y) && cnt < 1000)
+        {
+            cnt++;
+            map[currPos.x, currPos.y] = currentTerrain;
+            //we reached a local maximum
+            if (prevLocations.Contains(currPos))
+            {
+                Debug.Log("HIT LOCAL MAX");
+                break;
+            }
+
+            prevLocations.Add(currPos);
+
+            var gradient = gradientMap[currPos.x, currPos.y].normalized;
+            Vector2 tangent = Vector2.Perpendicular(gradient).normalized;
+            currPos += RoundVector(tangent);
+            momentum = momentum * .9f;
+        }
     }
 
     public static Terrain[,] RandomWalk2D(ref Terrain[,] map,
         ref Terrain[,] baseTerrainMap,
+        ref float[,] heightMap,
         System.Random rand,
         Terrain currentTerrain,
         int width,
@@ -225,7 +392,7 @@ public class LayerMapFunctions : MonoBehaviour
         }
 
         //pick a random point in the middle to go through
-        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) / 4, map.GetUpperBound(1) / 4);
+        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) / 2, map.GetUpperBound(1) / 2);
 
         int midRadiusX = map.GetUpperBound(0) / 2;
         int midRadiusY = map.GetUpperBound(1) / 2;
@@ -249,6 +416,8 @@ public class LayerMapFunctions : MonoBehaviour
             dir = dir.normalized;
         }
         #endregion
+
+        float startHeight = heightMap[start.x, start.y];
 
         Vector2Int gridPosition = start;
         Vector2 realPosition = start;
@@ -287,13 +456,17 @@ public class LayerMapFunctions : MonoBehaviour
             #endregion
             Vector2Int stepRounded = RoundVector(realPosition);
             map[stepRounded.x, stepRounded.y] = currentTerrain;
+            heightMap[stepRounded.x, stepRounded.y] = startHeight;
 
             for (int i = -width; i <= width; i++)
             {
                 Vector2 step = (realPosition + tangent * i);
                 stepRounded = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
                 if (InBounds(map, stepRounded))
+                {
                     map[stepRounded.x, stepRounded.y] = currentTerrain;
+                    heightMap[stepRounded.x, stepRounded.y] = startHeight;
+                }
             }
 
             Vector2 nextMove = (realPosition + dir);
@@ -377,7 +550,15 @@ public class LayerMapFunctions : MonoBehaviour
         RandomWalk2DHelper(ref map, rand, currentTerrain, gridPosition + delta, nextMove, dir, width, numSteps);
     }
 
-    public static Terrain[,] PerlinNoise(ref Terrain[,] map, Terrain currentTerrain, System.Random rand, float scale, float threshold)
+    public static Terrain[,] PerlinNoise(ref Terrain[,] map,
+        ref Terrain[,] baseTerrainMap,
+        ref Vector2[,] gradientMap,
+        Terrain currentTerrain,
+        System.Random rand,
+        float scale,
+        float threshold,
+        float maxGadient,
+        Dictionary<Terrain, TerrainTileSettings> terrainTileLookup)
     {
         Vector2 shift = new Vector2((float)rand.NextDouble() * 1000, (float)rand.NextDouble() * 1000);
         for (int x = 0; x <= map.GetUpperBound(0); x++)
@@ -388,9 +569,8 @@ public class LayerMapFunctions : MonoBehaviour
                 float yCoord = shift.y + y / (map.GetUpperBound(1) + 1f) * scale;
                 float sample = Mathf.PerlinNoise(xCoord, yCoord);
 
-                if(sample > threshold)
+                if(sample > threshold && gradientMap[x,y].magnitude < .05f && terrainTileLookup[baseTerrainMap[x,y]].tile.Improvable)
                 {
-                   
                     map[x, y] = currentTerrain;
                 }
             }
@@ -459,5 +639,87 @@ public class LayerMapFunctions : MonoBehaviour
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// remove jagged edges
+    /// </summary>
+    public static void Smooth(ref float[,] map)
+    {
+        //gausian smoothing filter
+        var kernel = new List<List<float>>()
+        {
+            new List<float>{1,4,7,4,1 },
+            new List<float>{4,16,26,16,4},
+            new List<float>{7,26,41,26,7},
+            new List<float>{4,16,26,16,4},
+            new List<float>{1,4,7,4,1 },
+        };
+
+        int k_h = kernel.Count;
+        int k_w = kernel[0].Count;
+
+        for (int k_x = 0; k_x < k_w; k_x++)
+        {
+            for (int k_y = 0; k_y < k_h; k_y++)
+            {
+                kernel[k_y][k_x] /= 273f;
+            }
+        }
+
+        map = Convolution2D(map, kernel);
+    }
+
+    public static void Normalize(ref float[,] arr)
+    {
+        float min = 1000, max = -1000;
+
+        for (int x = 0; x <= arr.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= arr.GetUpperBound(1); y++)
+            {
+                min = Mathf.Min(min, arr[x, y]);
+                max = Mathf.Max(max, arr[x, y]);
+            }
+        }
+
+        for (int x = 0; x <= arr.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= arr.GetUpperBound(1); y++)
+            {
+                arr[x, y] = Mathf.InverseLerp(min, max, arr[x, y]);
+            }
+        }
+    }
+
+    public static float[,] Convolution2D(float[,] arr, List<List<float>> kernel)
+    {
+        var convolutedArr = new float[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
+        int k_h = kernel.Count;
+        int k_w = kernel[0].Count;
+
+        //do a 2d convolution
+        for (int x = 0; x <= arr.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= arr.GetUpperBound(1); y++)
+            {
+                for (int k_x = 0; k_x < k_w; k_x++)
+                {
+                    for (int k_y = 0; k_y < k_h; k_y++)
+                    {
+                        float k = kernel[k_y][k_x];
+                        int heightMapOffset_x = x + k_x - (k_w / 2);
+                        int heightMapOffset_y = y + k_y - (k_h / 2);
+
+                        if (MapManager.InBounds(arr, heightMapOffset_x, heightMapOffset_y))
+                            convolutedArr[x, y] += arr[heightMapOffset_x, heightMapOffset_y] * k;
+                    }
+                }
+            }
+        }
+
+        Normalize(ref convolutedArr);
+
+        return convolutedArr;
     }
 }

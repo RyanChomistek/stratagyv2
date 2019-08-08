@@ -13,15 +13,19 @@ MonoBehaviour:
   m_Name: Town
   m_EditorClassIdentifier: 
   tile:
-    Supply: 0
-    MaxSupply: 0
-    _supplyGrowthRate: 0
-    _supplySpreadRate: 0
-    Population: 0
-    MaxPopulation: 0
-    _populationGrowthRate: 0
-    _populationSpreadRate: 0
-    MoveCost: 0
+    Supply: 50
+    MaxSupply: 100
+    SupplyGrowthRate: -0.002
+    SupplySpreadRate: 0.001
+    Population: 50
+    MaxPopulation: 100
+    InitialPopulation: 1
+    PopulationGrowthRate: 0.002
+    PopulationSpreadRate: 0.002
+    MoveCost: 1000
     TerrainType: 5
+    Height: 0
+    HeightGradient: {x: 0, y: 0}
+    Improvable: 0
     tile: {fileID: 11400000, guid: 9e9b3525e9886d14b89ce02f562912f7, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

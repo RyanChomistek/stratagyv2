@@ -165,7 +165,7 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        MapGen.GenerateMap(terrainTileLookup);
+        MapGen.GenerateMap(terrainTileLookup, NumZLayers);
         ConvertMapGenerationToTerrainTiles(terrainTileLookup);
         SetUpAjdacentTiles();
         CreateTileMapLayers();
@@ -264,7 +264,7 @@ public class MapManager : MonoBehaviour
                         {
                             if (InBounds(nodeArray, i, j))
                             {
-                                nodeArray[x,y].AddConnection(nodeArray[i,j], map[x,y].MoveCost);
+                                nodeArray[x,y].AddConnection(nodeArray[i,j], (uint) map[x,y].MoveCost);
                                 connections++;
                             }
                         }
@@ -286,8 +286,9 @@ public class MapManager : MonoBehaviour
         {
             for (int j = 0; j <= MapGen.terrainMap.GetUpperBound(1); j++)
             {
-                map[i, j] = new MapTerrainTile(terrainTileLookup[MapGen.terrainMap[i, j]], MapGen.heightMap[i,j], MapGen.gradientMap[i, j]);
-                map[i, j].Improvement = new MapTerrainTile(terrainTileLookup[MapGen.improvmentMap[i, j]], MapGen.heightMap[i, j], MapGen.gradientMap[i, j]);
+                map[i, j] = new MapTerrainTile(terrainTileLookup[MapGen.terrainMap[i, j]].tile, MapGen.heightMap[i,j], MapGen.LayeredGradientMap[i, j]);
+                map[i, j].Improvement = new MapTerrainTile(terrainTileLookup[MapGen.improvmentMap[i, j]].tile, MapGen.heightMap[i, j], MapGen.LayeredGradientMap[i, j]);
+                map[i, j].ModifyBaseWithImprovement();
                 _minHeight = Mathf.Min(_minHeight, MapGen.heightMap[i, j]);
                 _maxHeight = Mathf.Max(_maxHeight, MapGen.heightMap[i, j]);
             }
@@ -323,11 +324,11 @@ public class MapManager : MonoBehaviour
         {
             case MapDisplays.Population:
                 //this.RenderMapWithKeyAndRange(x => x.Population, 1000);
-                this.RenderMapWithKey(x => x.Population/x.MaxPopulation);
+                this.RenderMapWithKey(x => x.Population);
                 break;
             case MapDisplays.Supply:
                 //this.RenderMapWithKeyAndRange(x => x.Supply, 1000);
-                this.RenderMapWithKey(x => x.Supply / x.MaxSupply);
+                this.RenderMapWithKey(x => x.Supply);
                 break;
             case MapDisplays.HeightMap:
                 this.RenderMapWithKey(x => x.Height);
@@ -379,8 +380,6 @@ public class MapManager : MonoBehaviour
                 cnt += (int) map[x, y].Improvement.TerrainType;
             }
         }
-
-        Debug.Log(min);
     }
 
     public void SetTileColor(Vector2Int pos, Color color)
@@ -392,7 +391,10 @@ public class MapManager : MonoBehaviour
 
         TerrainTileLayers[highestLayer].SetTileFlags(position, TileFlags.None);
         TerrainTileLayers[highestLayer].SetColor(position, color);
-        
+        ImprovementTilemap.SetTileFlags(position, TileFlags.None);
+        ImprovementTilemap.SetColor(position, color);
+
+
     }
 
     public Color GetTileColor(Vector2Int pos)
@@ -547,34 +549,34 @@ public class MapManager : MonoBehaviour
 
     public void RenderMapWithKey(Func<MapTerrainTile, float> key)
     {
-        float min = float.MaxValue;
-        float max = float.MinValue;
-        float sum = 0;
+        double min = float.MaxValue;
+        double max = float.MinValue;
+        double sum = 0;
         for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
         {
             for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
             {
-                float val = key(map[x, y]);
-                min = Mathf.Min(min, val);
-                max = Mathf.Max(max, val);
+                double val = key(map[x, y]);
+                min = Math.Min(min, val);
+                max = Math.Max(max, val);
                 sum += val;
             }
         }
 
-        float average = sum / map.Length;
-        float rse = 0;
+        double average = sum / map.Length;
+        double rse = 0;
 
         for (int x = 0; x <= map.GetUpperBound(0); x++)
         {
             for (int y = 0; y <= map.GetUpperBound(1); y++)
             {
                 float val = key(map[x, y]);
-                rse += Mathf.Pow(val - average, 2);
+                rse += Math.Pow(val - average, 2);
             }
         }
 
         rse /= (map.Length - 1);
-        float std = Mathf.Sqrt(rse);
+        double std = Math.Sqrt(rse);
 
         Debug.Log($"min {min}, max {max}, average {average}, std {std} {average - 2 * std} {average + 2 * std}");
         min = average - 2 * std;
@@ -586,8 +588,8 @@ public class MapManager : MonoBehaviour
                 var position = new Vector2Int(x, y);
                 float val = key(map[x, y]);
                 //clamp the threshold to be within the middle 95% of values
-                val = Mathf.Clamp(val, min, max);
-                float t = Mathf.InverseLerp(min, max, val);
+                val = Mathf.Clamp(val, (float) min, (float) max);
+                float t = Mathf.InverseLerp((float) min, (float) max, val);
                 var color = Color.Lerp(Color.red, Color.green, t);
                 //TerrainTilemap.SetTileFlags(position, TileFlags.None);
                 //TerrainTilemap.SetColor(position, color);

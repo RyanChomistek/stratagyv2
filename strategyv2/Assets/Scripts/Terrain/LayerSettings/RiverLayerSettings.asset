@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: RiverLayerSettings
   m_EditorClassIdentifier: 
   terrain: 3
-  algorithm: 6
+  algorithm: 9
   Layer: 0
   tile: {fileID: 11400000, guid: ad8803c16cd12d34c8406a2644198ed4, type: 2}
+  useLayeredGradients: 0
   randomSeed: 1
   seed: 6541132
-  iterations: 6
+  iterations: 1
   radius: 1
   terrainTile: {fileID: 11400000, guid: b484cfafaadefae4bbd61070b0b26365, type: 2}
   IsEnabled: 1
@@ -30,3 +31,8 @@ MonoBehaviour:
   MinStopHeight: 0.2
   MaxWidth: 3
   WidthChangeThrotle: 0.25
+  Width: 0
+  MinThreshold: 0
+  SpawnChance: 0
+  MaxGradient: 0
+  PercentCovered: 0.1

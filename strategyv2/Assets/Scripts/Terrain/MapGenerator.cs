@@ -14,11 +14,11 @@ public class MapGenerator : MonoBehaviour
     public Terrain[,] terrainMap;
     public Terrain[,] improvmentMap;
     public float[,] heightMap;
-    public Vector2[,] gradientMap;
+    public Vector2[,] LayeredGradientMap;
 
     public TerrainGenerator HeightmapGen;
 
-    public void GenerateMap(Dictionary<Terrain, TerrainTileSettings> terrainTileLookup)
+    public void GenerateMap(Dictionary<Terrain, TerrainTileSettings> terrainTileLookup, int numZLayers)
     {
         ClearMap();
         terrainMap = new Terrain[mapSize, mapSize];
@@ -31,7 +31,7 @@ public class MapGenerator : MonoBehaviour
 
         //generate heightmap
         HeightmapGen.GenerateHeightMap(mapSize);
-        if(UseErosion)
+        if (UseErosion)
             HeightmapGen.Erode();
 
         for (int i = 0; i < mapSize * mapSize; i++)
@@ -46,15 +46,28 @@ public class MapGenerator : MonoBehaviour
             terrainMap[x, y] = Terrain.Hill;
         }
 
-        SmoothHeightMap();
+        LayerMapFunctions.Smooth(ref heightMap);
+        Vector2[,] unflattendGradientMap = CalculateGradients(heightMap);
 
-        gradientMap = CalculateGradients(heightMap);
+        LayerHeightMap(numZLayers);
+        LayeredGradientMap = CalculateGradients(heightMap);
 
         foreach (MapLayerSettings layerSetting in LayerSettings)
         {
             if (!layerSetting.IsEnabled)
             {
                 continue;
+            }
+
+            Vector2[,] gradientMapInUse;
+
+            if (layerSetting.useLayeredGradients)
+            {
+                gradientMapInUse = LayeredGradientMap;
+            }
+            else
+            {
+                gradientMapInUse = unflattendGradientMap;
             }
 
             if (layerSetting.randomSeed)
@@ -70,17 +83,22 @@ public class MapGenerator : MonoBehaviour
 
             if (layerSetting.Layer == MapLayer.Terrain)
             {
-                RunAlgorithm(ref terrainMap, ref terrainMap, ref rand, terrainTileLookup, layerSetting);
+                RunAlgorithm(ref terrainMap, ref terrainMap, ref improvmentMap, ref gradientMapInUse, ref rand, terrainTileLookup, layerSetting);
             }
             else
             {
-                RunAlgorithm(ref improvmentMap, ref terrainMap, ref rand, terrainTileLookup, layerSetting);
+                RunAlgorithm(ref improvmentMap, ref terrainMap, ref improvmentMap, ref gradientMapInUse, ref rand, terrainTileLookup, layerSetting);
             }
 
+            //recalculate gradients becasue they might have changed
+            LayeredGradientMap = CalculateGradients(heightMap);
         }
+
+        //SmoothHeightMap();
+        //gradientMap = CalculateGradients(heightMap);
     }
 
-    public void RunAlgorithm(ref Terrain[,] map, ref Terrain[,] baseTerrainMap, ref System.Random rand, Dictionary<Terrain, TerrainTileSettings> terrainTileLookup, MapLayerSettings layerSetting)
+    public void RunAlgorithm(ref Terrain[,] map, ref Terrain[,] baseTerrainMap, ref Terrain[,] baseImprovementMap, ref Vector2[,] gradientMap, ref System.Random rand, Dictionary<Terrain, TerrainTileSettings> terrainTileLookup, MapLayerSettings layerSetting)
     {
         for (int i = 0; i < layerSetting.iterations; i++)
         {
@@ -90,24 +108,56 @@ public class MapGenerator : MonoBehaviour
                     map = LayerMapFunctions.GenerateArray(mapSize, mapSize, layerSetting.terrain);
                     break;
                 case LayerFillAlgorithm.RandomWalk:
-                    map = LayerMapFunctions.RandomWalk2D(ref map, ref baseTerrainMap, rand, layerSetting.terrain, layerSetting.radius, false, terrainTileLookup);
+                    map = LayerMapFunctions.RandomWalk2D(ref map, ref baseTerrainMap, ref heightMap, rand, layerSetting.terrain, layerSetting.radius, false, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.Square:
                     map = LayerMapFunctions.RandomSquares(map, rand, layerSetting.terrain, layerSetting.radius);
                     break;
                 case LayerFillAlgorithm.PerlinNoise:
-                    map = LayerMapFunctions.PerlinNoise(ref map, layerSetting.terrain, rand, layerSetting.PerlinNoiseScale, layerSetting.PerlinNoiseThreshold);
+                    map = LayerMapFunctions.PerlinNoise(ref map, ref baseTerrainMap, ref gradientMap, layerSetting.terrain, rand, layerSetting.PerlinNoiseScale, layerSetting.PerlinNoiseThreshold, layerSetting.MaxGradient, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.RandomWalkBlocking:
-                    map = LayerMapFunctions.RandomWalk2D(ref map, ref baseTerrainMap, rand, layerSetting.terrain, layerSetting.radius, true, terrainTileLookup);
+                    map = LayerMapFunctions.RandomWalk2D(ref map, ref baseTerrainMap, ref heightMap, rand, layerSetting.terrain, layerSetting.radius, true, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.HeightRange:
                     LayerMapFunctions.FillHeightRange(ref map, ref heightMap, layerSetting.terrain, layerSetting.MinHeight, layerSetting.MaxHeight);
                     break;
                 case LayerFillAlgorithm.FollowGradient:
-                    LayerMapFunctions.FollowGradient(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.MinStartHeight, layerSetting.MinStopHeight, layerSetting.MaxWidth, layerSetting.WidthChangeThrotle);
+                    LayerMapFunctions.GadientDescent(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.MinStartHeight, layerSetting.MinStopHeight, layerSetting.MaxWidth, layerSetting.WidthChangeThrotle);
                     break;
+                case LayerFillAlgorithm.FollowAlongGradient:
+                    LayerMapFunctions.FollowAlongGradient(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.Width);
+                    break;
+                case LayerFillAlgorithm.AdjacentTiles:
+                    LayerMapFunctions.AjdacentTiles(ref map, ref heightMap, ref gradientMap, ref baseTerrainMap, ref baseImprovementMap,
+                        rand,
+                        layerSetting.terrain, layerSetting.MinThreshold, layerSetting.MaxGradient, layerSetting.radius, layerSetting.SpawnChance, terrainTileLookup);
+                    break;
+                case LayerFillAlgorithm.Droplets:
+                    LayerMapFunctions.Droplets(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.PercentCovered);
+                    break;
+            }
+        }
+    }
 
+    private int GetLayerIndexByHeight(float height, int numZLayers)
+    {
+        int z = (int)(height * numZLayers);
+        //if the z is exactly numzlayers it will cause at out of bound on out bounds on the layers list
+        if (z == numZLayers)
+        {
+            z--;
+        }
+        return z;
+    }
+
+    private void LayerHeightMap(int numZLayers)
+    {
+        for (int x = 0; x <= heightMap.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= heightMap.GetUpperBound(1); y++)
+            {
+                heightMap[x, y] = GetLayerIndexByHeight(heightMap[x, y], numZLayers) / (float) numZLayers;
             }
         }
     }
@@ -142,77 +192,6 @@ public class MapGenerator : MonoBehaviour
         }
 
         return gradientMap;
-    }
-
-    /// <summary>
-    /// remove jagged edges
-    /// </summary>
-    private void SmoothHeightMap()
-    {
-        //gausian smoothing filter
-        var kernel = new List<List<float>>()
-        {
-            new List<float>{1,4,7,4,1 },
-            new List<float>{4,16,26,16,4},
-            new List<float>{7,26,41,26,7},
-            new List<float>{4,16,26,16,4},
-            new List<float>{1,4,7,4,1 },
-        };
-
-        int k_h = kernel.Count;
-        int k_w = kernel[0].Count;
-
-        for (int k_x = 0; k_x < k_w; k_x++)
-        {
-            for (int k_y = 0; k_y < k_h; k_y++)
-            {
-                kernel[k_y][k_x] /= 273f;
-            }
-        }
-
-        heightMap = Convolution2D(heightMap, kernel);
-    }
-
-    public float[,] Convolution2D(float[,] arr, List<List<float>> kernel)
-    {
-        var convolutedArr = new float[arr.GetUpperBound(0)+1, arr.GetUpperBound(1)+1];
-        int k_h = kernel.Count;
-        int k_w = kernel[0].Count;
-
-        float min = 1000, max = -1000;
-
-        //do a 2d convolution
-        for (int x = 0; x <= arr.GetUpperBound(0); x++)
-        {
-            for (int y = 0; y <= arr.GetUpperBound(1); y++)
-            {
-                for (int k_x = 0; k_x < k_w; k_x++)
-                {
-                    for (int k_y = 0; k_y < k_h; k_y++)
-                    {
-                        float k = kernel[k_y][k_x];
-                        int heightMapOffset_x = x + k_x - (k_w / 2);
-                        int heightMapOffset_y = y + k_y - (k_h / 2);
-
-                        if (MapManager.InBounds(arr, heightMapOffset_x, heightMapOffset_y))
-                            convolutedArr[x, y] += arr[heightMapOffset_x, heightMapOffset_y] * k;
-                    }
-                }
-                min = Mathf.Min(min, convolutedArr[x, y]);
-                max = Mathf.Max(max, convolutedArr[x, y]);
-            }
-        }
-
-        //fix ranges
-        for (int x = 0; x <= convolutedArr.GetUpperBound(0); x++)
-        {
-            for (int y = 0; y <= convolutedArr.GetUpperBound(1); y++)
-            {
-                convolutedArr[x, y] = Mathf.InverseLerp(min, max, convolutedArr[x, y]);
-            }
-        }
-
-        return convolutedArr;
     }
 
     public void ClearMap()

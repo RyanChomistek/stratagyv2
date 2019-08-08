@@ -13,14 +13,26 @@ MonoBehaviour:
   m_Name: FarmLayerSettings
   m_EditorClassIdentifier: 
   terrain: 4
-  algorithm: 3
+  algorithm: 8
   Layer: 1
   tile: {fileID: 11400000, guid: 539899b2fe6fb7144bfc493e07f1bf04, type: 2}
+  useLayeredGradients: 1
   randomSeed: 1
   seed: 0
   iterations: 1
-  radius: 5
+  radius: 8
   terrainTile: {fileID: 11400000, guid: addb74078648dc340be54de1e064e373, type: 2}
-  IsEnabled: 0
+  IsEnabled: 1
   PerlinNoiseScale: 10
   PerlinNoiseThreshold: 0.7
+  MinHeight: 0
+  MaxHeight: 0
+  MinStartHeight: 0
+  MinStopHeight: 0
+  MaxWidth: 0
+  WidthChangeThrotle: 0
+  Width: 0
+  MinThreshold: 0.2
+  SpawnChance: 0.2
+  MaxGradient: 0.2
+  PercentCovered: 0

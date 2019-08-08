@@ -49,7 +49,6 @@ public class HeightMapGenerator : MonoBehaviour {
         heightMapComputeShader.SetFloat ("persistence", persistence);
         heightMapComputeShader.SetFloat ("scaleFactor", initialScale);
         heightMapComputeShader.SetInt ("floatToIntMultiplier", floatToIntMultiplier);
-        Debug.Log(mapSize+ " "+ map.Length);
         heightMapComputeShader.Dispatch (0, map.Length, 1, 1);
 
         mapBuffer.GetData (map);

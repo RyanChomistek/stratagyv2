@@ -15,13 +15,17 @@ MonoBehaviour:
   tile:
     Supply: 0
     MaxSupply: 0
-    _supplyGrowthRate: 0
-    _supplySpreadRate: 0
+    SupplyGrowthRate: 0
+    SupplySpreadRate: 0.002
     Population: 0
     MaxPopulation: 0
-    _populationGrowthRate: 0
-    _populationSpreadRate: 0
-    MoveCost: 0
+    InitialPopulation: 1
+    PopulationGrowthRate: 0
+    PopulationSpreadRate: 0.002
+    MoveCost: -3000
     TerrainType: 2
+    Height: 0
+    HeightGradient: {x: 0, y: 0}
+    Improvable: 0
     tile: {fileID: 11400000, guid: fc530990f841218469dd887a849f70ff, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}

@@ -14,14 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tile:
     Supply: 0
-    MaxSupply: 0
-    _supplyGrowthRate: 0
-    _supplySpreadRate: 0
+    MaxSupply: 25
+    SupplyGrowthRate: 0
+    SupplySpreadRate: 0
     Population: 0
-    MaxPopulation: 0
-    _populationGrowthRate: 0
-    _populationSpreadRate: 0
-    MoveCost: 0
+    MaxPopulation: 25
+    InitialPopulation: 1
+    PopulationGrowthRate: 0
+    PopulationSpreadRate: 0
+    MoveCost: 2500
     TerrainType: 7
+    Height: 0
+    HeightGradient: {x: 0, y: 0}
+    Improvable: 1
     tile: {fileID: 11400000, guid: 27a0d85afb2325c44b095d0931827fab, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
