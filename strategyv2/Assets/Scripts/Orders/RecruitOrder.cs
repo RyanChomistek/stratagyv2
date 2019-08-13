@@ -23,14 +23,17 @@ public class RecruitOrder : TickingOrder
     public override void OnTick(ControlledDivision Host)
     {
         var tile = MapManager.Instance.GetTileFromPosition(Host.Controller.transform.position);
-        if (tile.Population > 100)
+
+        int popThreshold = 50;
+
+        if (tile.Population > popThreshold)
         {
             for (int i = 0; i < 10; i++)
             {
                 Host.Soldiers.Add(new Soldier());
             }
 
-            tile.Population -= 100;
+            tile.Population -= popThreshold;
 
             var tile2 = MapManager.Instance.GetTileFromPosition(Host.Controller.transform.position);
         }

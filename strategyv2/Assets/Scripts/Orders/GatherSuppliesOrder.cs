@@ -22,7 +22,7 @@ public class GatherSuppliesOrder : TickingOrder
     public override void OnTick(ControlledDivision Host)
     {
         var tile = MapManager.Instance.GetTileFromPosition(Host.Controller.transform.position);
-        if (tile.Supply > 100)
+        if (tile.Supply > 50)
         {
             foreach(var soldier in Host.Soldiers)
             {

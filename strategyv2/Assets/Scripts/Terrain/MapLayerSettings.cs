@@ -9,6 +9,7 @@ public enum LayerFillAlgorithm
     Solid, RandomWalk, Square, PerlinNoise, RandomWalkBlocking, HeightRange, FollowGradient, FollowAlongGradient, AdjacentTiles, Droplets
 }
 
+[System.Serializable]
 public enum Terrain
 {
     Empty, Grass, Road, Water, Farm, Town, Hill, Forest

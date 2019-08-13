@@ -229,6 +229,7 @@ public class MapManager : MonoBehaviour
         return false;
     }
     #endregion
+
     /**
      * creates the navmesh for our grid
      */

@@ -44,13 +44,13 @@ public class MapTerrainTile
 
     public MapTerrainTile(MapTerrainTile other, float height, Vector2 heightGradient)
     {
-        this.Supply = other.Supply;
+        this.Supply = Random.Range(1, other.Supply);
         this.MaxSupply = other.MaxSupply;
         this.InitialSupply = this.Supply;
         this.SupplyGrowthRate = other.SupplyGrowthRate;
         this.SupplySpreadRate = other.SupplySpreadRate;
 
-        this.Population = other.Population;
+        this.Population = Random.Range(1, other.Population);
         this.MaxPopulation = other.MaxPopulation;
         this.InitialPopulation = this.Population;
         this.PopulationGrowthRate = other.PopulationGrowthRate;

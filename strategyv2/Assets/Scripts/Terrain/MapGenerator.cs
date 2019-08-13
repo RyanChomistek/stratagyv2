@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using Newtonsoft.Json;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -11,16 +13,26 @@ public class MapGenerator : MonoBehaviour
     public bool UseErosion = true;
     public List<MapLayerSettings> LayerSettings = new List<MapLayerSettings>();
 
+    [SerializeField]
     public Terrain[,] terrainMap;
+    [SerializeField]
     public Terrain[,] improvmentMap;
     public float[,] heightMap;
-    public Vector2[,] LayeredGradientMap;
 
+    public Vector2[,] LayeredGradientMap;
     public TerrainGenerator HeightmapGen;
+
+    public bool LoadFromFile = false;
 
     public void GenerateMap(Dictionary<Terrain, TerrainTileSettings> terrainTileLookup, int numZLayers)
     {
         ClearMap();
+        if(LoadFromFile)
+        {
+            LoadMap();
+            return;
+        }
+
         terrainMap = new Terrain[mapSize, mapSize];
         improvmentMap = new Terrain[mapSize, mapSize];
         heightMap = new float[mapSize, mapSize];
@@ -96,6 +108,7 @@ public class MapGenerator : MonoBehaviour
 
         //SmoothHeightMap();
         //gradientMap = CalculateGradients(heightMap);
+        SaveMap();
     }
 
     public void RunAlgorithm(ref Terrain[,] map, ref Terrain[,] baseTerrainMap, ref Terrain[,] baseImprovementMap, ref Vector2[,] gradientMap, ref System.Random rand, Dictionary<Terrain, TerrainTileSettings> terrainTileLookup, MapLayerSettings layerSetting)
@@ -139,7 +152,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
     }
-
+    
     private int GetLayerIndexByHeight(float height, int numZLayers)
     {
         int z = (int)(height * numZLayers);
@@ -149,6 +162,39 @@ public class MapGenerator : MonoBehaviour
             z--;
         }
         return z;
+    }
+
+    private void SaveMap()
+    {
+        var terrainMapJson = JsonConvert.SerializeObject(terrainMap);
+        var sr = File.CreateText("Assets/Saves/TerrainMap.txt");
+        sr.WriteLine(terrainMapJson);
+        sr.Close();
+
+        var improvementMapJson = JsonConvert.SerializeObject(improvmentMap);
+        sr = File.CreateText("Assets/Saves/ImprovementMap.txt");
+        sr.WriteLine(improvementMapJson);
+        sr.Close();
+
+        var heightMapJson = JsonConvert.SerializeObject(heightMap);
+        sr = File.CreateText("Assets/Saves/HeightMap.txt");
+        sr.WriteLine(heightMapJson);
+        sr.Close();
+    }
+
+    private void LoadMap()
+    {
+        var terrainMapJson = JsonConvert.SerializeObject(terrainMap);
+        var sr = File.ReadAllText("Assets/Saves/TerrainMap.txt");
+        terrainMap = JsonConvert.DeserializeObject<Terrain[,]>(sr);
+
+        sr = File.ReadAllText("Assets/Saves/ImprovementMap.txt");
+        improvmentMap = JsonConvert.DeserializeObject<Terrain[,]>(sr);
+
+        sr = File.ReadAllText("Assets/Saves/HeightMap.txt");
+        heightMap = JsonConvert.DeserializeObject<float[,]>(sr);
+
+        LayeredGradientMap = CalculateGradients(heightMap);
     }
 
     private void LayerHeightMap(int numZLayers)
