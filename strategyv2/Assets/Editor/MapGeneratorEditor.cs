@@ -26,7 +26,6 @@ public class MapGeneratorEditor : CustomEditorBase
 
             if (GUILayout.Button("Generate"))
             {
-                levelGen.GenerateMap();
             }
 
             if (GUILayout.Button("Clear"))

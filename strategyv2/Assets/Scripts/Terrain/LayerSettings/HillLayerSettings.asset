@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: HillLayerSettings
   m_EditorClassIdentifier: 
   terrain: 6
-  algorithm: 2
-  tile: {fileID: 11400000, guid: dc96b06dd113c964183ab955bfd08c90, type: 2}
+  algorithm: 3
+  Layer: 0
+  tile: {fileID: 11400000, guid: c95a2c95928fc834687b94ce54691bff, type: 2}
   randomSeed: 1
   seed: 234234
   iterations: 4
   radius: 4
   terrainTile: {fileID: 11400000, guid: a3e08438b93d765439e4a2d5be07b4a9, type: 2}
-  IsEnabled: 1
+  IsEnabled: 0
   PerlinNoiseScale: 2.5
-  PerlinNoiseThreshold: 0.5
+  PerlinNoiseThreshold: 0.8

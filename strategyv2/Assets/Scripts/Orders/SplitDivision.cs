@@ -7,6 +7,7 @@ public class SplitDivision : Order {
 
     Dictionary<SoldierType, int> SoldiersToSplit;
     public bool IsFinishedSpliting;
+
     public SplitDivision(Division divisionToSplit, int commanderSendingOrder, Dictionary<SoldierType, int> soldiersToSplit)
         : base(divisionToSplit, commanderSendingOrder, "split")
     {
@@ -14,9 +15,27 @@ public class SplitDivision : Order {
         this.IsFinishedSpliting = false;
     }
 
+    /// <summary>
+    /// split a division based on the percentage if soldiers to split off
+    /// </summary>
+    /// <param name="divisionToSplit"></param>
+    /// <param name="commanderSendingOrder"></param>
+    /// <param name="percentOfSoldiersToSplit"></param>
+    public SplitDivision(Division divisionToSplit, int commanderSendingOrder, float percentOfSoldiersToSplit)
+        : base(divisionToSplit, commanderSendingOrder, "split")
+    {
+        this.IsFinishedSpliting = false;
+        var types = divisionToSplit.SplitSoldiersIntoTypes();
+        this.SoldiersToSplit = new Dictionary<SoldierType, int>();
+        foreach(var kvp in types)
+        {
+            SoldiersToSplit[kvp.Key] = (int) (kvp.Value.Count * percentOfSoldiersToSplit);
+        }
+    }
+
     public override void Start(ControlledDivision Host)
     {
-        Debug.Log("start split");
+        Debug.Log($"start split {Host.Soldiers.Count}");
         List<Soldier> soldiers = new List<Soldier>();
 
         var soldiersSplitIntoTypes = Host.SplitSoldiersIntoTypes();
@@ -29,9 +48,10 @@ public class SplitDivision : Order {
             soldiersTaken.ToList().ForEach(x => Host.Soldiers.Remove(x));
         }
 
-        Host.Controller.CreateChild(soldiers);
+        var child = Host.Controller.CreateChild(soldiers);
         IsFinishedSpliting = true;
         base.Start(Host);
+        Debug.Log($"end split {Host.Soldiers.Count} + {child.AttachedDivision.Soldiers.Count}");
     }
 
     public override void Pause(ControlledDivision Host) { }

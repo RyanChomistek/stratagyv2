@@ -51,18 +51,8 @@ public class DivisionController : BaseDivisionController {
         DivisionControllerManager.Instance.RemoveDivision(this);
     }
 
-    void Update () {
-
-        //these are potentually needed to sync but kills perf
-        //RefreshVisibleDivisions();
-        //AttachedDivision.RefreshRememberedDivisionsFromVisibleDivisions();
-        //AttachedDivision.UseSupply();
-        FindVisibleDivisions();
-        AttachedDivision.OrderSystem.DoOrders(AttachedDivision);
-        AttachedDivision.OrderSystem.DoBackgroundOrders(AttachedDivision);
-        AttachedDivision.CheckRefresh();
-        //AttachedDivision.RecalculateAggrigateValues();
-        //SightCollider.radius = AttachedDivision.MaxSightDistance;
+    public void OnTick()
+    {
         var generalDivision = LocalPlayerController.Instance.GeneralDivision;
         
         if (generalDivision == this || generalDivision.VisibleControllers.Contains(this) || GameManager.DEBUG)
@@ -158,9 +148,6 @@ public class DivisionController : BaseDivisionController {
     private void OnDivisionExitSight(DivisionController controller)
     {
         //Debug.Log($"exit {this.name} {controller.name}");
-
-        
-
         //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
         RefreshVisibleDivisions();
 
@@ -168,7 +155,7 @@ public class DivisionController : BaseDivisionController {
         //VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
     }
 
-    protected void FindVisibleDivisions()
+    public void FindVisibleDivisions()
     {
         //VisibleControllers.Clear();
         //var divisions = FindObjectsOfType<DivisionController>();

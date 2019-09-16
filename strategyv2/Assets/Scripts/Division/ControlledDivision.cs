@@ -31,7 +31,13 @@ public class ControlledDivision : Division
     
     public void DestroyDivision(ControlledDivision other)
     {
-        Debug.Log($"Destorying division {other}, from {this}, notifying {other.VisibleDivisions.Count}");
+        string str = "";
+        foreach (var kvp in VisibleDivisions)
+        {
+            str += kvp.Key +", ";
+        }
+
+        Debug.Log($"Destorying division {other}, from {this}, notifying {str}");
         other.HasBeenDestroyed = true;
         FindAndRemoveSubordinateById(other.DivisionId, ref RememberedDivisions);
         RememberedDivisions[other.DivisionId] = new RememberedDivision(other);
@@ -71,24 +77,7 @@ public class ControlledDivision : Division
 
     public bool TakeDamage(float damage, ControlledDivision from)
     {
-        for (int i = 0; i < Soldiers.Count; i++)
-        {
-            if (damage == 0)
-            {
-                break;
-            }
-
-            var soldier = Soldiers[i];
-            float damageToSoldier = Mathf.Min(damage, soldier.Health);
-            soldier.Health -= damageToSoldier;
-            damage -= damageToSoldier;
-
-            if (soldier.Health <= 0)
-            {
-                Soldiers.RemoveAt(i);
-                i--;
-            }
-        }
+        base.TakeDamage(damage, from);
 
         if (Soldiers.Count == 0)
         {
@@ -102,15 +91,7 @@ public class ControlledDivision : Division
 
     public bool CheckDamageDone(ControlledDivision from)
     {
-        for (int i = 0; i < Soldiers.Count; i++)
-        {
-            var soldier = Soldiers[i];
-            if (soldier.Health <= 0)
-            {
-                Soldiers.RemoveAt(i);
-                i--;
-            }
-        }
+        base.CheckDamageDone(from);
 
         if (Soldiers.Count == 0)
         {
@@ -315,6 +296,11 @@ public class ControlledDivision : Division
         OnChange();
     }
 
+    public void CancelOrder(int orderId)
+    {
+        CancelOrders(new HashSet<int>() { orderId });
+    }
+
     public void CancelOrders(HashSet<int> orderIdsToCancel)
     {
         OrderSystem.CancelOrders(this, orderIdsToCancel);
@@ -323,7 +309,7 @@ public class ControlledDivision : Division
     public void SendMessenger(RememberedDivision to, RememberedDivision endTarget, List<Order> orders)
     {
         //create a new division
-        DivisionController messenger = CreateNewDivision((int) CommandingOfficer.MessengerDivisionSoldierCnt);
+        DivisionController messenger = CreateNewDivision((int) CommandingOfficer.MessengerDivisionSoldierCnt.Value);
         messenger.AttachedDivision.IsMessenger = true;
         messenger.name = "messenger";
         messenger.AttachedDivision.ReceiveOrder(new FindDivision(messenger.AttachedDivision, DivisionId, to.DivisionId));

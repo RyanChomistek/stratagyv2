@@ -13,9 +13,13 @@ public class PlayerController : MonoBehaviour
     public List<Zone> Zones;
     public Dictionary<Zone, ZoneDisplay> ZoneDisplayMap;
 
+    public Color PlayerColor;
+
     private void Awake()
     {
         _teamId = _teamIdCnt++;
+        PlayerColor = Random.ColorHSV();
+        PlayerColor.a = 1;
     }
 
     public void CreateZone()

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e319c951dafda31469df9bcf7f10b019, type: 3}
+  m_Name: LakeLayerSettings
+  m_EditorClassIdentifier: 
+  terrain: 3
+  algorithm: 5
+  Layer: 0
+  tile: {fileID: 11400000, guid: ad8803c16cd12d34c8406a2644198ed4, type: 2}
+  randomSeed: 1
+  seed: 6541132
+  iterations: 1
+  radius: 1
+  terrainTile: {fileID: 11400000, guid: b484cfafaadefae4bbd61070b0b26365, type: 2}
+  IsEnabled: 0
+  PerlinNoiseScale: 5
+  PerlinNoiseThreshold: 0.8
+  MinHeight: 0
+  MaxHeight: 0.25
+  MinStartHeight: 0
+  MinStopHeight: 0
+  MaxWidth: 0
+  WidthChangeThrotle: 0

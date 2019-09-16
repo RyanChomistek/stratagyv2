@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrain: 1
   algorithm: 0
-  tile: {fileID: 11400000, guid: 1526d0f8d445b5a46b6d144e58c6ac54, type: 2}
+  Layer: 0
+  tile: {fileID: 11400000, guid: b9545bb8c4b2d9945805ebb61cb1cc7c, type: 2}
   randomSeed: 1
   seed: 234234
   iterations: 1
   radius: 1
   terrainTile: {fileID: 11400000, guid: 2d6792ee67884aa44a82efd32c9d6b0c, type: 2}
-  IsEnabled: 1
+  IsEnabled: 0
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.5

@@ -24,12 +24,15 @@ public class AIControllerSpawner : MonoBehaviour
         for(int i = 0; i < numAIPlayersToSpawn; i++)
         {
             AIPlayerController AIPlayer = Instantiate(AIPlayerControllerPrefab).GetComponent<AIPlayerController>();
+            AIPlayer.name = $"Player {AIPlayer.TeamId}";
             AIDivisionController newDivision = Instantiate(DivisionControllerManager.Instance.DivisionPrefab).GetComponent<AIDivisionController>();
+            newDivision.Controller = AIPlayer;
+            newDivision.name = $"Division {newDivision.AttachedDivision.DivisionId}";
             newDivision.AttachedDivision.TeamId = AIPlayer.TeamId;
-            float width = MapManager.Instance.MapGen.Width;
-            float height = MapManager.Instance.MapGen.Height;
+            float width = MapManager.Instance.MapGen.mapSize;
+            float height = MapManager.Instance.MapGen.mapSize;
 
-            newDivision.transform.position = new Vector3(Random.Range(0, width), Random.Range(0, height));
+            newDivision.transform.position = new Vector3(Random.Range(0, width-1), Random.Range(0, height-1));
             //newDivision.Controller = AIPlayer;
         }
     }

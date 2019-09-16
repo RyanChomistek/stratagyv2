@@ -63,7 +63,7 @@ public class ZoneDisplay : MonoBehaviour
     private Color _OutlineColor;
     private string _outlineColorShaderProperty = "_BaseColor";
 
-    InputController.OnClick OnClickCallback;
+    ButtonHandler SelectCallBack;
     HoverHandler HoverHandler;
 
     private void Awake()
@@ -470,16 +470,17 @@ public class ZoneDisplay : MonoBehaviour
     public void Init(Zone zone)
     {
         DisplayedZone = zone;
-        OnClickCallback = mousePosition =>
-        {
-            var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePosition);
-            if (DisplayedZone.Contains(tileCoordinate))
-            {
-                ZoneDisplayManager.Instance.OnZoneSelected(this);
-            }
-        };
+        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
+            (handler, mousePos) => {
+                handler.Cancel = true;
+                var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePos);
+                if (DisplayedZone.Contains(tileCoordinate))
+                {
+                    ZoneDisplayManager.Instance.OnZoneSelected(this);
+                }
+            });
 
-        InputController.Instance.RegisterOnClickCallBack(OnClickCallback);
+        InputController.Instance.RegisterButtonHandler(Handler);
 
         HoverHandler = new ConditionalHoverHandler(
             //warmups
@@ -546,7 +547,7 @@ public class ZoneDisplay : MonoBehaviour
     public void OnDestroy()
     {
         //free input handelers
-        InputController.Instance.UnRegisterOnClickCallBack(OnClickCallback);
+        InputController.Instance.UnRegisterButtonHandler(SelectCallBack);
         InputController.Instance.UnRegisterHoverHandler(HoverHandler);
     }
 }

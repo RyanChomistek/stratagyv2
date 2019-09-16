@@ -58,6 +58,12 @@ public class Division : IEquatable<Division>
     protected bool RefreshFlag = true;
 
     #region constructors
+
+    /// <summary>
+    /// used when copying
+    /// </summary>
+    /// <param name="division"></param>
+    /// <param name="controller"></param>
     public Division(Division division, DivisionController controller = null)
     {
         this.Commander = division.Commander;
@@ -67,6 +73,8 @@ public class Division : IEquatable<Division>
 
         this.Soldiers = new ObservableCollection<Soldier>(division.Soldiers);
         this.NumSoldiers = division.NumSoldiers;
+        if(division.CommandingOfficer != null)
+            this.CommandingOfficer = new Officer(division.CommandingOfficer);
 
         this.DivisionId = division.DivisionId;
         this.TeamId = division.TeamId;
@@ -222,7 +230,6 @@ public class Division : IEquatable<Division>
     public virtual void RecalculateAggrigateValues()
     {
         //check if soldier hash has changed
-
         MaxSightDistance = 0;
         Speed = Mathf.Infinity;
         TotalHealth = 0;
@@ -289,8 +296,11 @@ public class Division : IEquatable<Division>
             //look in each of my subordinates to see if they have it
             foreach (var subordinateId in Subordinates)
             {
-                var subordinate = rememberedDivisions[subordinateId];
-                subordinate.FindAndRemoveSubordinateById(divisionId, ref rememberedDivisions);
+                if(rememberedDivisions.ContainsKey(subordinateId))
+                {
+                    var subordinate = rememberedDivisions[subordinateId];
+                    subordinate.FindAndRemoveSubordinateById(divisionId, ref rememberedDivisions);
+                }
             }
         }
     }
@@ -537,6 +547,45 @@ public class Division : IEquatable<Division>
     static public bool AreSameTeam(Division d1, Division d2)
     {
         return d1.TeamId == d2.TeamId;
+    }
+
+    public void TakeDamage(float damage, Division from)
+    {
+        for (int i = 0; i < Soldiers.Count; i++)
+        {
+            if (damage == 0)
+            {
+                break;
+            }
+
+            var soldier = Soldiers[i];
+            float damageToSoldier = Mathf.Min(damage, soldier.Health);
+            soldier.Health -= damageToSoldier;
+            damage -= damageToSoldier;
+
+            if (soldier.Health <= 0)
+            {
+                Soldiers.RemoveAt(i);
+                i--;
+            }
+        }
+
+        RecalculateAggrigateValues();
+    }
+
+    public void CheckDamageDone(Division from)
+    {
+        for (int i = 0; i < Soldiers.Count; i++)
+        {
+            var soldier = Soldiers[i];
+            if (soldier.Health <= 0)
+            {
+                Soldiers.RemoveAt(i);
+                i--;
+            }
+        }
+
+        RecalculateAggrigateValues();
     }
 
     static private float CalculateDamageStatistic(Division d)

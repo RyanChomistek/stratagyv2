@@ -8,6 +8,8 @@ public class AIOrder : MultiOrder
 {
     private System.Action<List<ControlledDivision>> OnEnemiesSeenCallback;
 
+    private string _currentBehavior = "None";
+
     public AIOrder(Division controller, int commanderSendingOrderId, string name = "AI Order")
         : base(controller, commanderSendingOrderId, name, new List<Order>(), false)
     {
@@ -27,13 +29,34 @@ public class AIOrder : MultiOrder
     {
         base.OnEmptyOrder(Host);
 
-        //resupply if we need to
-        if(Host.DivisionModifiers.ContainsKey(typeof(LowSupplyModifier)))
+        //look at enemies and see if we can fight
+        List<ControlledDivision> enemies = new List<ControlledDivision>();
+        foreach (var kvp in Host.VisibleDivisions)
         {
+            if (!kvp.Value.HasBeenDestroyed && !Division.AreSameTeam(kvp.Value, Host))
+            {
+                enemies.Add(kvp.Value);
+            }
+        }
+
+        if (enemies.Count > 0)
+        {
+            OnEnemiesSeen(Host, enemies);
+        }
+        else if (Host.Soldiers.Count > Host.CommandingOfficer.SoldierCntSplitThreshold.Value)
+        {
+            _currentBehavior = "split";
+            this.ReceiveOrder(Host, new SplitDivision(Host, Host.DivisionId, Host.CommandingOfficer.PercentOfSoldiersToSplit.Value));
+        }
+        else if (Host.Supply < Host.CommandingOfficer.ResupplyPerSoldierThreshold.Value * Host.NumSoldiers)
+        {
+            _currentBehavior = "Resupply";
+            //resupply if we need to
             Resupply(Host);
         }
         else
         {
+            _currentBehavior = "Recruit";
             //recruit if we have nothing better to do
             Recruit(Host);
         }
@@ -47,19 +70,26 @@ public class AIOrder : MultiOrder
             return tile.Supply > 100;
         };
 
+        //UnityEngine.Profiling.Profiler.BeginSample("find supply");
+
         //find closest supply
         if (Host.TryFindKnownTileMatchingPred(findSupplyTile, out Vector3 foundPosition))
         {
             //Debug.Log($"resupply position : {foundPosition}");
             this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
+            var supplyOrder = new GatherSuppliesOrder(Host, Host.DivisionId);
             // add the supply to Host 
-            Host.ReceiveOrder(new GatherSuppliesOrder(Host, Host.DivisionId));
-            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2));
+            Host.ReceiveOrder(supplyOrder);
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2, x => {
+                x.CancelOrder(supplyOrder.orderId);
+            }));
         }
         else
         {
             RandomMove(Host);
         }
+
+        //UnityEngine.Profiling.Profiler.EndSample();
     }
 
     public void Recruit(ControlledDivision Host)
@@ -75,8 +105,11 @@ public class AIOrder : MultiOrder
             //Debug.Log($"resupply position : {foundPosition}");
             this.ReceiveOrder(Host, new Move(Host, Host.DivisionId, foundPosition));
             // add the recruit to Host 
-            Host.ReceiveOrder(new RecruitOrder(Host, Host.DivisionId));
-            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2));
+            var recruitOrder = new RecruitOrder(Host, Host.DivisionId);
+            Host.ReceiveOrder(recruitOrder);
+            this.ReceiveOrder(Host, new WaitOrder(Host, Host.DivisionId, 2, x => {
+                x.CancelOrder(recruitOrder.orderId);
+            }));
         }
         else
         {
@@ -86,6 +119,7 @@ public class AIOrder : MultiOrder
 
     public void RandomMove(ControlledDivision Host)
     {
+        _currentBehavior = $"Random Move";
         Vector3 pos = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(2,10);
         pos.z = 0;
         pos += Host.Position;
@@ -97,14 +131,16 @@ public class AIOrder : MultiOrder
     {
         //Debug.Log("ENEMY!!!!!!!!!!!!!!!");
 
-        if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > Host.CommandingOfficer.EngagementThreshold)
+        if(Division.PredictCombatResult(Host, enemies.ConvertAll(x => (Division) x)) > Host.CommandingOfficer.EngagementThreshold.Value)
         {
             //Debug.Log("ATTACK");
+            _currentBehavior = $"Attack: {enemies[0].DivisionId}";
             StartOrder(Host, new EngageOrder(Host,Host.DivisionId, enemies[0].DivisionId));
         }
         else
         {
             //Debug.Log("RUN AWAY");
+            _currentBehavior = $"Running Away";
             Vector3 enemiesCentoid = Vector3.zero;
 
             foreach(var enemy in enemies)
@@ -114,7 +150,7 @@ public class AIOrder : MultiOrder
 
             enemiesCentoid /= enemies.Count;
 
-            Vector3 delta = (Host.Position - enemiesCentoid) * Host.CommandingOfficer.RunAwayDistance;
+            Vector3 delta = (Host.Position - enemiesCentoid) * Host.CommandingOfficer.RunAwayDistance.Value;
             Vector3 retreatPos = Host.Position + delta;
             StartOrder(Host, new Move(Host, Host.DivisionId, MapManager.Instance.ClampPositionToInBounds(retreatPos)));
         }
@@ -124,8 +160,6 @@ public class AIOrder : MultiOrder
 
         //run if we cant win also send messengers to nearby units to call for help
     }
-
-
 
     public virtual void GenerateZones(ControlledDivision Host)
     {
@@ -141,5 +175,10 @@ public class AIOrder : MultiOrder
         base.End(Host);
         Host.UnRegisterOnEnemiesSeenCallback(OnEnemiesSeenCallback);
         Debug.Log("AI END");
+    }
+
+    public override string ToString()
+    {
+        return _currentBehavior + "-" + base.ToString();
     }
 }

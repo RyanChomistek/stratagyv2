@@ -44,7 +44,7 @@ public class Move : Order {
         _ai.canMove = true;
         Host.RecalculateAggrigateValues();
         Host.RefreshDiscoveredTiles();
-        _ai.maxSpeed = Host.Speed * GameManager.GameSpeed * Host.CommandingOfficer.SupplyUsage;
+        _ai.maxSpeed = Host.Speed * GameManager.GameSpeed * Host.CommandingOfficer.SupplyUsage.Value;
     }
 
     public override void Pause(ControlledDivision Host)
@@ -61,14 +61,19 @@ public class Move : Order {
 
     public override void OnClickedInUI(Division Host, PlayerController playerController)
     {
-        UICallback = mousePos => OnClickReturn(mousePos, Host, playerController);
-        InputController.Instance.RegisterOnClickCallBackWithUICancel(UICallback);
+        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { }, 
+            (handler, mousePos) => {
+                handler.Cancel = true;
+                OnClickReturn(mousePos, Host, playerController);
+            });
+
+        InputController.Instance.RegisterButtonHandler(Handler);
     }
 
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
     {
         finish = new Vector3(mousePos.x, mousePos.y);
-        InputController.Instance.UnRegisterOnClickCallBack(UICallback);
+        //InputController.Instance.UnRegisterOnClickCallBack(UICallback);
         //clear ui
         OrderDisplayManager.Instance.ClearOrders();
         //need to get 

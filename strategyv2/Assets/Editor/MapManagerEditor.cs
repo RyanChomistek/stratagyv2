@@ -20,6 +20,12 @@ public class MapManagerEditor : CustomEditorBase
             mapManager.GenerateMap();
         }
 
+        if (GUILayout.Button("rerender"))
+        {
+            mapManager.RenderMap(mapManager.CurrentlyDisplayingMapType);
+        }
+
+        /*
         if (GUILayout.Button("Show Tiles"))
         {
             mapManager.RenderMap(MapDisplays.Tiles);
@@ -45,11 +51,24 @@ public class MapManagerEditor : CustomEditorBase
             mapManager.RenderMap(MapDisplays.Simple);
         }
 
+        if (GUILayout.Button("show area controll Map Mode"))
+        {
+            mapManager.RenderMap(MapDisplays.PlayerControlledAreas);
+        }
+
+        if (GUILayout.Button(""))
+        {
+            mapManager.RenderMap(MapDisplays.HeightMap);
+        }
+        
+
+
         if (GUILayout.Button("show vision"))
         {
             //var soldiers = new List<Soldier>() { new Soldier() };
             //myTarget.AttachedDivision.TransferSoldiers(soldiers);
             mapManager.RenderMap(MapDisplays.TilesWithVision);
         }
+        */
     }
 }

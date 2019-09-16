@@ -13,7 +13,7 @@ public class CameraController : MonoBehaviour
     private void Start()
     {
         InputController.Instance.RegisterButtonHandler(new DragHandler("MiddleMouse", 
-            (handler, x) => {  }, 
+            (handler, x) => { handler.IgnoreUI = false; }, 
             (handler, mousePosition, delta) =>
             {
                 if (Camera.main.transform.position != transform.position)
@@ -23,13 +23,14 @@ public class CameraController : MonoBehaviour
                 transform.position -= delta;
                 handler.LastMousePosition = mousePosition - delta;
             },
-            (handler,point) => { }));
+            (handler,point) => { handler.IgnoreUI = true; }));
 
-        InputController.Instance.RegisterAxisHandler(new AxisHandler("Mouse ScrollWheel", 
-            (handler, delta) => 
+        var zoomHandler = new AxisHandler("Mouse ScrollWheel",
+            (handler, delta) =>
             {
                 GetComponent<Cinemachine.CinemachineVirtualCamera>().m_Lens.OrthographicSize += delta * -2;
-            }));
+            },false);
+        InputController.Instance.RegisterAxisHandler(zoomHandler);
     }
 
     void Update()

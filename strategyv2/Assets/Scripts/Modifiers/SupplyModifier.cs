@@ -44,6 +44,7 @@ public class LowSupplyModifier : SupplyModifier
 
     public override DivisionModifier ModifyDivision(Division divisionToModify)
     {
+        //kill a random unit
         return base.ModifyDivision(divisionToModify);
     }
 

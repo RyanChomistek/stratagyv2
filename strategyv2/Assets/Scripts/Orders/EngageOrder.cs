@@ -20,15 +20,16 @@ public class EngageOrder : MultiOrder
         EngageDivision(Host);
     }
 
-    public override void Proceed(ControlledDivision Host)
-    {
-        base.Proceed(Host);
-    }
-
     protected override void ContinueOrder(ControlledDivision Host)
     {
         EngageDivision(Host);
         base.ContinueOrder(Host);
+    }
+
+    public override void OnEmptyOrder(ControlledDivision Host)
+    {
+        EngageDivision(Host);
+        base.OnEmptyOrder(Host);
     }
 
     private void EngageDivision(ControlledDivision Host)
@@ -87,6 +88,11 @@ public class EngageOrder : MultiOrder
 
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), 
             new EngageOrder(Host, CommanderSendingOrder.DivisionId, division.DivisionId), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
+    }
+
+    public override string ToString()
+    {
+        return base.ToString() + $" target = {RememberedTargetId}";
     }
 }
 

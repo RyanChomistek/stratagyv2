@@ -66,21 +66,7 @@ public class DivisionControllerEditor : CustomEditorBase
 
         if (GUILayout.Button("print orders"))
         {
-            string str = "orders : ";
-            str += myTarget.AttachedDivision.OrderSystem.OngoingOrder?.ToString() + " :: ";
-            foreach (Order order in myTarget.AttachedDivision.OrderSystem.OrderQueue)
-            {
-                str += order.ToString() + " | ";
-            }
-
-            str += "||";
-
-            foreach (Order order in myTarget.AttachedDivision.OrderSystem.BackgroundOrderList)
-            {
-                str += order.ToString() + " | ";
-            }
-
-            Debug.Log(str);
+            Debug.Log(myTarget.AttachedDivision.OrderSystem.ToString());
         }
     }
 
@@ -90,9 +76,9 @@ public class DivisionControllerEditor : CustomEditorBase
     {
         string str = "";
 
-        foreach (var remembered in division.RememberedDivisions)
+        foreach (KeyValuePair<int, RememberedDivision> remembered in division.RememberedDivisions)
         {
-            str += $"<{remembered}> \n";
+            str += $"<{remembered.Value.ToString()}> \n";
         }
 
         return str;

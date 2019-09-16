@@ -8,60 +8,100 @@ public class MapTerrainTile
 {
     public float Supply = 1;
     public float MaxSupply = 200;
-    private float _initialSupply = 1;
+    private float InitialSupply = 1;
     [SerializeField]
-    private float _supplyGrowthRate = .1f;
+    public float SupplyGrowthRate = .1f;
     [SerializeField]
-    private float _supplySpreadRate = .1f;
+    public float SupplySpreadRate = .1f;
 
     public float Population = 1;
     public float MaxPopulation = 200;
-    private float _initialPopulation = 1;
+    public float InitialPopulation = 1;
     [SerializeField]
-    private float _populationGrowthRate = .1f;
+    public float PopulationGrowthRate = .1f;
     [SerializeField]
-    private float _populationSpreadRate = .1f;
-    [HideInInspector]
-    private List<MapTerrainTile> _adjacentTiles;
+    public float PopulationSpreadRate = .1f;
 
-    public uint MoveCost = 1;
+    [System.NonSerialized]
+    public List<MapTerrainTile> AdjacentTiles;
+    [System.NonSerialized]
+    public MapTerrainTile Improvement;
+
+    public int MoveCost = 1;
     public Terrain TerrainType;
+    public float Height;
+    public Vector2 HeightGradient;
+
+    [Tooltip("can this tile be improved")]
+    public bool Improvable = true;
     [Tooltip("The Tile to draw (use a RuleTile for best results)")]
+
     public TileBase tile;
     public Color SimpleDisplayColor;
 
-    public MapTerrainTile(TerrainTileSettings other)
+    public MapTerrainTile()
+    {}
+
+    public MapTerrainTile(MapTerrainTile other, float height, Vector2 heightGradient)
     {
-        this.Supply = other.tile.Supply;
-        this.MaxSupply = other.tile.MaxSupply;
-        this._initialSupply = this.Supply;
-        this._supplyGrowthRate = other.tile._supplyGrowthRate;
-        this._supplySpreadRate = other.tile._supplySpreadRate;
+        this.Supply = Random.Range(1, other.Supply);
+        this.MaxSupply = other.MaxSupply;
+        this.InitialSupply = this.Supply;
+        this.SupplyGrowthRate = other.SupplyGrowthRate;
+        this.SupplySpreadRate = other.SupplySpreadRate;
 
-        this.Population = other.tile.Population;
-        this.MaxPopulation = other.tile.MaxPopulation;
-        this._initialPopulation = this.Population;
-        this._populationGrowthRate = other.tile._populationGrowthRate;
-        this._populationSpreadRate = other.tile._populationSpreadRate;
+        this.Population = Random.Range(1, other.Population);
+        this.MaxPopulation = other.MaxPopulation;
+        this.InitialPopulation = this.Population;
+        this.PopulationGrowthRate = other.PopulationGrowthRate;
+        this.PopulationSpreadRate = other.PopulationSpreadRate;
 
-        this.MoveCost = other.tile.MoveCost;
-        this.TerrainType = other.tile.TerrainType;
-        this.tile = other.tile.tile;
-        this.SimpleDisplayColor = other.tile.SimpleDisplayColor;
+        this.MoveCost = other.MoveCost;
+        this.TerrainType = other.TerrainType;
+        this.tile = other.tile;
+        this.SimpleDisplayColor = other.SimpleDisplayColor;
+
+        this.Height = height;
+        this.HeightGradient = heightGradient;
+        this.AdjacentTiles = other.AdjacentTiles;
+        this.Improvement = other.Improvement;
+        this.Improvable = other.Improvable;
+    }
+    
+    public void ModifyBaseWithImprovement()
+    {
+        this.Supply += Improvement.Supply;
+        this.MaxSupply += Improvement.MaxSupply;
+        this.InitialSupply += Improvement.Supply;
+        this.SupplyGrowthRate += Improvement.SupplyGrowthRate;
+        this.SupplySpreadRate += Improvement.SupplySpreadRate;
+
+        this.Population += Improvement.Population;
+        this.MaxPopulation += Improvement.MaxPopulation;
+        this.InitialPopulation += Improvement.Population;
+        this.PopulationGrowthRate += Improvement.PopulationGrowthRate;
+        this.PopulationSpreadRate += Improvement.PopulationSpreadRate;
+
+        this.MoveCost += Improvement.MoveCost;
+    }
+
+    public void Combine()
+    {
+
     }
 
     public void Update(float gameTime)
     {
         //derivitive of continous growth function A = K * A0 * e^(kt)
-        AddWithCap(ref Population, _populationGrowthRate * _initialPopulation * Mathf.Exp(_populationGrowthRate * gameTime), MaxPopulation);
-        AddWithCap(ref Supply, _supplyGrowthRate * _initialSupply * Mathf.Exp(_supplyGrowthRate * gameTime), MaxSupply);
+        AddWithCap(ref Population, PopulationGrowthRate * InitialPopulation * Mathf.Exp(PopulationGrowthRate * gameTime), MaxPopulation);
+        AddWithCap(ref Supply, SupplyGrowthRate * InitialSupply * Mathf.Exp(SupplyGrowthRate * gameTime), MaxSupply);
 
-        foreach(var tile in _adjacentTiles)
+        foreach(var tile in AdjacentTiles)
         {
             if(tile.Population != Population)
             {
-                Spread(ref Population, ref tile.Population, _populationSpreadRate, MaxPopulation, tile.MaxPopulation);
-                Spread(ref Supply, ref tile.Supply, _supplySpreadRate, MaxSupply, tile.MaxSupply);
+                Spread(ref Population, ref tile.Population, PopulationSpreadRate, MaxPopulation, tile.MaxPopulation);
+                Spread(ref Supply, ref tile.Supply, SupplySpreadRate, MaxSupply, tile.MaxSupply);
             }
         }
     }
@@ -69,8 +109,8 @@ public class MapTerrainTile
     private void Spread(ref float value, ref float otherValue, float rate, float cap, float otherCap)
     {
         var average = (otherValue + value) / 2;
-        var deltaOther = (average - otherValue) * rate;
-        var deltaThis = (average - value) * rate;
+        var deltaOther = (average - otherValue) * rate * GameManager.DeltaTime;
+        var deltaThis = (average - value) * rate * GameManager.DeltaTime;
 
         //first add the average pop to each
         float excess = AddWithCap(ref otherValue, deltaOther, otherCap);
@@ -83,7 +123,7 @@ public class MapTerrainTile
 
     public void SetAdjacentTiles(List<MapTerrainTile> adjacentTiles)
     {
-        _adjacentTiles = new List<MapTerrainTile>(adjacentTiles);
+        AdjacentTiles = new List<MapTerrainTile>(adjacentTiles);
     }
 
     //will fill the amount to the cap and return excess
@@ -104,6 +144,6 @@ public class MapTerrainTile
     public override string ToString()
     {
 
-        return $" {TerrainType.ToString()} supply : {Supply}/{MaxSupply} \n Population : {Population}/{MaxPopulation}";
+        return $" {TerrainType.ToString()} supply : {Supply}/{MaxSupply}  Population : {Population}/{MaxPopulation}  height {Height}, {HeightGradient}";
     }
 }

@@ -7,6 +7,18 @@ using UnityEngine.EventSystems;
 public class Handler
 {
     public bool Cancel = false;
+    public bool IgnoreUI = true;
+    public bool OnlyUI = false;
+
+    /// <summary>
+    /// checks to make sure that the the handler with activate with the current ui flag
+    /// </summary>
+    /// <param name="isOverUI"></param>
+    /// <returns></returns>
+    public bool IsUIStateValid(bool isOverUI)
+    {
+        return !(IgnoreUI && isOverUI) && !(OnlyUI && !isOverUI);
+    }
 }
 
 public class ButtonHandler : Handler
@@ -14,11 +26,19 @@ public class ButtonHandler : Handler
     public string ButtonName;
     public Action<ButtonHandler, Vector3> OnButtonDownCallBack;
     public Action<ButtonHandler, Vector3> OnButtonUpCallBack;
-    public ButtonHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<ButtonHandler, Vector3> onButtonUp)
+
+    public const string LeftClick = "Fire1";
+    public const string RightClick = "Fire2";
+    public const string MiddleMouse = "Fire3";
+
+
+    public ButtonHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<ButtonHandler, Vector3> onButtonUp, bool ignoreUI = true, bool onlyUi = false)
     {
         this.ButtonName = buttonName;
         this.OnButtonDownCallBack = onButtonDown;
         this.OnButtonUpCallBack = onButtonUp;
+        this.IgnoreUI = ignoreUI;
+        this.OnlyUI = onlyUi;
     }
 
     public virtual void OnButtonDown()
@@ -157,8 +177,8 @@ public class DragHandler : ButtonHandler
     public bool IsCurrentlyDragging = false;
     public Vector3 LastMousePosition;
 
-    public DragHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<DragHandler, Vector3, Vector3> onButtonDrag, Action<ButtonHandler, Vector3> onButtonUp)
-        : base(buttonName, onButtonDown, onButtonUp)
+    public DragHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<DragHandler, Vector3, Vector3> onButtonDrag, Action<ButtonHandler, Vector3> onButtonUp, bool ignoreUI = true, bool onlyUi = false)
+        : base(buttonName, onButtonDown, onButtonUp, ignoreUI, onlyUi)
     {
         this.OnDragCallBack = onButtonDrag;
     }
@@ -189,29 +209,28 @@ public class DragHandler : ButtonHandler
     }
 }
 
-public class AxisHandler
+public class AxisHandler : Handler
 {
     public string AxisName;
     public Action<AxisHandler, float> OnChangeCallBack;
-    public AxisHandler(string axisName, Action<AxisHandler, float> onChangeCallBack)
+    public AxisHandler(string axisName, Action<AxisHandler, float> onChangeCallBack, bool ignoreUI = true, bool onlyUi = false)
     {
         this.AxisName = axisName;
         this.OnChangeCallBack = onChangeCallBack;
+        this.IgnoreUI = ignoreUI;
+        this.OnlyUI = onlyUi;
     }
 
     public virtual void OnChange()
     {
         this.OnChangeCallBack(this, Input.GetAxis(AxisName));
     }
-    
 }
 
 public class InputController : MonoBehaviour {
     public static InputController Instance { get; set; }
     public Player Player;
     public delegate void OnClick(Vector3 mouseLoc);
-    public OnClick OnClickDel;
-    public OnClick OnUIClickDel;
 
     private List<ButtonHandler> _buttonHandlers;
     private List<AxisHandler> _axisHandlers;
@@ -229,25 +248,15 @@ public class InputController : MonoBehaviour {
 	void Update ()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-        if (EventSystem.current.IsPointerOverGameObject())
-        {
-            if (Input.GetButtonUp("Fire1"))
-            {
-                OnUIClickDel?.Invoke(mousePos);
-            }
-            
-            return;
-        }
-
-        if (Input.GetButtonUp("Fire1"))
-        {
-            if(OnClickDel != null)
-                OnClickDel(mousePos);
-        }
+        bool isOverUI = EventSystem.current.IsPointerOverGameObject();
 
         foreach(ButtonHandler handler in _buttonHandlers)
         {
+            if (!handler.IsUIStateValid(isOverUI))
+            {
+                continue;
+            }
+
             if (Input.GetButtonDown(handler.ButtonName))
             {
                 handler.OnButtonDown();
@@ -262,6 +271,7 @@ public class InputController : MonoBehaviour {
             }
         }
 
+        //remove canceled handlers
         for (int i = 0; i < _buttonHandlers.Count; i++)
         {
             ButtonHandler handler = _buttonHandlers[i];
@@ -274,6 +284,11 @@ public class InputController : MonoBehaviour {
 
         foreach (AxisHandler handler in _axisHandlers)
         {
+            if (!handler.IsUIStateValid(isOverUI))
+            {
+                continue;
+            }
+
             if (Input.GetAxis(handler.AxisName) != 0)
             {
                 handler.OnChange();
@@ -282,6 +297,11 @@ public class InputController : MonoBehaviour {
 
         foreach (HoverHandler handler in _hoverHandlers)
         {
+            if (!handler.IsUIStateValid(isOverUI))
+            {
+                continue;
+            }
+
             if (handler.IsTemporarilyHovering())
             {
                 if (!handler.IsCurrentlyHovering)
@@ -312,42 +332,6 @@ public class InputController : MonoBehaviour {
 
             handler.LastMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
-    }
-    
-    public void RegisterOnClickCallBack(OnClick callback)
-    {
-        Debug.Log("registering click");
-        OnClickDel += callback;
-    }
-
-    public void UnRegisterOnClickCallBack(OnClick callback)
-    {
-        Debug.Log("unregistering click");
-        OnClickDel -= callback;
-    }
-
-    //use this so when you click on a ui element it cancles the previous click delegate
-    public void RegisterOnClickCallBackWithUICancel(OnClick callback)
-    {
-        RegisterOnClickCallBack(callback);
-        //need to wait for 1 frame so that if we happend to activate this register from a ui click, we dont immediatly cancel it
-        StartCoroutine(RegisterOnClickCallBackWithUICancelHelper(callback));
-    }
-
-    private IEnumerator RegisterOnClickCallBackWithUICancelHelper(OnClick callback)
-    {
-        yield return new WaitForEndOfFrame();
-        OnUIClickDel += x => { OnClickDel -= callback; };
-    }
-
-    public void RegisterOnUiClickCallBack(OnClick callback)
-    {
-        OnUIClickDel += callback;
-    }
-
-    public void UnRegisterOnUiClickCallBack(OnClick callback)
-    {
-        OnUIClickDel -= callback;
     }
 
     public void RegisterButtonHandler(ButtonHandler handler)

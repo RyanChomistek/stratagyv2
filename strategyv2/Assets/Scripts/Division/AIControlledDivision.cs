@@ -13,7 +13,9 @@ public class AIControlledDivision : ControlledDivision
         _enableAI = enableAI;
         if(_enableAI)
         {
-            ReceiveOrder(new AIOrder(this, DivisionId));
+            //ReceiveOrder(new AIOrder(this, DivisionId));
+            OrderSystem = new AIOrder(this, DivisionId);
+            this.OrderSystem.OngoingOrder = new EmptyOrder();
         }
     }
 }
