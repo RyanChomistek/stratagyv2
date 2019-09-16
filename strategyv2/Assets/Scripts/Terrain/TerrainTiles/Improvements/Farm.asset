@@ -9,23 +9,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 752719300a52ba54f9bfb29ec6fc02ec, type: 3}
+  m_Script: {fileID: 11500000, guid: acea1e18219d33f40b89f7cf0508e3be, type: 3}
   m_Name: Farm
   m_EditorClassIdentifier: 
-  tile:
+  Layer: 1
+  TerrainMapTileSettings:
+    Supply: 0
+    MaxSupply: 0
+    InitialSupply: 0
+    SupplyGrowthRate: 0
+    SupplySpreadRate: 0
+    MoveCost: 0
+    Population: 0
+    MaxPopulation: 0
+    InitialPopulation: 0
+    PopulationGrowthRate: 0
+    PopulationSpreadRate: 0
+    DisplayTile: {fileID: 0}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    Improvable: 0
+    TerrainType: 0
+    Height: 0
+    HeightGradient: {x: 0, y: 0}
+  ImprovementMapTileSettings:
     Supply: 100
     MaxSupply: 100
+    InitialSupply: 1
     SupplyGrowthRate: 0.001
     SupplySpreadRate: 0.001
+    MoveCost: 1000
     Population: 25
     MaxPopulation: 25
     InitialPopulation: 1
     PopulationGrowthRate: 0.001
     PopulationSpreadRate: 0.001
-    MoveCost: 1000
-    TerrainType: 4
-    Height: 0
-    HeightGradient: {x: 0, y: 0}
+    DisplayTile: {fileID: 11400000, guid: 539899b2fe6fb7144bfc493e07f1bf04, type: 2}
+    SimpleDisplayColor: {r: 0, g: 1, b: 0.04815674, a: 0}
     Improvable: 0
-    tile: {fileID: 11400000, guid: 539899b2fe6fb7144bfc493e07f1bf04, type: 2}
-    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    Improvement: 2

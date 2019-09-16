@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: FarmLayerSettings
   m_EditorClassIdentifier: 
   terrain: 4
+  Improvement: 2
   algorithm: 8
   Layer: 1
   tile: {fileID: 11400000, guid: 539899b2fe6fb7144bfc493e07f1bf04, type: 2}
@@ -21,7 +22,7 @@ MonoBehaviour:
   seed: 0
   iterations: 1
   radius: 8
-  terrainTile: {fileID: 11400000, guid: addb74078648dc340be54de1e064e373, type: 2}
+  MapTile: {fileID: 11400000, guid: ca4da8be0e5706f4bb4649df73a1ff16, type: 2}
   IsEnabled: 1
   PerlinNoiseScale: 10
   PerlinNoiseThreshold: 0.7

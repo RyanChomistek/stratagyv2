@@ -9,23 +9,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 752719300a52ba54f9bfb29ec6fc02ec, type: 3}
+  m_Script: {fileID: 11500000, guid: acea1e18219d33f40b89f7cf0508e3be, type: 3}
   m_Name: Town
   m_EditorClassIdentifier: 
-  tile:
+  Layer: 1
+  TerrainMapTileSettings:
+    Supply: 0
+    MaxSupply: 0
+    InitialSupply: 0
+    SupplyGrowthRate: 0
+    SupplySpreadRate: 0
+    MoveCost: 0
+    Population: 0
+    MaxPopulation: 0
+    InitialPopulation: 0
+    PopulationGrowthRate: 0
+    PopulationSpreadRate: 0
+    DisplayTile: {fileID: 0}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    Improvable: 0
+    TerrainType: 0
+    Height: 0
+    HeightGradient: {x: 0, y: 0}
+  ImprovementMapTileSettings:
     Supply: 50
     MaxSupply: 100
+    InitialSupply: 1
     SupplyGrowthRate: -0.002
     SupplySpreadRate: 0.001
+    MoveCost: 1000
     Population: 50
     MaxPopulation: 100
     InitialPopulation: 1
     PopulationGrowthRate: 0.005
     PopulationSpreadRate: 0.002
-    MoveCost: 1000
-    TerrainType: 5
-    Height: 0
-    HeightGradient: {x: 0, y: 0}
+    DisplayTile: {fileID: 11400000, guid: 9e9b3525e9886d14b89ce02f562912f7, type: 2}
+    SimpleDisplayColor: {r: 1, g: 1, b: 1, a: 0}
     Improvable: 0
-    tile: {fileID: 11400000, guid: 9e9b3525e9886d14b89ce02f562912f7, type: 2}
-    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    Improvement: 3

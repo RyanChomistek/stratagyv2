@@ -121,7 +121,7 @@ public class Soldier : IEquatable<Soldier>
         Supply -= SupplyUsePerSec * officer.SupplyUsage.Value;
     }
 
-    public virtual void GatherSupplies(MapTerrainTile tile)
+    public virtual void GatherSupplies(TerrainMapTile tile)
     {
         tile.Supply -= 1;
         Supply += 1;

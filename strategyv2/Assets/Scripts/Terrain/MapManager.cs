@@ -15,12 +15,12 @@ public class MapManager : MonoBehaviour
 {
     private static MapManager _instance;
     public static MapManager Instance { get { return _instance; } }
-    public MapTerrainTile BaseTerrainTile;
+    public TerrainMapTile BaseTerrainTile;
     public MapGenerator MapGen;
     [Tooltip("The Tilemap to draw onto")]
     public List<Tilemap> TerrainTileLayers;
     public Tilemap ImprovementTilemap;
-    public MapTerrainTile[,] map;
+    public TerrainMapTile[,] map;
     public TileBase BlankTile;
     public GameObject ZLayerPrefab;
 
@@ -100,7 +100,7 @@ public class MapManager : MonoBehaviour
 
     private void SetUpAjdacentTiles()
     {
-        List<MapTerrainTile> adjacents = new List<MapTerrainTile>();
+        List<TerrainMapTile> adjacents = new List<TerrainMapTile>();
         for (int y = 0; y <= map.GetUpperBound(0); y++)
         {
             for (int x = 0; x <= map.GetUpperBound(1); x++)
@@ -156,24 +156,36 @@ public class MapManager : MonoBehaviour
 
     public void GenerateMap()
     {
-        Dictionary<Terrain, TerrainTileSettings> terrainTileLookup = new Dictionary<Terrain, TerrainTileSettings>();
+        Dictionary<Terrain, TerrainMapTile> terrainTileLookup = new Dictionary<Terrain, TerrainMapTile>();
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup = new Dictionary<Improvement, ImprovementMapTile>();
         foreach (MapLayerSettings layer in MapGen.LayerSettings)
         {
-            if (!terrainTileLookup.ContainsKey(layer.terrain))
+            if(layer.MapTile.Layer == MapLayer.Terrain)
             {
-                terrainTileLookup[layer.terrain] = layer.terrainTile;
+                if (!terrainTileLookup.ContainsKey(layer.terrain))
+                {
+                    terrainTileLookup[layer.terrain] = layer.MapTile.TerrainMapTileSettings;
+                }
             }
+            else
+            {
+                if (!improvementTileLookup.ContainsKey(layer.Improvement))
+                {
+                    improvementTileLookup[layer.Improvement] = layer.MapTile.ImprovementMapTileSettings;
+                }
+            }
+            
         }
 
-        MapGen.GenerateMap(terrainTileLookup, NumZLayers);
-        ConvertMapGenerationToTerrainTiles(terrainTileLookup);
+        MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers);
+        ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
         SetUpAjdacentTiles();
         CreateTileMapLayers();
         RenderMap(MapDisplays.Tiles);
     }
 
     #region position conversion and helpers
-    public MapTerrainTile GetTileFromPosition(Vector3 position)
+    public TerrainMapTile GetTileFromPosition(Vector3 position)
     {
         var gridStart = TerrainTileLayers[0].transform.position;
         var deltaFromStart = position - gridStart;
@@ -278,17 +290,18 @@ public class MapManager : MonoBehaviour
         AstarPath.active.FlushWorkItems();
     }
 
-    private void ConvertMapGenerationToTerrainTiles(Dictionary<Terrain, TerrainTileSettings> terrainTileLookup)
+    private void ConvertMapGenerationToMapTiles(Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup)
     {
         _minHeight = 100;
         _maxHeight = -100;
-        map = new MapTerrainTile[MapGen.terrainMap.GetUpperBound(0)+1, MapGen.terrainMap.GetUpperBound(1)+1];
+        map = new TerrainMapTile[MapGen.terrainMap.GetUpperBound(0)+1, MapGen.terrainMap.GetUpperBound(1)+1];
         for (int i =0; i <= MapGen.terrainMap.GetUpperBound(0); i++)
         {
             for (int j = 0; j <= MapGen.terrainMap.GetUpperBound(1); j++)
             {
-                map[i, j] = new MapTerrainTile(terrainTileLookup[MapGen.terrainMap[i, j]].tile, MapGen.heightMap[i,j], MapGen.LayeredGradientMap[i, j]);
-                map[i, j].Improvement = new MapTerrainTile(terrainTileLookup[MapGen.improvmentMap[i, j]].tile, MapGen.heightMap[i, j], MapGen.LayeredGradientMap[i, j]);
+                map[i, j] = new TerrainMapTile(terrainTileLookup[MapGen.terrainMap[i, j]], MapGen.heightMap[i,j], MapGen.LayeredGradientMap[i, j]);
+                map[i, j].Improvement = new ImprovementMapTile(improvementTileLookup[MapGen.improvmentMap[i, j]]);
                 map[i, j].ModifyBaseWithImprovement();
                 _minHeight = Mathf.Min(_minHeight, MapGen.heightMap[i, j]);
                 _maxHeight = Mathf.Max(_maxHeight, MapGen.heightMap[i, j]);
@@ -374,11 +387,11 @@ public class MapManager : MonoBehaviour
                 min = Mathf.Min(min, highestLayer);
                 for (int z = 0; z <= highestLayer; z ++)
                 {
-                    TerrainTileLayers[z].SetTile(new Vector3Int(x, y, 0), map[x, y].tile);
+                    TerrainTileLayers[z].SetTile(new Vector3Int(x, y, 0), map[x, y].DisplayTile);
                 }
 
-                ImprovementTilemap.SetTile(new Vector3Int(x, y, 0), map[x, y].Improvement.tile);
-                cnt += (int) map[x, y].Improvement.TerrainType;
+                ImprovementTilemap.SetTile(new Vector3Int(x, y, 0), map[x, y].Improvement.DisplayTile);
+                cnt += (int) map[x, y].Improvement.Improvement;
             }
         }
     }
@@ -548,7 +561,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void RenderMapWithKey(Func<MapTerrainTile, float> key)
+    public void RenderMapWithKey(Func<TerrainMapTile, float> key)
     {
         double min = float.MaxValue;
         double max = float.MinValue;
@@ -599,7 +612,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void RenderMapWithKeyAndRange(Func<MapTerrainTile, float> key, float range)
+    public void RenderMapWithKeyAndRange(Func<TerrainMapTile, float> key, float range)
     {
         for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
         {

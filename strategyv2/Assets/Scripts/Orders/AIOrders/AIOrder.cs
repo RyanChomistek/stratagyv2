@@ -66,7 +66,7 @@ public class AIOrder : MultiOrder
     public void Resupply(ControlledDivision Host)
     {
         //find closest supply dump
-        Func<MapTerrainTile, bool> findSupplyTile = tile => {
+        Func<TerrainMapTile, bool> findSupplyTile = tile => {
             return tile.Supply > 100;
         };
 
@@ -94,7 +94,7 @@ public class AIOrder : MultiOrder
 
     public void Recruit(ControlledDivision Host)
     {
-        Func<MapTerrainTile, bool> findPopTile = tile => {
+        Func<TerrainMapTile, bool> findPopTile = tile => {
             return tile.Population > 100;
         };
 

@@ -623,12 +623,12 @@ public class Division : IEquatable<Division>
         return CalculateDamageStatistic(d1) / enemies.Sum(x => CalculateDamageStatistic(x));
     }
 
-    private bool MatchPred(Func<MapTerrainTile, bool> pred, int x, int y, out Vector3 foundPosition)
+    private bool MatchPred(Func<TerrainMapTile, bool> pred, int x, int y, out Vector3 foundPosition)
     {
         if (MapManager.InBounds(MapManager.Instance.map, x, y))
         {
             //Debug.Log($"{x},{y} in bounds | {discoveredMapLocations[x, y]}");
-            MapTerrainTile left = MapManager.Instance.map[x, y];
+            TerrainMapTile left = MapManager.Instance.map[x, y];
             if (discoveredMapLocations[x, y] && pred(left))
             {
                 foundPosition = new Vector3(x, y);
@@ -640,7 +640,7 @@ public class Division : IEquatable<Division>
         return false;
     }
 
-    public bool TryFindKnownTileMatchingPred(Func<MapTerrainTile, bool> pred, out Vector3 foundPosition)
+    public bool TryFindKnownTileMatchingPred(Func<TerrainMapTile, bool> pred, out Vector3 foundPosition)
     {
         HashSet<Vector3> checkedPositions = new HashSet<Vector3>();
         Vector2Int tilePos = MapManager.Instance.GetTilePositionFromPosition(Position);

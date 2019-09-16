@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Forest
   m_EditorClassIdentifier: 
   terrain: 7
+  Improvement: 4
   algorithm: 3
   Layer: 1
   tile: {fileID: 11400000, guid: 27a0d85afb2325c44b095d0931827fab, type: 2}
@@ -21,7 +22,7 @@ MonoBehaviour:
   seed: 234234
   iterations: 1
   radius: 4
-  terrainTile: {fileID: 11400000, guid: c12fda807e3951e40af7cff14033fd82, type: 2}
+  MapTile: {fileID: 11400000, guid: 513dd5d0f5d9bab4c8d00262796ed357, type: 2}
   IsEnabled: 1
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.6

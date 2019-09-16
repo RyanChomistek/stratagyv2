@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: RoadLayerSettings
   m_EditorClassIdentifier: 
   terrain: 2
+  Improvement: 1
   algorithm: 1
   Layer: 1
   tile: {fileID: 11400000, guid: fc530990f841218469dd887a849f70ff, type: 2}
@@ -21,7 +22,7 @@ MonoBehaviour:
   seed: 651651
   iterations: 2
   radius: 0
-  terrainTile: {fileID: 11400000, guid: 7b9d15a615d119d4c9651fae2ae806e1, type: 2}
+  MapTile: {fileID: 11400000, guid: b9756f42f5795b54eabcc8c83f6340cb, type: 2}
   IsEnabled: 1
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.5
