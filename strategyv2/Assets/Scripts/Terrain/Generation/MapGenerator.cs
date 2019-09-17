@@ -175,51 +175,6 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    //public void RunAlgorithm(ref Terrain[,] map, ref Terrain[,] baseTerrainMap, ref Improvement[,] baseImprovementMap,
-    //    ref Vector2[,] gradientMap, ref System.Random rand,
-    //    Dictionary<Terrain, TerrainTileSettings> terrainTileLookup, Dictionary<Improvement, TerrainTileSettings> improvementTileLookup,
-    //    MapLayerSettings layerSetting)
-    //{
-    //    for (int i = 0; i < layerSetting.iterations; i++)
-    //    {
-    //        switch (layerSetting.algorithm)
-    //        {
-    //            case LayerFillAlgorithm.Solid:
-    //                map = LayerMapFunctions.GenerateArray(mapSize, mapSize, layerSetting.terrain);
-    //                break;
-    //            case LayerFillAlgorithm.RandomWalk:
-    //                map = LayerMapFunctions.RandomWalk2D(ref map, ref baseTerrainMap, ref heightMap, rand, layerSetting.terrain, layerSetting.radius, false, terrainTileLookup);
-    //                break;
-    //            case LayerFillAlgorithm.Square:
-    //                map = LayerMapFunctions.RandomSquares(ref map, rand, layerSetting.terrain, layerSetting.radius);
-    //                break;
-    //            case LayerFillAlgorithm.PerlinNoise:
-    //                map = LayerMapFunctions.PerlinNoise(ref map, ref baseTerrainMap, ref gradientMap, layerSetting.terrain, rand, layerSetting.PerlinNoiseScale, layerSetting.PerlinNoiseThreshold, layerSetting.MaxGradient, terrainTileLookup);
-    //                break;
-    //            case LayerFillAlgorithm.RandomWalkBlocking:
-    //                map = LayerMapFunctions.RandomWalk2D(ref map, ref baseTerrainMap, ref heightMap, rand, layerSetting.terrain, layerSetting.radius, true, terrainTileLookup);
-    //                break;
-    //            case LayerFillAlgorithm.HeightRange:
-    //                LayerMapFunctions.FillHeightRange(ref map, ref heightMap, layerSetting.terrain, layerSetting.MinHeight, layerSetting.MaxHeight);
-    //                break;
-    //            case LayerFillAlgorithm.FollowGradient:
-    //                LayerMapFunctions.GadientDescent(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.MinStartHeight, layerSetting.MinStopHeight, layerSetting.MaxWidth, layerSetting.WidthChangeThrotle);
-    //                break;
-    //            case LayerFillAlgorithm.FollowAlongGradient:
-    //                LayerMapFunctions.FollowAlongGradient(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.Width);
-    //                break;
-    //            case LayerFillAlgorithm.AdjacentTiles:
-    //                LayerMapFunctions.AjdacentTiles(ref map, ref heightMap, ref gradientMap, ref baseTerrainMap, ref baseImprovementMap,
-    //                    rand, layerSetting.terrain, layerSetting.MinThreshold, layerSetting.MaxGradient,
-    //                    layerSetting.radius, layerSetting.SpawnChance, terrainTileLookup, improvementTileLookup);
-    //                break;
-    //            case LayerFillAlgorithm.Droplets:
-    //                LayerMapFunctions.Droplets(ref map, ref heightMap, ref gradientMap, rand, layerSetting.terrain, layerSetting.PercentCovered);
-    //                break;
-    //        }
-    //    }
-    //}
-
     /// <summary>
     /// Check if we made an improvment on top of water, if so fix it to be land
     /// </summary>
@@ -229,10 +184,10 @@ public class MapGenerator : MonoBehaviour
         {
             for (int y = 0; y <= improvmentMap.GetUpperBound(1); y++)
             {
-                //if (improvmentMap[x, y] == Terrain.Water && )
-                //{
-
-                //}
+                if (terrainMap[x, y] == Terrain.Water && improvmentMap[x,y] != Improvement.Empty)
+                {
+                    terrainMap[x, y] = Terrain.Grass;
+                }
             }
         }
     }
