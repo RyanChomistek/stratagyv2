@@ -24,6 +24,12 @@ public class MapGenerator : MonoBehaviour
 
     public bool LoadFromFile = false;
 
+    /// <summary>
+    /// Generates  terrain and improvment maps based on provided layers
+    /// </summary>
+    /// <param name="terrainTileLookup"></param>
+    /// <param name="improvementTileLookup"></param>
+    /// <param name="numZLayers"> number of z layers to produce, height map is flattened to z layers so more z layers will make the mape more hilly, also much slower to render</param>
     public void GenerateMap(Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
         Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, int numZLayers)
     {
@@ -129,7 +135,6 @@ public class MapGenerator : MonoBehaviour
     {
         for (int i = 0; i < layerSetting.iterations; i++)
         {
-            Debug.Log(layerSetting.algorithm.ToString());
             switch (layerSetting.algorithm)
             {
                 case LayerFillAlgorithm.Solid:
@@ -177,6 +182,7 @@ public class MapGenerator : MonoBehaviour
 
     /// <summary>
     /// Check if we made an improvment on top of water, if so fix it to be land
+    /// Might want to later change this for roads so that they look like briges instead, but idk
     /// </summary>
     private void FixImprovmentsOnWater()
     {

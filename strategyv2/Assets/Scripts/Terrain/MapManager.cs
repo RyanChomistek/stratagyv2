@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -30,15 +31,17 @@ public class MapManager : MonoBehaviour
     public bool GenNewMapOnStart = false;
     public MapDisplays CurrentlyDisplayingMapType;
 
-    private Color _FowGrey = new Color(.25f, .25f, .25f, 1);
-    private Color _notDiscovered = new Color(0f, 0f, 0f, 1);
-    private Color _playerVision = new Color(1, 1, 1, 1);
-    private Color _otherDivisionsVision = new Color(.5f, .5f, .5f, 1);
+    private Color FowGrey = new Color(.25f, .25f, .25f, 1);
+    private Color NotDiscovered = new Color(0f, 0f, 0f, 1);
+    private Color PlayerVision = new Color(1, 1, 1, 1);
+    private Color OtherDivisionsVision = new Color(.5f, .5f, .5f, 1);
 
     [SerializeField]
-    private float _tileUpdateTickTime = 1;
+    private float TileUpdateTickTime = 1;
 
-    private Action _onMapRerender;
+    private Action OnMapRerender;
+
+    private bool FinishedUpdatingTiles = false;
 
     private void Awake()
     {
@@ -69,9 +72,14 @@ public class MapManager : MonoBehaviour
         if(CurrentlyDisplayingMapType == MapDisplays.TilesWithVision)
         {
             //show the players vision range
-            RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
-            _onMapRerender?.Invoke();
+            RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, PlayerVision);
+            OnMapRerender?.Invoke();
         }
+    }
+
+    void OnDestroy()
+    {
+        //UpdateTileValuesThreads.ForEach(x => x.Abort());
     }
 
     public bool[,] GetMapMask()
@@ -89,7 +97,7 @@ public class MapManager : MonoBehaviour
 
     public void RegisterOnMapRerenderCallback(Action callback)
     {
-        _onMapRerender += callback;
+        OnMapRerender += callback;
     }
 
     private void PrintTile(Vector3 pos)
@@ -122,37 +130,92 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    #region updateTileValues
+    private void UpdateTileValueThread(Vector2Int start, Vector2Int End)
+    {
+        for (int y = start.y; y < End.y; y++)
+        //for (int y = start.y; y <= 1; y++)
+        {
+            for (int x = start.x; x < End.x; x++)
+            //for (int x = start.x; x <= 0; x++)
+            {
+                map[x, y].Update(TileUpdateTickTime);
+            }
+        }
+    }
+
+    /// <summary>
+    /// async update the tiles, will set FinishedUpdatingTiles when its done
+    /// </summary>
+    /// <param name="numThreads"></param>
+    private void AsyncUpdateTileValues(int numThreads)
+    {
+        int size = (map.GetUpperBound(1) + 1) / numThreads;
+
+        Thread waitThread = new Thread(() => {
+            // Use the thread pool to parrellize update
+            using (CountdownEvent e = new CountdownEvent(1))
+            {
+                // TODO make these blocks instead of rows so that we get better lock perf
+                for (int i = 0; i < numThreads; i++)
+                {
+                    Vector2Int start = new Vector2Int(0, i * size);
+                    Vector2Int End = new Vector2Int(map.GetUpperBound(1) + 1, ((i + 1) * size) - 1);
+                    e.AddCount();
+                    ThreadPool.QueueUserWorkItem(delegate (object state)
+                    {
+                        try
+                        {
+                            UpdateTileValueThread(start, End);
+                        }
+                        finally
+                        {
+                            e.Signal();
+                        }
+                    },
+                    null);
+                }
+
+                e.Signal();
+                e.Wait();
+
+                FinishedUpdatingTiles = true;
+            }
+        });
+
+        waitThread.Start();
+    }
+    
+    /// <summary>
+    /// start a new update cycle every second, also make sure that the previous one is finished before we start a new one
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator UpdateTileValues()
     {
         float timeSinceLastTick = 0;
         float GameTime = 0;
-        while(true)
+        int numThreads = 4;
+        while (true)
         {
-            while (timeSinceLastTick < _tileUpdateTickTime)
+            while (timeSinceLastTick < TileUpdateTickTime)
             {
                 timeSinceLastTick += GameManager.DeltaTime;
                 GameTime += GameManager.DeltaTime;
                 yield return new WaitForEndOfFrame();
             }
 
-            float max = 0;
-            float min = 0;
-            for (int y = 0; y <= map.GetUpperBound(0); y++)
+            FinishedUpdatingTiles = false;
+            AsyncUpdateTileValues(numThreads);
+
+            while(!FinishedUpdatingTiles)
             {
-                for (int x = 0; x <= map.GetUpperBound(1); x++)
-                {
-                    map[x, y].Update(GameTime);
-                    max = Mathf.Max(max, map[x, y].Supply);
-                    min = Mathf.Min(min, map[x, y].Supply);
-
-                }
+                yield return new WaitForEndOfFrame();
             }
-
-            //RenderMap(CurrentlyDisplayingMapType);
 
             timeSinceLastTick = 0;
         }
     }
+    #endregion updateTileValues
 
     public void GenerateMap()
     {
@@ -356,7 +419,7 @@ public class MapManager : MonoBehaviour
             case MapDisplays.TilesWithVision:
                 //RenderAllTilesGray();
                 RenderDiscoveredTiles(LocalPlayerController.Instance.GeneralDivision.AttachedDivision);
-                RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, _playerVision);
+                RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, PlayerVision);
                 break;
             case MapDisplays.MovementSpeed:
                 this.RenderMapWithKey(x => 1 / (float)x.MoveCost);
@@ -369,7 +432,7 @@ public class MapManager : MonoBehaviour
                 break;
         }
         
-        _onMapRerender?.Invoke();
+        OnMapRerender?.Invoke();
     }
 
     public void RenderMapWithTiles()
@@ -440,7 +503,7 @@ public class MapManager : MonoBehaviour
             for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
             {
                 var position = new Vector2Int(x, y);
-                SetTileColor(position, _FowGrey);
+                SetTileColor(position, FowGrey);
             }
         }
     }
@@ -456,11 +519,11 @@ public class MapManager : MonoBehaviour
                 if(division.discoveredMapLocations[x, y])
                 {
                     //TerrainTilemap.SetColor(position, _FowGrey);
-                    SetTileColor(position, _FowGrey);
+                    SetTileColor(position, FowGrey);
                 }
                 else
                 {
-                    SetTileColor(position, _notDiscovered);
+                    SetTileColor(position, NotDiscovered);
                     //TerrainTilemap.SetColor(position, _notDiscovered);
                 }
             }
@@ -489,14 +552,14 @@ public class MapManager : MonoBehaviour
 
                     var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
                     var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance;
-                    var color = _notDiscovered;
+                    var color = NotDiscovered;
                     float percentDistance = 1 - (new Vector3(x, y, 0).magnitude / 1.5f / sightDistance);
                     if (InBounds(map, position.x, position.y) && inVision)
                     {
                         if (controlColors[position.x, position.y] == null)
                             controlColors[position.x, position.y] = new List<Color>();
                         
-                        controlColors[position.x, position.y].Add(Color.Lerp(_FowGrey, controller.Controller.PlayerColor, percentDistance));
+                        controlColors[position.x, position.y].Add(Color.Lerp(FowGrey, controller.Controller.PlayerColor, percentDistance));
                     }
                 }
             }
@@ -511,7 +574,7 @@ public class MapManager : MonoBehaviour
                 if (colors == null)
                 {
                     //TerrainTilemap.SetColor(position, _FowGrey);
-                    SetTileColor(position, _FowGrey);
+                    SetTileColor(position, FowGrey);
                 }
                 else
                 {
@@ -542,7 +605,7 @@ public class MapManager : MonoBehaviour
                
                 var position = new Vector2Int(x, y) + controllerPositionRounded;
                 var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < controller.AttachedDivision.MaxSightDistance;
-                var color = _notDiscovered;
+                var color = NotDiscovered;
                 
                 if (inVision)
                 {
@@ -550,7 +613,7 @@ public class MapManager : MonoBehaviour
                 }
                 else if(InBounds(controller.AttachedDivision.discoveredMapLocations, position.x, position.y) && controller.AttachedDivision.discoveredMapLocations[position.x, position.y])
                 {
-                    color = _FowGrey;
+                    color = FowGrey;
                 }
                 
                 //TerrainTilemap.SetTileFlags(position, TileFlags.None);

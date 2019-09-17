@@ -149,8 +149,6 @@ public class LayerMapFunctions : MonoBehaviour
 
             }
         }
-
-        Debug.Log($"count {cnt/(baseTerrainMap.GetUpperBound(0)* baseTerrainMap.GetUpperBound(0))} {minHabitability}");
     }
 
     public static void Droplets<T>(ref T[,] map,

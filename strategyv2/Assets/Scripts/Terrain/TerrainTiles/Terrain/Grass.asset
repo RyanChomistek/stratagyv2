@@ -17,14 +17,14 @@ MonoBehaviour:
     Supply: 25
     MaxSupply: 200
     InitialSupply: 0
-    SupplyGrowthRate: 0
-    SupplySpreadRate: 0
+    SupplyGrowthRate: 0.001
+    SupplySpreadRate: 0.001
     MoveCost: 5000
     Population: 25
     MaxPopulation: 100
     InitialPopulation: 0
-    PopulationGrowthRate: 0
-    PopulationSpreadRate: 0
+    PopulationGrowthRate: 0.001
+    PopulationSpreadRate: 0.001
     DisplayTile: {fileID: 11400000, guid: c95a2c95928fc834687b94ce54691bff, type: 2}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
     Improvable: 1

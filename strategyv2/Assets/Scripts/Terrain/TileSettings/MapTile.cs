@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 [System.Serializable]
 public class MapTile
 {
-    public float Supply = 1;
+    public volatile float Supply = 1;
     public float MaxSupply = 200;
     [HideInInspector]
     public float InitialSupply = 1;
@@ -17,7 +17,7 @@ public class MapTile
 
     public int MoveCost = 1;
 
-    public float Population = 1;
+    public volatile float Population = 1;
     public float MaxPopulation = 200;
     [HideInInspector]
     public float InitialPopulation = 1;
