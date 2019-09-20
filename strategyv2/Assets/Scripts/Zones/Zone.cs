@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Zone
+public class Zone : IZone
 {
     public static int idCnt = 0;
-    public int id = -1;
+    public int Id { get; set; }
     public List<Rect> BoundingBoxes { get; set; }
-    Color OutlineColor;
+
+    public IZoneBehavior Behavior { get; set; }
 
     public Zone(List<Rect> boundingBoxes, Color outlineColor)
     {
         BoundingBoxes = boundingBoxes;
-        OutlineColor = outlineColor;
-        id = idCnt++;
+        Id = idCnt++;
+        Behavior = new EmptyZoneBehavior();
     }
 
-    public Zone(Zone other)
+    public Zone(IZone other)
     {
         BoundingBoxes = new List<Rect>(other.BoundingBoxes);
-        OutlineColor = other.OutlineColor;
-        id = other.id;
+        Id = other.Id;
     }
 
     public Vector3 GetRandomPoint()
@@ -73,14 +73,13 @@ public class Zone
     public override bool Equals(object obj)
     {
         var zone = obj as Zone;
-        return zone != null &&
-               id == zone.id;
+        return zone != null && Id == zone.Id;
     }
 
     public override int GetHashCode()
     {
         var hashCode = 199608042;
-        hashCode = hashCode * -1521134295 + id.GetHashCode();
+        hashCode = hashCode * -1521134295 + Id.GetHashCode();
         hashCode = hashCode * -1521134295 + EqualityComparer<List<Rect>>.Default.GetHashCode(BoundingBoxes);
         return hashCode;
     }

@@ -27,7 +27,7 @@ public class Division : IEquatable<Division>
 
     public HashSet<int> Subordinates = new HashSet<int>();
 
-    public Dictionary<int, Zone> Zones = new Dictionary<int, Zone>();
+    public Dictionary<int, IZone> Zones = new Dictionary<int, IZone>();
     
     public List<Order> PossibleOrders = new List<Order>();
     public MultiOrder OrderSystem;
@@ -514,34 +514,34 @@ public class Division : IEquatable<Division>
     /// </summary>
     /// <param name="zones"></param>
     /// <returns> returns whether there was any change to the zones</returns>
-    public virtual bool MergeZones(List<Zone> newZones)
+    public virtual bool MergeZones(List<IZone> newZones)
     {
         bool changed = false;
         foreach(var newZone in newZones)
         {
-            if(Zones.ContainsKey(newZone.id))
+            if(Zones.ContainsKey(newZone.Id))
             {
-                var oldZone = Zones[newZone.id];
+                var oldZone = Zones[newZone.Id];
                 //use hashcode to see if the two zones are different
                 if(oldZone.GetHashCode() != newZone.GetHashCode())
                 {
-                    Zones[newZone.id] = new Zone(newZone);
+                    Zones[newZone.Id] = new Zone(newZone);
                     changed = true;
                 }
             }
             else
             {
                 changed = true;
-                Zones.Add(newZone.id, newZone);
+                Zones.Add(newZone.Id, newZone);
             }
         }
 
         return changed;
     }
 
-    public virtual void AddZone(Zone zone)
+    public virtual void AddZone(IZone zone)
     {
-        Zones.Add(zone.id, zone);
+        Zones.Add(zone.Id, zone);
     }
 
     static public bool AreSameTeam(Division d1, Division d2)

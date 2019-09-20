@@ -338,9 +338,13 @@ public class ControlledDivision : Division
 
     #endregion
 
-    public List<Zone> ConvertZonesToList()
+    /// <summary>
+    /// converts the zones map to a list
+    /// </summary>
+    /// <returns></returns>
+    public List<IZone> ConvertZonesToList()
     {
-        List<Zone> zonesList = new List<Zone>();
+        List<IZone> zonesList = new List<IZone>();
         foreach(var zone in Zones)
         {
             zonesList.Add(zone.Value);
@@ -349,7 +353,7 @@ public class ControlledDivision : Division
         return zonesList;
     }
 
-    public override bool MergeZones(List<Zone> newZones)
+    public override bool MergeZones(List<IZone> newZones)
     {
         bool changed = base.MergeZones(newZones);
         if(changed)
@@ -362,12 +366,12 @@ public class ControlledDivision : Division
         return changed;
     }
 
-    public override void AddZone(Zone zone)
+    public override void AddZone(IZone zone)
     {
         base.AddZone(zone);
         
         SendMessengerToAllSubordinates(new List<Order>() { new ShareZoneInfoOrder(this, this.DivisionId, ConvertZonesToList()) }, true);
-        Debug.Log($"Adding zone {Name} {zone.id} | {Zones.Count}");
+        Debug.Log($"Adding zone {Name} {zone.Id} | {Zones.Count}");
     }
 
     public void RegisterOnEnemiesSeenCallback(Action<List<ControlledDivision>> callback)

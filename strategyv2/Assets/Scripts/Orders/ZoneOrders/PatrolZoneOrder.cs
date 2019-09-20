@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PatrolZoneOrder : ZoneOrder
 {
-    public PatrolZoneOrder(Division controller, int commanderSendingOrderId, Zone zone)
+    public PatrolZoneOrder(Division controller, int commanderSendingOrderId, IZone zone)
         : base(controller, commanderSendingOrderId, zone, "Patrol Zone ")
     {
     }
@@ -12,7 +12,7 @@ public class PatrolZoneOrder : ZoneOrder
     protected override bool TryStartNextOrder(ControlledDivision Host)
     {
         base.TryStartNextOrder(Host);
-        if (Host.Zones.TryGetValue(AssignedZoneId, out Zone AssignedZone))
+        if (Host.Zones.TryGetValue(AssignedZoneId, out IZone AssignedZone))
         {
             //pick a random point in the zone 
             Vector3 nextPoint = AssignedZone.GetRandomPoint();
@@ -29,7 +29,7 @@ public class PatrolZoneOrder : ZoneOrder
         return true;
     }
 
-    public override void OnZoneSelected(Division Host, PlayerController playerController, Zone zone)
+    public override void OnZoneSelected(Division Host, PlayerController playerController, IZone zone)
     {
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         LocalPlayerController.Instance.UnRegisterZoneSelectCallback(UICallback);

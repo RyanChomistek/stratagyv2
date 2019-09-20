@@ -4,15 +4,10 @@ using UnityEngine;
 
 public class ContextMenuController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    protected IContextMenu Menu;
 
-    // Update is called once per frame
-    void Update()
+    public void Init(IContextMenu menu)
     {
-        
+        Menu = menu;
     }
 }

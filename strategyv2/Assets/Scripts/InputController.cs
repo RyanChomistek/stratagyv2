@@ -31,7 +31,6 @@ public class ButtonHandler : Handler
     public const string RightClick = "Fire2";
     public const string MiddleMouse = "Fire3";
 
-
     public ButtonHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<ButtonHandler, Vector3> onButtonUp, bool ignoreUI = true, bool onlyUi = false)
     {
         this.ButtonName = buttonName;

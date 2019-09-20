@@ -46,7 +46,7 @@ public struct Edge
     }
 }
 
-public class ZoneDisplay : MonoBehaviour
+public class ZoneDisplay : MonoBehaviour, IContextMenuSource
 {
     public Zone DisplayedZone;
 
@@ -65,57 +65,94 @@ public class ZoneDisplay : MonoBehaviour
     private string _outlineColorShaderProperty = "_BaseColor";
 
     ButtonHandler SelectCallBack;
+    ButtonHandler ContextMenuHandler;
     HoverHandler HoverHandler;
 
     #region Context Menu
     List<IContextMenuItem> ContextMenuItems;
 
-    private class DeleteContextMenuItem : IContextMenuItem
+    private abstract class BaseZoneContextMenuItem : BaseContextMenuItem
     {
-        public Action GetAction()
+        protected IZone _Zone;
+        protected ZoneDisplay _Display;
+
+        public BaseZoneContextMenuItem(IZone Zone, ZoneDisplay Display)
         {
-            return () => { };
+            _Zone = Zone;
+            _Display = Display;
+        }
+    }
+
+    private class DeleteZoneContextMenuItem : BaseZoneContextMenuItem
+    {
+        public DeleteZoneContextMenuItem(IZone Zone, ZoneDisplay Display) : base(Zone, Display)
+        {
         }
 
-        public string GetDisplayName()
+        public override Action GetAction()
+        {
+            return () => { Destroy(_Display); };
+        }
+
+        public override string GetDisplayString()
         {
             return "Delete";
         }
 
-        public List<IContextMenuItem> GetSubMenu()
+        public override ICollection<IContextMenuItem> GetSubMenu()
         {
             throw new NotImplementedException();
         }
 
-        public bool HasSubMenu()
+        public override bool HasSubMenu()
         {
             return false;
         }
     }
 
-    private class DesignateAreaContextMenuItem : IContextMenuItem
+    private class DesignateZoneBehaviorContextMenuItem : BaseZoneContextMenuItem
     {
+        public DesignateZoneBehaviorContextMenuItem(IZone Zone, ZoneDisplay Display) : base(Zone, Display)
+        {
+        }
 
-        public Action GetAction()
+        public override Action GetAction()
         {
             return () => { };
         }
 
-        public string GetDisplayName()
+        public override string GetDisplayString()
         {
             return "Designate Area";
         }
 
-        public List<IContextMenuItem> GetSubMenu()
+        public override ICollection<IContextMenuItem> GetSubMenu()
         {
             throw new NotImplementedException();
         }
 
-        public bool HasSubMenu()
+        public override bool HasSubMenu()
         {
-            return true;
+            return false;
         }
     }
+
+    private class ZoneDisplayContextMenu : BaseContextMenu
+    {
+        private List<IContextMenuItem> m_Items;
+        public ZoneDisplayContextMenu(ZoneDisplay Display)
+        {
+            m_Items = new List<IContextMenuItem>();
+            m_Items.Add(new DeleteZoneContextMenuItem(Display.DisplayedZone, Display));
+            m_Items.Add(new DesignateZoneBehaviorContextMenuItem(Display.DisplayedZone, Display));
+        }
+    }
+
+    public IContextMenu GetContextMenu()
+    {
+        return new ZoneDisplayContextMenu(this);
+    }
+
     #endregion Context Menu
 
     private void Awake()
@@ -562,8 +599,14 @@ public class ZoneDisplay : MonoBehaviour
                 return DisplayedZone.Contains(tileCoordinate);
             },
             .1f);
-
         InputController.Instance.RegisterHoverHandler(HoverHandler);
+
+        ContextMenuHandler = new ButtonHandler(ButtonHandler.RightClick,
+            // Down
+            (handler, position) => { },
+            // Up
+            (handler, position) => { ContextMenuManager.Instance.CreateContextMenu(new Vector3(position.x,position.y, 0), this); });
+        InputController.Instance.RegisterButtonHandler(ContextMenuHandler);
     }
 
     public void Change(Vector3 topLeft, Vector3 bottomRight, int rectIndex)
@@ -606,6 +649,7 @@ public class ZoneDisplay : MonoBehaviour
     {
         //free input handelers
         InputController.Instance.UnRegisterButtonHandler(SelectCallBack);
+        InputController.Instance.UnRegisterButtonHandler(ContextMenuHandler);
         InputController.Instance.UnRegisterHoverHandler(HoverHandler);
     }
 }
