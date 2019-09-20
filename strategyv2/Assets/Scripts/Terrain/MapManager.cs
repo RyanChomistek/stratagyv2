@@ -396,6 +396,7 @@ public class MapManager : MonoBehaviour
 
     public void RenderMap(MapDisplays mapDisplay)
     {
+        DateTime start = DateTime.Now;
         CurrentlyDisplayingMapType = mapDisplay;
         switch (mapDisplay)
         {
@@ -431,7 +432,10 @@ public class MapManager : MonoBehaviour
                 this.RenderMapWithZoneOfControl();
                 break;
         }
-        
+
+        DateTime end = DateTime.Now;
+        Debug.Log($"render time {end - start}");
+
         OnMapRerender?.Invoke();
     }
 
@@ -470,8 +474,6 @@ public class MapManager : MonoBehaviour
         TerrainTileLayers[highestLayer].SetColor(position, color);
         ImprovementTilemap.SetTileFlags(position, TileFlags.None);
         ImprovementTilemap.SetColor(position, color);
-
-
     }
 
     public Color GetTileColor(Vector2Int pos)
@@ -629,9 +631,11 @@ public class MapManager : MonoBehaviour
         double min = float.MaxValue;
         double max = float.MinValue;
         double sum = 0;
-        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+
+        
+        for (int x = 0; x <= map.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            for (int y = 0; y <= map.GetUpperBound(1); y++)
             {
                 double val = key(map[x, y]);
                 min = Math.Min(min, val);
@@ -658,9 +662,10 @@ public class MapManager : MonoBehaviour
         Debug.Log($"min {min}, max {max}, average {average}, std {std} {average - 2 * std} {average + 2 * std}");
         min = average - 2 * std;
         max = average + 2 * std;
-        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
+
+        for (int x = 0; x <= map.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
+            for (int y = 0; y <= map.GetUpperBound(1); y++)
             {
                 var position = new Vector2Int(x, y);
                 float val = key(map[x, y]);
@@ -668,8 +673,6 @@ public class MapManager : MonoBehaviour
                 val = Mathf.Clamp(val, (float) min, (float) max);
                 float t = Mathf.InverseLerp((float) min, (float) max, val);
                 var color = Color.Lerp(Color.red, Color.green, t);
-                //TerrainTilemap.SetTileFlags(position, TileFlags.None);
-                //TerrainTilemap.SetColor(position, color);
                 SetTileColor(position, color);
             }
         }

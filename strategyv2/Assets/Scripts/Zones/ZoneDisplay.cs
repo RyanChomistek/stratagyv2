@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -66,15 +67,72 @@ public class ZoneDisplay : MonoBehaviour
     ButtonHandler SelectCallBack;
     HoverHandler HoverHandler;
 
+    #region Context Menu
+    List<IContextMenuItem> ContextMenuItems;
+
+    private class DeleteContextMenuItem : IContextMenuItem
+    {
+        public Action GetAction()
+        {
+            return () => { };
+        }
+
+        public string GetDisplayName()
+        {
+            return "Delete";
+        }
+
+        public List<IContextMenuItem> GetSubMenu()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HasSubMenu()
+        {
+            return false;
+        }
+    }
+
+    private class DesignateAreaContextMenuItem : IContextMenuItem
+    {
+
+        public Action GetAction()
+        {
+            return () => { };
+        }
+
+        public string GetDisplayName()
+        {
+            return "Designate Area";
+        }
+
+        public List<IContextMenuItem> GetSubMenu()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HasSubMenu()
+        {
+            return true;
+        }
+    }
+    #endregion Context Menu
+
     private void Awake()
     {
         transform.position = Vector3.zero;
-        _FillColor = new Color(Random.Range(.25f, 1), Random.Range(.25f, 1), Random.Range(.25f, 1), .5f);
+        _FillColor = new Color(UnityEngine.Random.Range(.25f, 1), UnityEngine.Random.Range(.25f, 1), UnityEngine.Random.Range(.25f, 1), .5f);
         _OutlineColor = InvertColor(_FillColor);
         _OutlineColor.a = .5f;
         
         _fill.GetComponent<Renderer>().material.SetColor(_fillColorShaderProperty, _FillColor);
         _outline.GetComponent<Renderer>().material.SetColor(_outlineColorShaderProperty, _OutlineColor);
+    }
+
+    private void CreateContextMenuItems()
+    {
+        ContextMenuItems = new List<IContextMenuItem>();
+        //ContextMenuItems.Add()
     }
 
     public void MergeZone(ZoneDisplay Other)
