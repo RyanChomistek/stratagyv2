@@ -10,3 +10,6 @@ m_Name = private
 _Name = protected
 
 Name public
+
+IName = interface
+BaseName = abstract implmentation of IName
