@@ -83,6 +83,18 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
         }
     }
 
+    private class ZoneDisplayContextMenu : BaseContextMenu
+    {
+        public ZoneDisplayContextMenu(ZoneDisplay Display)
+        {
+            _Items = new List<IContextMenuItem>
+            {
+                new DeleteZoneContextMenuItem(Display.DisplayedZone, Display),
+                new DesignateZoneBehaviorContextMenuItem(Display.DisplayedZone, Display)
+            };
+        }
+    }
+
     private class DeleteZoneContextMenuItem : BaseZoneContextMenuItem
     {
         public DeleteZoneContextMenuItem(IZone Zone, ZoneDisplay Display) : base(Zone, Display)
@@ -91,7 +103,7 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
 
         public override Action GetAction()
         {
-            return () => { Destroy(_Display); };
+            return () => { Debug.Log($"Destroying Zone{_Display}"); ZoneDisplayManager.Instance.DestroyZoneDisplay(_Display); };
         }
 
         public override string GetDisplayString()
@@ -99,7 +111,7 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
             return "Delete";
         }
 
-        public override ICollection<IContextMenuItem> GetSubMenu()
+        public override IContextMenu GetSubMenu()
         {
             throw new NotImplementedException();
         }
@@ -112,6 +124,48 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
 
     private class DesignateZoneBehaviorContextMenuItem : BaseZoneContextMenuItem
     {
+        private class DesignateZoneBehaviorContextMenu : BaseContextMenu
+        {
+            private class ZoneBehaviorContextMenuItem : BaseZoneContextMenuItem
+            {
+                protected IZoneBehavior _ZoneBehavior;
+
+                public ZoneBehaviorContextMenuItem(IZone Zone, ZoneDisplay Display, IZoneBehavior behavior) : base(Zone, Display)
+                {
+                    _ZoneBehavior = behavior;
+                }
+
+                public override Action GetAction()
+                {
+                    return null;
+                }
+
+                public override string GetDisplayString()
+                {
+                    return _ZoneBehavior.ToString();
+                }
+
+                public override IContextMenu GetSubMenu()
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override bool HasSubMenu()
+                {
+                    return false;
+                }
+            }
+
+            public DesignateZoneBehaviorContextMenu(ZoneDisplay display)
+            {
+                _Items = new List<IContextMenuItem>();
+                foreach (IZoneBehavior behavior in BaseZoneBehavior.GetAllZoneBehaviors())
+                {
+                    _Items.Add(new ZoneBehaviorContextMenuItem(display.DisplayedZone, display, behavior));
+                }
+            }
+        }
+
         public DesignateZoneBehaviorContextMenuItem(IZone Zone, ZoneDisplay Display) : base(Zone, Display)
         {
         }
@@ -126,27 +180,18 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
             return "Designate Area";
         }
 
-        public override ICollection<IContextMenuItem> GetSubMenu()
+        public override IContextMenu GetSubMenu()
         {
-            throw new NotImplementedException();
+            return new DesignateZoneBehaviorContextMenu(_Display);
         }
 
         public override bool HasSubMenu()
         {
-            return false;
+            return true;
         }
     }
 
-    private class ZoneDisplayContextMenu : BaseContextMenu
-    {
-        private List<IContextMenuItem> m_Items;
-        public ZoneDisplayContextMenu(ZoneDisplay Display)
-        {
-            m_Items = new List<IContextMenuItem>();
-            m_Items.Add(new DeleteZoneContextMenuItem(Display.DisplayedZone, Display));
-            m_Items.Add(new DesignateZoneBehaviorContextMenuItem(Display.DisplayedZone, Display));
-        }
-    }
+ 
 
     public IContextMenu GetContextMenu()
     {

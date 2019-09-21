@@ -8,4 +8,9 @@ public class DefendZoneBehavior : BaseZoneBehavior
     {
         return new PatrolZoneOrder(null, commanderId, null);
     }
+
+    public override string ToString()
+    {
+        return "DefendZoneBehavior";
+    }
 }

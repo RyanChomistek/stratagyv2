@@ -8,4 +8,20 @@ public abstract class BaseZoneBehavior : IZoneBehavior
     {
         throw new System.NotImplementedException();
     }
+
+    public static List<IZoneBehavior> GetAllZoneBehaviors()
+    {
+        List<IZoneBehavior> behaviors = new List<IZoneBehavior>
+        {
+            new DefendZoneBehavior(),
+            new EmptyZoneBehavior()
+        };
+
+        return behaviors;
+    }
+
+    public override string ToString()
+    {
+        return "Base Zone";
+    }
 }

@@ -33,7 +33,7 @@ public interface IContextMenuItem
     /// Gets the sub menu
     /// </summary>
     /// <returns></returns>
-    ICollection<IContextMenuItem> GetSubMenu();
+    IContextMenu GetSubMenu();
 }
 
 public abstract class BaseContextMenuItem : IContextMenuItem
@@ -55,10 +55,10 @@ public abstract class BaseContextMenuItem : IContextMenuItem
         throw new NotImplementedException();
     }
 
-    public abstract ICollection<IContextMenuItem> GetSubMenu();
+    public abstract IContextMenu GetSubMenu();
     public abstract bool HasSubMenu();
 
-    public bool TryGetSubMenu(out ICollection<IContextMenuItem> subMenu)
+    public bool TryGetSubMenu(out IContextMenu subMenu)
     {
         if(HasSubMenu())
         {

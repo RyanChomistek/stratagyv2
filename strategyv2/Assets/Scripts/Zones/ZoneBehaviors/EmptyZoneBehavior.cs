@@ -8,5 +8,9 @@ public class EmptyZoneBehavior : BaseZoneBehavior
     {
         return new ZoneOrder(null, commanderId, null);
     }
+    public override string ToString()
+    {
+        return "EmptyZoneBehavior";
+    }
 }
 
