@@ -41,11 +41,11 @@ public class DivisionDisplayManager : MonoBehaviour
         divisionToDisplay.AddRefreshDelegate(RefreshDivisionCallback);
         ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
             (handler, mousePos) => {
-                handler.Cancel = true;
+                InputController.Instance.UnRegisterHandler(handler);
                 OnClickOff(mousePos);
             });
 
-        InputController.Instance.RegisterButtonHandler(Handler);
+        InputController.Instance.RegisterHandler(Handler);
     }
 
     public void RefreshDivisionCallback(Division rootDivision)

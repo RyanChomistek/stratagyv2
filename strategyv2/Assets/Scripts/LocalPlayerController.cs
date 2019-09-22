@@ -166,8 +166,14 @@ public class LocalPlayerController : PlayerController {
     private IEnumerator ZoneUICancelHelper(ZoneSelectDelegate callback)
     {
         yield return new WaitForEndOfFrame();
-        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { x.Cancel = true; ZoneSelectCallback -= callback; }, (x, y) => { });
-        InputController.Instance.RegisterButtonHandler(Handler);
+        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, 
+        (x, y) => 
+        {
+            InputController.Instance.UnRegisterHandler(x);
+            ZoneSelectCallback -= callback;
+        }, 
+        (x, y) => { });
+        InputController.Instance.RegisterHandler(Handler);
     }
 
     public void UnRegisterZoneSelectCallback(ZoneSelectDelegate callback)
@@ -181,7 +187,7 @@ public class LocalPlayerController : PlayerController {
         var zoneDisplay = ZoneDisplayManager.Instance.CreateZoneDisplay();
         
         Vector3 start = Vector3.zero;
-        InputController.Instance.RegisterButtonHandler(new DragHandler("Fire1",
+        InputController.Instance.RegisterHandler(new DragHandler("Fire1",
             (handler, mousePosition) => 
             {
                 zoneDisplay.Change(mousePosition,mousePosition,0);
@@ -193,7 +199,7 @@ public class LocalPlayerController : PlayerController {
             },
             (handler, point) => 
             {
-                handler.Cancel = true;
+                InputController.Instance.UnRegisterHandler(handler);
                 //check for collisions between rects and merge them
                 for (int i = 0; i < ZoneDisplayManager.Instance.Zones.Count; i++)
                 {

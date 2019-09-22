@@ -29,7 +29,7 @@ public class MapHighlight : MonoBehaviour
             },
             (x,y) => {  }, (x,y) => { }, (x,y) => { });
 
-        InputController.Instance.RegisterHoverHandler(handler);
+        InputController.Instance.RegisterHandler(handler);
         _map = MapManager.Instance;
         _map.RegisterOnMapRerenderCallback(OnMapRerender);
     }

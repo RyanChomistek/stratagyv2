@@ -321,8 +321,6 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
         {
             OrderedEdgeVerts.Add(FindEdgeLoop(ref edgeVertsSet, ref Edges, ref edgesIntoPoint));
         }
-
-        Debug.Log(OrderedEdgeVerts.Count);
     }
 
     /// <summary>
@@ -612,7 +610,7 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
         DisplayedZone = zone;
         ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
             (handler, mousePos) => {
-                handler.Cancel = true;
+                InputController.Instance.UnRegisterHandler(handler);
                 var tileCoordinate = MapManager.Instance.GetTilePositionFromPosition(mousePos);
                 if (DisplayedZone.Contains(tileCoordinate))
                 {
@@ -620,7 +618,7 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
                 }
             });
 
-        InputController.Instance.RegisterButtonHandler(Handler);
+        InputController.Instance.RegisterHandler(Handler);
 
         HoverHandler = new ConditionalHoverHandler(
             //warmups
@@ -644,14 +642,14 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
                 return DisplayedZone.Contains(tileCoordinate);
             },
             .1f);
-        InputController.Instance.RegisterHoverHandler(HoverHandler);
+        InputController.Instance.RegisterHandler(HoverHandler);
 
         ContextMenuHandler = new ButtonHandler(ButtonHandler.RightClick,
             // Down
             (handler, position) => { },
             // Up
             (handler, position) => { ContextMenuManager.Instance.CreateContextMenu(new Vector3(position.x,position.y, 0), this); });
-        InputController.Instance.RegisterButtonHandler(ContextMenuHandler);
+        InputController.Instance.RegisterHandler(ContextMenuHandler);
     }
 
     public void Change(Vector3 topLeft, Vector3 bottomRight, int rectIndex)
@@ -693,8 +691,8 @@ public class ZoneDisplay : MonoBehaviour, IContextMenuSource
     public void OnDestroy()
     {
         //free input handelers
-        InputController.Instance.UnRegisterButtonHandler(SelectCallBack);
-        InputController.Instance.UnRegisterButtonHandler(ContextMenuHandler);
-        InputController.Instance.UnRegisterHoverHandler(HoverHandler);
+        InputController.Instance.UnRegisterHandler(SelectCallBack);
+        InputController.Instance.UnRegisterHandler(ContextMenuHandler);
+        InputController.Instance.UnRegisterHandler(HoverHandler);
     }
 }

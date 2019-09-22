@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        InputController.Instance.RegisterButtonHandler(new DragHandler("MiddleMouse", 
+        InputController.Instance.RegisterHandler(new DragHandler("MiddleMouse", 
             (handler, x) => { handler.IgnoreUI = false; }, 
             (handler, mousePosition, delta) =>
             {
@@ -30,7 +30,7 @@ public class CameraController : MonoBehaviour
             {
                 GetComponent<Cinemachine.CinemachineVirtualCamera>().m_Lens.OrthographicSize += delta * -2;
             },false);
-        InputController.Instance.RegisterAxisHandler(zoomHandler);
+        InputController.Instance.RegisterHandler(zoomHandler);
     }
 
     void Update()

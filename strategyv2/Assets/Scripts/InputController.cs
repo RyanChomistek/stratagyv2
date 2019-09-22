@@ -4,12 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Handler
+public enum HandlerType
 {
-    public bool Cancel = false;
+    Button, Hover, Axis
+}
+
+public abstract class Handler
+{
     public bool IgnoreUI = true;
     public bool OnlyUI = false;
-
+    public HandlerType HandlerType { protected set; get;}
     /// <summary>
     /// checks to make sure that the the handler with activate with the current ui flag
     /// </summary>
@@ -38,6 +42,7 @@ public class ButtonHandler : Handler
         this.OnButtonUpCallBack = onButtonUp;
         this.IgnoreUI = ignoreUI;
         this.OnlyUI = onlyUi;
+        HandlerType = HandlerType.Button;
     }
 
     public virtual void OnButtonDown()
@@ -94,6 +99,7 @@ public class HoverHandler : Handler
         this.IsCurrentlyWarmingup = false;
         this._warmupTimestamp = Time.time;
         this.hoverWarmupTime = hoverWarmupTime;
+        HandlerType = HandlerType.Hover;
     }
 
     public virtual bool IsTemporarilyHovering()
@@ -218,6 +224,7 @@ public class AxisHandler : Handler
         this.OnChangeCallBack = onChangeCallBack;
         this.IgnoreUI = ignoreUI;
         this.OnlyUI = onlyUi;
+        HandlerType = HandlerType.Axis;
     }
 
     public virtual void OnChange()
@@ -235,17 +242,38 @@ public class InputController : MonoBehaviour {
     private List<AxisHandler> _axisHandlers;
     private List<HoverHandler> _hoverHandlers;
 
+    private enum HandlerQueueAction
+    {
+        Add, Remove
+    }
+
+    private struct HandlerQueueItem
+    {
+        public HandlerQueueAction Action;
+        public Handler Item;
+
+        public HandlerQueueItem(HandlerQueueAction action, Handler item)
+        {
+            Action = action;
+            Item = item;
+        }
+    }
+    private List<HandlerQueueItem> m_HandlerQueue;
+
     private void Awake()
     {
         _buttonHandlers = new List<ButtonHandler>();
         _axisHandlers = new List<AxisHandler>();
         _hoverHandlers = new List<HoverHandler>();
+        m_HandlerQueue = new List<HandlerQueueItem>();
         Instance = this;
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        ProcessHandlerQueue();
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         bool isOverUI = EventSystem.current.IsPointerOverGameObject();
 
@@ -267,17 +295,6 @@ public class InputController : MonoBehaviour {
             else if (Input.GetButtonUp(handler.ButtonName))
             {
                 handler.OnButtonUp();
-            }
-        }
-
-        //remove canceled handlers
-        for (int i = 0; i < _buttonHandlers.Count; i++)
-        {
-            ButtonHandler handler = _buttonHandlers[i];
-            if (handler.Cancel)
-            {
-                _buttonHandlers.RemoveAt(i);
-                i--;
             }
         }
 
@@ -331,27 +348,98 @@ public class InputController : MonoBehaviour {
 
             handler.LastMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
+
+        ProcessHandlerQueue();
     }
 
-    public void RegisterButtonHandler(ButtonHandler handler)
+    public void RegisterHandler(Handler handler)
+    {
+        m_HandlerQueue.Add(new HandlerQueueItem(HandlerQueueAction.Add, handler));
+    }
+
+    public void UnRegisterHandler(Handler handler)
+    {
+        m_HandlerQueue.Add(new HandlerQueueItem(HandlerQueueAction.Remove, handler));
+    }
+
+    /// <summary>
+    /// all adds/removes to handlers are processed in here so that we never add/remove a handler while processing others
+    /// </summary>
+    protected void ProcessHandlerQueue()
+    {
+        foreach(var handler in m_HandlerQueue)
+        {
+            if(handler.Item == null)
+            {
+                continue;
+            }
+
+            if(handler.Action == HandlerQueueAction.Add)
+            {
+                switch (handler.Item.HandlerType)
+                {
+                    case HandlerType.Button:
+                        RegisterButtonHandler(handler.Item as ButtonHandler);
+                        break;
+                    case HandlerType.Hover:
+                        RegisterHoverHandler(handler.Item as HoverHandler);
+                        break;
+                    case HandlerType.Axis:
+                        RegisterAxisHandler(handler.Item as AxisHandler);
+                        break;
+                }
+            }
+            else
+            {
+                switch (handler.Item.HandlerType)
+                {
+                    case HandlerType.Button:
+                        UnRegisterButtonHandler(handler.Item as ButtonHandler);
+                        break;
+                    case HandlerType.Hover:
+                        UnRegisterHoverHandler(handler.Item as HoverHandler);
+                        break;
+                    case HandlerType.Axis:
+                        UnRegisterAxisHandler(handler.Item as AxisHandler);
+                        break;
+                }
+            }
+        }
+
+        // TODO may need to clean handlers of any nulls (only do this if it becomes a problem)
+
+        m_HandlerQueue.Clear();
+    }
+
+    // Button
+    protected void RegisterButtonHandler(ButtonHandler handler)
     {
         _buttonHandlers.Add(handler);
     }
-    public void UnRegisterButtonHandler(ButtonHandler handler)
+
+    protected void UnRegisterButtonHandler(ButtonHandler handler)
     {
         _buttonHandlers.Remove(handler);
     }
 
-    public void RegisterAxisHandler(AxisHandler handler)
+    // Axis
+    protected void RegisterAxisHandler(AxisHandler handler)
     {
         _axisHandlers.Add(handler);
     }
 
-    public void RegisterHoverHandler(HoverHandler handler)
+    protected void UnRegisterAxisHandler(AxisHandler handler)
+    {
+        _axisHandlers.Remove(handler);
+    }
+
+    // Hover
+    protected void RegisterHoverHandler(HoverHandler handler)
     {
         _hoverHandlers.Add(handler);
     }
-    public void UnRegisterHoverHandler(HoverHandler handler)
+
+    protected void UnRegisterHoverHandler(HoverHandler handler)
     {
         _hoverHandlers.Remove(handler);
     }

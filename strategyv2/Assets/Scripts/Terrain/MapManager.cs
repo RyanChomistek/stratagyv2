@@ -62,7 +62,7 @@ public class MapManager : MonoBehaviour
                 PrintTile(mousePos);
             });
 
-        InputController.Instance.RegisterButtonHandler(Handler);
+        InputController.Instance.RegisterHandler(Handler);
 
         LocalPlayerController.Instance.GeneralDivision.AttachedDivision.OnDiscoveredMapChanged += x => Rerender();
     }
@@ -596,6 +596,11 @@ public class MapManager : MonoBehaviour
     public void RenderMapWithTilesAndVision(DivisionController controller, Color visionColor)
     {
         int sightDistance = Mathf.RoundToInt(controller.AttachedDivision.MaxSightDistance);
+        if(controller == null)
+        {
+            return;
+        }
+
         Vector2 controllerPosition = controller.transform.position;
         Vector2Int controllerPositionRounded = new Vector2Int(RoundVector(controller.transform.position).x, RoundVector(controller.transform.position).y);
 

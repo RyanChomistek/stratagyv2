@@ -6,6 +6,7 @@ public class CreateZoneButtonController : MonoBehaviour
 {
     public void OnClick()
     {
+        Debug.Log("Zone button pressed");
         LocalPlayerController.Instance.BeginCreateZone();
     }
 }

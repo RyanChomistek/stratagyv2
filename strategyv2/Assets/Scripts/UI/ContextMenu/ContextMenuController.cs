@@ -20,6 +20,7 @@ public class ContextMenuController : MonoBehaviour, IContextMenuController, IPoi
     protected IContextMenu _Menu;
     protected IContextMenuController _Parent;
     protected IContextMenuController _SubMenu;
+
     [SerializeField]
     private ContextMenuCardController m_ContextMenuCardPrefab;
     [SerializeField]
@@ -28,8 +29,9 @@ public class ContextMenuController : MonoBehaviour, IContextMenuController, IPoi
     private const int m_CharacterSize = 15;
     private const int m_LineSize = 30;
     private Vector2 m_size;
-
+    private bool m_IsMouseOverThisMenu = true;
     private Dictionary<uint, ContextMenuCardController> m_CardControllers;
+    ButtonHandler ClickOffMenuHandler;
 
     public void Init(Vector3 screenPositionOfClick, IContextMenu menu, IContextMenuController parent)
     {
@@ -52,6 +54,21 @@ public class ContextMenuController : MonoBehaviour, IContextMenuController, IPoi
 
         // Set the position make sure to offset so that the mouse appears in uper left corner
         GetComponent<RectTransform>().position = screenPositionOfClick + (new Vector3(m_size.x, m_size.y * -1) * .9f)/2;
+
+        // TODO add a button handler so that when the user clicks off the menu they close the menu
+        m_IsMouseOverThisMenu = false;
+
+        ClickOffMenuHandler = new ButtonHandler(ButtonHandler.RightClick,
+            // Down
+            (handler, position) => { if (!m_IsMouseOverThisMenu && _SubMenu == null) { CloseMenu(); } },
+            // Up
+            (handler, position) => {  });
+
+        ClickOffMenuHandler.IgnoreUI = false;
+        ClickOffMenuHandler.OnlyUI = false;
+
+        InputController.Instance.RegisterHandler(ClickOffMenuHandler);
+
     }
 
     public void CloseMenu()
@@ -90,15 +107,23 @@ public class ContextMenuController : MonoBehaviour, IContextMenuController, IPoi
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Mouse enter");
+        //Debug.Log("Mouse enter");
+        m_IsMouseOverThisMenu = true;
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log($"{name} Mouse exit {_SubMenu} {_SubMenu == null} |");
+        //Debug.Log($"{name} Mouse exit {_SubMenu} {_SubMenu == null} |");
+        m_IsMouseOverThisMenu = false;
         if (_SubMenu == null)
         {
             CloseMenu();
         }
+    }
+
+    public void OnDestroy()
+    {
+        //free input handelers
+        InputController.Instance.UnRegisterHandler(ClickOffMenuHandler);
     }
 }

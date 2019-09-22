@@ -63,11 +63,11 @@ public class Move : Order {
     {
         ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { }, 
             (handler, mousePos) => {
-                handler.Cancel = true;
+                InputController.Instance.UnRegisterHandler(handler);
                 OnClickReturn(mousePos, Host, playerController);
             });
 
-        InputController.Instance.RegisterButtonHandler(Handler);
+        InputController.Instance.RegisterHandler(Handler);
     }
 
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
