@@ -15,7 +15,6 @@ MonoBehaviour:
   terrain: 1
   Improvement: 0
   algorithm: 0
-  Layer: 0
   tile: {fileID: 11400000, guid: c95a2c95928fc834687b94ce54691bff, type: 2}
   useLayeredGradients: 1
   randomSeed: 1

@@ -17,7 +17,10 @@ public class MapManager : MonoBehaviour
     private static MapManager _instance;
     public static MapManager Instance { get { return _instance; } }
     public TerrainMapTile BaseTerrainTile;
+
     public MapGenerator MapGen;
+    public TerrainMeshGenerator MeshGen;
+
     [Tooltip("The Tilemap to draw onto")]
     public List<Tilemap> TerrainTileLayers;
     public Tilemap ImprovementTilemap;
@@ -28,9 +31,10 @@ public class MapManager : MonoBehaviour
     private float _minHeight, _maxHeight;
     public int NumZLayers = 5;
 
-    public bool GenNewMapOnStart = false;
     public MapDisplays CurrentlyDisplayingMapType;
 
+    [SerializeField]
+    private bool m_Use3DRenderer = false;
     private Color FowGrey = new Color(.25f, .25f, .25f, 1);
     private Color NotDiscovered = new Color(0f, 0f, 0f, 1);
     private Color PlayerVision = new Color(1, 1, 1, 1);
@@ -42,12 +46,11 @@ public class MapManager : MonoBehaviour
     private Action OnMapRerender;
 
     private bool FinishedUpdatingTiles = false;
-
+    
     private void Awake()
     {
         _instance = this;
-        if (GenNewMapOnStart)
-            GenerateMap();
+        GenerateMap();
 
         CurrentlyDisplayingMapType = MapDisplays.TilesWithVision;
     }
@@ -243,8 +246,15 @@ public class MapManager : MonoBehaviour
         MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers);
         ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
         SetUpAjdacentTiles();
-        CreateTileMapLayers();
-        RenderMap(MapDisplays.Tiles);
+        if(!m_Use3DRenderer)
+        {
+            CreateTileMapLayers();
+            RenderMap(MapDisplays.Tiles);
+        }
+        else
+        {
+            MeshGen.ContructMesh(MapGen.heightMap);
+        }
     }
 
     #region position conversion and helpers
@@ -359,7 +369,7 @@ public class MapManager : MonoBehaviour
         _minHeight = 100;
         _maxHeight = -100;
         map = new TerrainMapTile[MapGen.terrainMap.GetUpperBound(0)+1, MapGen.terrainMap.GetUpperBound(1)+1];
-        for (int i =0; i <= MapGen.terrainMap.GetUpperBound(0); i++)
+        for (int i = 0; i <= MapGen.terrainMap.GetUpperBound(0); i++)
         {
             for (int j = 0; j <= MapGen.terrainMap.GetUpperBound(1); j++)
             {

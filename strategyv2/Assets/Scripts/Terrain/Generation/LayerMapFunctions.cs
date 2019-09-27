@@ -499,27 +499,27 @@ public class LayerMapFunctions : MonoBehaviour
             Vector2Int delta = nextMoveRounded - gridPosition;
 
             //dont go diagonally, only keep one axis
-            if (System.Math.Abs(delta.x) == System.Math.Abs(delta.y))
-            {
-                var keepxOry = rand.Next(2);
-                if (keepxOry == 1)
-                {
-                    delta = new Vector2Int(delta.x, 0);
-                    nextMove = realPosition + new Vector2(dir.x, 0);
-                }
-                else
-                {
-                    delta = new Vector2Int(0, delta.y);
-                    nextMove = realPosition + new Vector2(0, dir.y);
-                }
-            }
+            //if (System.Math.Abs(delta.x) == System.Math.Abs(delta.y))
+            //{
+            //    var keepxOry = rand.Next(2);
+            //    if (keepxOry == 1)
+            //    {
+            //        delta = new Vector2Int(delta.x, 0);
+            //        nextMove = realPosition + new Vector2(dir.x, 0);
+            //    }
+            //    else
+            //    {
+            //        delta = new Vector2Int(0, delta.y);
+            //        nextMove = realPosition + new Vector2(0, dir.y);
+            //    }
+            //}
 
             //dir += new Vector2((float)rand.NextDouble() - .5f, (float)rand.NextDouble() - .5f) * .01f;
             //dir = dir.normalized / 8;
 
             var directionSign = rand.Next(2) == 0 ? -1 : 1;
             //if we cant go farther take a turn
-            dir = Vector2.MoveTowards(dir, tangent * directionSign, .008f);
+            //dir = Vector2.MoveTowards(dir, tangent * directionSign, .008f);
 
             gridPosition = gridPosition + delta;
             realPosition = nextMove;
@@ -687,6 +687,44 @@ public class LayerMapFunctions : MonoBehaviour
             for (int k_y = 0; k_y < k_h; k_y++)
             {
                 kernel[k_y][k_x] /= 273f;
+            }
+        }
+
+        map = Convolution2D(map, kernel);
+    }
+
+    /// <summary>
+    /// remove jagged edges
+    /// </summary>
+    public static void Smooth(ref float[,] map, int kernalSize)
+    {
+        float sigma = 1;
+        float r, s = 2.0f * sigma * sigma;
+
+        //gausian smoothing filter
+        var kernel = new List<List<float>>();
+
+        float sum = 0;
+        for (int x = -kernalSize/2; x <= kernalSize/2; x++)
+        {
+            var row = new List<float>();
+            for (int y = -kernalSize/2; y <= kernalSize/2; y++)
+            {
+                r = Mathf.Sqrt(x * x + y * y);
+                float val = (Mathf.Exp(-(r * r) / s)) / (Mathf.PI * s);
+                sum += val;
+                row.Add(val);
+            }
+
+            kernel.Add(row);
+        }
+
+        for(int i = 0; i < kernel.Count; i++)
+        {
+            var row = kernel[i];
+            for (int j = 0; j < kernel.Count; j++)
+            {
+                row[j] /= sum;
             }
         }
 

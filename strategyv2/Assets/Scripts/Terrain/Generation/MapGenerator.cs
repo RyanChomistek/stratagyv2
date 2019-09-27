@@ -17,6 +17,7 @@ public class MapGenerator : MonoBehaviour
     public Terrain[,] terrainMap;
     [SerializeField]
     public Improvement[,] improvmentMap;
+    public float[,] RawHeightMap;
     public float[,] heightMap;
 
     public Vector2[,] LayeredGradientMap;
@@ -38,7 +39,7 @@ public class MapGenerator : MonoBehaviour
         {
             LoadMap();
             return;
-        }
+        } 
 
         terrainMap = new Terrain[mapSize, mapSize];
         improvmentMap = new Improvement[mapSize, mapSize];
@@ -65,12 +66,14 @@ public class MapGenerator : MonoBehaviour
             terrainMap[x, y] = Terrain.Grass;
         }
 
-        LayerMapFunctions.Smooth(ref heightMap);
+        RawHeightMap = (float[,]) heightMap.Clone();
+        //LayerMapFunctions.Smooth(ref heightMap);
         Vector2[,] unflattendGradientMap = CalculateGradients(heightMap);
 
         LayerHeightMap(numZLayers);
         LayeredGradientMap = CalculateGradients(heightMap);
 
+        
         foreach (MapLayerSettings layerSetting in LayerSettings)
         {
             if (!layerSetting.IsEnabled)
@@ -114,7 +117,7 @@ public class MapGenerator : MonoBehaviour
             //recalculate gradients becasue they might have changed
             LayeredGradientMap = CalculateGradients(heightMap);
         }
-
+        
         FixImprovmentsOnWater();
 
         //SmoothHeightMap();

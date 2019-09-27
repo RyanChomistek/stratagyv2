@@ -15,7 +15,6 @@ MonoBehaviour:
   terrain: 5
   Improvement: 3
   algorithm: 8
-  Layer: 1
   tile: {fileID: 11400000, guid: 9e9b3525e9886d14b89ce02f562912f7, type: 2}
   useLayeredGradients: 1
   randomSeed: 1
@@ -23,7 +22,7 @@ MonoBehaviour:
   iterations: 1
   radius: 3
   MapTile: {fileID: 11400000, guid: ce0af898b72cb854ba3a21640d3c9707, type: 2}
-  IsEnabled: 1
+  IsEnabled: 0
   PerlinNoiseScale: 10
   PerlinNoiseThreshold: 0.8
   MinHeight: 0
