@@ -26,7 +26,7 @@ MonoBehaviour:
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
     DisplayTile: {fileID: 11400000, guid: ad8803c16cd12d34c8406a2644198ed4, type: 2}
-    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SimpleDisplayColor: {r: 0.35617658, g: 0.44116035, b: 0.8679245, a: 0}
     Improvable: 0
     TerrainType: 2
     Height: 0

@@ -1,10 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System.Threading.Tasks;
 
 public class LayerMapFunctions : MonoBehaviour
 {
+    public const int DefaultNumThreadsForJob = 16;
+
     public static T[,] GenerateArray<T>(int width, int height, T defaultValue)
     {
         T[,] map = new T[width, height];
@@ -169,19 +173,18 @@ public class LayerMapFunctions : MonoBehaviour
             Vector2 start = new Vector2(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
             var realPos = start;
             var gridPos = RoundVector(start);
-            Vector2 momentum = gradientMap[gridPos.x, gridPos.y].normalized * 10;
+            Vector2 momentum = gradientMap[gridPos.x, gridPos.y].normalized * 20;
 
             int cnt = 0;
-            while (momentum.magnitude > 1 && cnt < 10000)
+            while (momentum.magnitude > 1 && cnt < 100)
             {
                 cnt++;
                 dropletMap[gridPos.x, gridPos.y] += 1;
                 var gradient = gradientMap[gridPos.x, gridPos.y].normalized;
                 
-
                 var delta = gradient * -1;
                 momentum += delta;
-                momentum *= .95f;
+                momentum *= .98f;
 
                 var nextStep = realPos + delta;
                 var gridNextStep = RoundVector(nextStep);
@@ -200,16 +203,18 @@ public class LayerMapFunctions : MonoBehaviour
         }
 
         Normalize(ref dropletMap);
-        Smooth(ref dropletMap);
-        //Smooth(ref dropletPathMap);
+        SmoothMT(ref dropletMap, 5, 4);
 
         for (int x = 0; x <= dropletMap.GetUpperBound(0); x++)
         {
             for (int y = 0; y <= dropletMap.GetUpperBound(1); y++)
             {
-                if(dropletMap[x, y] > .01f)
-                //if(dropletMap[x, y] != 0 || dropletPathMap[x, y] != 0)
+                if(dropletMap[x, y] > .004f)
+                {
                     map[x, y] = currentTerrain;
+                    heightMap[x, y] -= dropletMap[x, y];
+                }
+                    
             }
         }
     }
@@ -731,6 +736,44 @@ public class LayerMapFunctions : MonoBehaviour
         map = Convolution2D(map, kernel);
     }
 
+    /// <summary>
+    /// remove jagged edges, mutithreaded dont use for small maps
+    /// </summary>
+    public static void SmoothMT(ref float[,] map, int kernalSize, int numThreads = DefaultNumThreadsForJob)
+    {
+        float sigma = 1;
+        float r, s = 2.0f * sigma * sigma;
+
+        //gausian smoothing filter
+        var kernel = new List<List<float>>();
+
+        float sum = 0;
+        for (int x = -kernalSize / 2; x <= kernalSize / 2; x++)
+        {
+            var row = new List<float>();
+            for (int y = -kernalSize / 2; y <= kernalSize / 2; y++)
+            {
+                r = Mathf.Sqrt(x * x + y * y);
+                float val = (Mathf.Exp(-(r * r) / s)) / (Mathf.PI * s);
+                sum += val;
+                row.Add(val);
+            }
+
+            kernel.Add(row);
+        }
+
+        for (int i = 0; i < kernel.Count; i++)
+        {
+            var row = kernel[i];
+            for (int j = 0; j < kernel.Count; j++)
+            {
+                row[j] /= sum;
+            }
+        }
+
+        map = Convolution2DMT(map, kernel, numThreads);
+    }
+
     public static void Normalize(ref float[,] arr)
     {
         float min = 1000, max = -1000;
@@ -782,5 +825,86 @@ public class LayerMapFunctions : MonoBehaviour
         Normalize(ref convolutedArr);
 
         return convolutedArr;
+    }
+
+    public static void ParallelForFast(float[,] map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        int size = (map.GetUpperBound(1) + 1) / numThreads;
+        int mapSize = map.GetUpperBound(1);
+
+        // Use the thread pool to parrellize update
+        using (CountdownEvent e = new CountdownEvent(1))
+        {
+            // TODO make these blocks instead of rows so that we get better lock perf
+            for (int i = 0; i < numThreads; i++)
+            {
+                Vector2Int start = new Vector2Int(0, i * size);
+                Vector2Int end = new Vector2Int(map.GetUpperBound(1) + 1, ((i + 1) * size) - 1);
+                e.AddCount();
+                ThreadPool.QueueUserWorkItem(delegate (object state)
+                {
+                    try
+                    {
+                        for (int y = start.y; y <= end.y; y++)
+                        {
+                            for (int x = start.x; x < end.x; x++)
+                            {
+                                action(x,y);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        e.Signal();
+                    }
+                },
+                null);
+            }
+
+            e.Signal();
+            e.Wait();
+        }
+    }
+
+    public static float[,] Convolution2DMT(float[,] map, List<List<float>> kernel, int numThreads = DefaultNumThreadsForJob)
+    {
+        var convolutedArr = new float[map.GetUpperBound(0) + 1, map.GetUpperBound(1) + 1];
+        int k_h = kernel.Count;
+        int k_w = kernel[0].Count;
+
+        //int size = (map.GetUpperBound(1) + 1) / numThreads;
+        int mapSize = map.GetUpperBound(1);
+
+        ParallelForFast(map, (x, y) => {
+            for (int k_x = 0; k_x < k_w; k_x++)
+            {
+                for (int k_y = 0; k_y < k_h; k_y++)
+                {
+                    float k = kernel[k_y][k_x];
+                    int heightMapOffset_x = x + k_x - (k_w / 2);
+                    int heightMapOffset_y = y + k_y - (k_h / 2);
+
+                    if (MapManager.InBounds(mapSize, mapSize, heightMapOffset_x, heightMapOffset_y))
+                        convolutedArr[x, y] += map[heightMapOffset_x, heightMapOffset_y] * k;
+                }
+            }
+        }, numThreads);
+
+        Normalize(ref convolutedArr);
+
+        return convolutedArr;
+    }
+
+    public static bool LogTimes = true;
+
+    public static void LogAction(System.Action action, string text)
+    {
+        System.DateTime start = System.DateTime.Now;
+        action();
+        if (LogTimes)
+        {
+            System.DateTime end = System.DateTime.Now;
+            Debug.Log($"{text} : {end - start}");
+        }
     }
 }

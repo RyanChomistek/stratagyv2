@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +53,9 @@ public class MapGenerator : MonoBehaviour
         //generate heightmap
         HeightmapGen.GenerateHeightMap(mapSize);
         if (UseErosion)
-            HeightmapGen.Erode();
+        {
+            LayerMapFunctions.LogAction(() => HeightmapGen.Erode(mapSize), "Erosion time");
+        }
 
         for (int i = 0; i < mapSize * mapSize; i++)
         {
@@ -66,13 +69,16 @@ public class MapGenerator : MonoBehaviour
             terrainMap[x, y] = Terrain.Grass;
         }
 
-        RawHeightMap = (float[,]) heightMap.Clone();
-        //LayerMapFunctions.Smooth(ref heightMap);
-        Vector2[,] unflattendGradientMap = CalculateGradients(heightMap);
-
-        LayerHeightMap(numZLayers);
-        LayeredGradientMap = CalculateGradients(heightMap);
-
+        RawHeightMap = (float[,])heightMap.Clone();
+        Vector2[,] unflattendGradientMap = null;
+        LayerMapFunctions.LogAction(() =>
+        {
+            //LayerMapFunctions.Smooth(ref heightMap);
+            unflattendGradientMap = CalculateGradients(heightMap);
+            LayerHeightMap(numZLayers);
+            LayeredGradientMap = CalculateGradients(heightMap);
+        }
+        , "other gen times");
         
         foreach (MapLayerSettings layerSetting in LayerSettings)
         {
@@ -119,7 +125,6 @@ public class MapGenerator : MonoBehaviour
         }
         
         FixImprovmentsOnWater();
-
         //SmoothHeightMap();
         //gradientMap = CalculateGradients(heightMap);
         SaveMap();
@@ -260,30 +265,25 @@ public class MapGenerator : MonoBehaviour
     {
         var gradientMap = new Vector2[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
         //loop through every tile
-        for (int x = 0; x <= arr.GetUpperBound(0); x++)
-        {
-            for (int y = 0; y <= arr.GetUpperBound(1); y++)
+        LayerMapFunctions.ParallelForFast(arr, (x, y) => {
+            //loop through every tiles neighbors
+            for (int i = x - 1; i <= x + 1; i++)
             {
-                //loop through every tiles neighbors
-                for (int i = x - 1; i <= x + 1; i++)
+                for (int j = y - 1; j <= y + 1; j++)
                 {
-                    for (int j = y - 1; j <= y + 1; j++)
+                    if (MapManager.InBounds(arr, i, j))
                     {
-                        if (MapManager.InBounds(arr, i, j))
-                        {
-                            //adjacents.Add(map[i, j]);
-                            int d_x = i - x, d_y = j - y;
-                            var dir = new Vector2(d_x, d_y);
-                            var delta =  arr[i, j] - arr[x, y];
-                            
-                            Vector2 localGradient = dir * delta;
-                            gradientMap[x, y] += localGradient;
-                        }
+                        //adjacents.Add(map[i, j]);
+                        int d_x = i - x, d_y = j - y;
+                        var dir = new Vector2(d_x, d_y);
+                        var delta = arr[i, j] - arr[x, y];
+
+                        Vector2 localGradient = dir * delta;
+                        gradientMap[x, y] += localGradient;
                     }
                 }
-
             }
-        }
+        });
 
         return gradientMap;
     }

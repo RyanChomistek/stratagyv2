@@ -20,6 +20,8 @@ public class MapManager : MonoBehaviour
 
     public MapGenerator MapGen;
     public TerrainMeshGenerator MeshGen;
+    [SerializeField]
+    private MeshGeneratorArgs m_MeshArgs;
 
     [Tooltip("The Tilemap to draw onto")]
     public List<Tilemap> TerrainTileLayers;
@@ -137,10 +139,8 @@ public class MapManager : MonoBehaviour
     private void UpdateTileValueThread(Vector2Int start, Vector2Int End)
     {
         for (int y = start.y; y < End.y; y++)
-        //for (int y = start.y; y <= 1; y++)
         {
             for (int x = start.x; x < End.x; x++)
-            //for (int x = start.x; x <= 0; x++)
             {
                 map[x, y].Update(TileUpdateTickTime);
             }
@@ -240,10 +240,10 @@ public class MapManager : MonoBehaviour
                     improvementTileLookup[layer.Improvement] = layer.MapTile.ImprovementMapTileSettings;
                 }
             }
-            
         }
 
-        MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers);
+        LayerMapFunctions.LogAction(() => MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers), "map gen time");
+        
         ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
         SetUpAjdacentTiles();
         if(!m_Use3DRenderer)
@@ -253,7 +253,8 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            MeshGen.ContructMesh(MapGen.heightMap);
+            LayerMapFunctions.LogAction(() => MeshGen.ContructMesh(MapGen.heightMap, m_MeshArgs), "mesh time");
+            MeshGen.GenerateAndSetTextures(MapGen.terrainMap, terrainTileLookup);
         }
     }
 
@@ -298,6 +299,19 @@ public class MapManager : MonoBehaviour
             z--;
         }
         return z;
+    }
+
+    public static bool InBounds(int maxX, int maxY, int x, int y)
+    {
+        if (x <= maxX &&
+            y <= maxY &&
+            x >= 0 &&
+            y >= 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static bool InBounds<T>(T[,] map, int x, int y)

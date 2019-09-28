@@ -3,14 +3,6 @@ using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour {
 
-    public bool printTimers;
-
-    [Header ("Mesh Settings")]
-    public int mapSize = 255;
-    public float scale = 20;
-    public float elevationScale = 10;
-    public Material material;
-
     [Header ("Erosion Settings")]
     public ComputeShader erosion;
     public int numErosionIterations = 50000;
@@ -36,13 +28,12 @@ public class TerrainGenerator : MonoBehaviour {
     MeshRenderer meshRenderer;
     MeshFilter meshFilter;
 
-    public void GenerateHeightMap (int newMapSize) {
-        this.mapSize = newMapSize;
+    public void GenerateHeightMap (int mapSize) {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         Map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
     }
 
-    public void Erode () {
+    public void Erode (int mapSize) {
         int numThreads = numErosionIterations / 1024;
 
         // Create brush
