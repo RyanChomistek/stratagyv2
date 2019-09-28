@@ -181,7 +181,9 @@ public class MapGenerator : MonoBehaviour
                         layerSetting.radius, layerSetting.SpawnChance, terrainTileLookup, improvementTileLookup);
                     break;
                 case LayerFillAlgorithm.Droplets:
-                    LayerMapFunctions.Droplets(ref currentMap, ref heightMap, ref gradientMap, rand, currentTileValue, layerSetting.PercentCovered);
+                    LayerMapFunctions.Droplets(ref currentMap, ref heightMap, ref gradientMap, rand, currentTileValue, 
+                        layerSetting.PercentCovered, layerSetting.MaxSteps, layerSetting.WaterPercentThreshold,
+                        layerSetting.InitialMomentum, layerSetting.MaxMomentum, layerSetting.StopMomentum, layerSetting.MaxWaterDepth);
                     break;
             }
 

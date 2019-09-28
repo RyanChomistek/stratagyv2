@@ -160,31 +160,40 @@ public class LayerMapFunctions : MonoBehaviour
         ref Vector2[,] gradientMap,
         System.Random rand,
         T currentTerrain,
-        float percentCovered)
+        float percentCovered,
+        int maxSteps,
+        float waterPercentThreshold,
+        float initialMomentum,
+        float maxMomentum,
+        float stopMomentum,
+        float maxWaterDepth)
     {
         float[,] dropletMap = new float[heightMap.GetUpperBound(0) + 1, heightMap.GetUpperBound(1) + 1];
         //float[,] dropletPathMap = new float[heightMap.GetUpperBound(0) + 1, heightMap.GetUpperBound(1) + 1];
 
         int numDroplets = (int) (heightMap.GetUpperBound(0) * heightMap.GetUpperBound(1) * percentCovered);
-        //int numDroplets = 25;
+        //int numDroplets = 10;
         
         for(int i = 0; i < numDroplets; i++)
         {
             Vector2 start = new Vector2(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
             var realPos = start;
             var gridPos = RoundVector(start);
-            Vector2 momentum = gradientMap[gridPos.x, gridPos.y].normalized * 20;
+            Vector2 momentum = gradientMap[gridPos.x, gridPos.y].normalized * initialMomentum;
 
             int cnt = 0;
-            while (momentum.magnitude > 1 && cnt < 100)
+
+            // 5000 is good for lakes, 100 for rivers
+            while (momentum.magnitude > stopMomentum && cnt < maxSteps)
             {
                 cnt++;
                 dropletMap[gridPos.x, gridPos.y] += 1;
                 var gradient = gradientMap[gridPos.x, gridPos.y].normalized;
                 
-                var delta = gradient * -1;
-                momentum += delta;
+                momentum += gradient * -1;
                 momentum *= .98f;
+
+                var delta = Vector2.ClampMagnitude(momentum, maxMomentum);
 
                 var nextStep = realPos + delta;
                 var gridNextStep = RoundVector(nextStep);
@@ -209,10 +218,11 @@ public class LayerMapFunctions : MonoBehaviour
         {
             for (int y = 0; y <= dropletMap.GetUpperBound(1); y++)
             {
-                if(dropletMap[x, y] > .004f)
+                if(dropletMap[x, y] > waterPercentThreshold)
+                //if(dropletMap[x, y] > 0)
                 {
                     map[x, y] = currentTerrain;
-                    heightMap[x, y] -= dropletMap[x, y];
+                    heightMap[x, y] -= Mathf.Clamp(dropletMap[x, y], 0, maxWaterDepth);
                 }
                     
             }

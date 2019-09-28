@@ -63,7 +63,15 @@ public class MapLayerSettings : ScriptableObject
 
     public float MaxGradient;
 
+    // Droplets
     public float PercentCovered;
+    public int MaxSteps;
+    public float WaterPercentThreshold;
+    public float InitialMomentum;
+    public float MaxMomentum;
+    public float StopMomentum;
+    public float MaxWaterDepth;
+
 }
 
 
@@ -141,6 +149,12 @@ public class MapLayerSettings_Editor : Editor
                 break;
             case LayerFillAlgorithm.Droplets:
                 mapLayer.PercentCovered = EditorGUILayout.FloatField("PercentCovered", mapLayer.PercentCovered);
+                mapLayer.MaxSteps = EditorGUILayout.IntField("MaxSteps", mapLayer.MaxSteps);
+                mapLayer.WaterPercentThreshold = EditorGUILayout.FloatField("WaterPercentThreshold", mapLayer.WaterPercentThreshold);
+                mapLayer.InitialMomentum = EditorGUILayout.FloatField("InitialMomentum", mapLayer.InitialMomentum);
+                mapLayer.MaxMomentum = EditorGUILayout.FloatField("MaxMomentum", mapLayer.MaxMomentum);
+                mapLayer.StopMomentum = EditorGUILayout.FloatField("StopMomentum", mapLayer.StopMomentum);
+                mapLayer.MaxWaterDepth = EditorGUILayout.FloatField("maxWaterDepth", mapLayer.MaxWaterDepth);
                 break;
         }
 
