@@ -35,9 +35,9 @@ MonoBehaviour:
   MinThreshold: 0
   SpawnChance: 0
   MaxGradient: 0
-  PercentCovered: 0.003
+  PercentCovered: 0.2
   MaxSteps: 5000
-  WaterPercentThreshold: 0.01
+  WaterPercentThreshold: 0.3
   InitialMomentum: 3
   MaxMomentum: 3
   StopMomentum: 1
