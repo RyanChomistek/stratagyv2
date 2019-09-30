@@ -22,7 +22,7 @@ MonoBehaviour:
   iterations: 1
   radius: 4
   MapTile: {fileID: 11400000, guid: 513dd5d0f5d9bab4c8d00262796ed357, type: 2}
-  IsEnabled: 0
+  IsEnabled: 1
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.6
   MinHeight: 0
@@ -35,4 +35,5 @@ MonoBehaviour:
   MinThreshold: 0
   SpawnChance: 0
   MaxGradient: 0.15
-  PercentCovered: 0
+  WaterPercentThreshold: 0
+  MaxWaterDepth: 0

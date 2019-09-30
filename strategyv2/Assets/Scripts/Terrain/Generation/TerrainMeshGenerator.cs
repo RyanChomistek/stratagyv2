@@ -53,7 +53,7 @@ public class TerrainMeshGenerator : MonoBehaviour
     }
 
     //TODO Block this into chuncks 
-    public void ConstructMesh(float[,] heightMap, MeshGeneratorArgs otherArgs, Terrain[,] map, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
+    public void ConstructMesh(float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs, Terrain[,] map, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
         Debug.Log(m_Terrain.terrainData.alphamapWidth+ " " + m_Terrain.terrainData.alphamapHeight);
 
@@ -67,25 +67,35 @@ public class TerrainMeshGenerator : MonoBehaviour
         m_Terrain.terrainData.SetHeights(0, 0, scaledMap);
 
         float[,,] alphaData = tData.GetAlphamaps(0, 0, tData.alphamapWidth, tData.alphamapHeight);
+
+        int GRASS = 0;
+        int WATER = 1;
+        int ROCK = 1;
+
         for (int y = 0; y < tData.alphamapHeight; y++)
         {
             for (int x = 0; x < tData.alphamapWidth; x++)
             {
                 Vector2Int terrainMapPos =  new Vector2Int((int) (x / alphaMapScale), (int) (y / alphaMapScale));
                 Terrain terrain = map[terrainMapPos.x, terrainMapPos.y];
+                Vector2 gradient = gradientMap[terrainMapPos.x, terrainMapPos.y];
 
-                if(terrain == Terrain.Water)
+                if (terrain == Terrain.Water)
                 {
-                    alphaData[y, x, 0] = 0;
-                    alphaData[y, x, 1] = 1;
+                    alphaData[y, x, GRASS] = 0;
+                    alphaData[y, x, WATER] = 1;
                 }
                 else
                 {
-                    alphaData[y, x, 0] = 1;
-                    alphaData[y, x, 1] = 0;
+                    float rockyness = Mathf.Abs(gradient.normalized.y);
+                    alphaData[y, x, GRASS] = 1 - rockyness;
+                    alphaData[y, x, ROCK] = rockyness;
                 }
             }
         }
+
+        // Add forests
+
 
         tData.SetAlphamaps(0, 0, alphaData);
     }

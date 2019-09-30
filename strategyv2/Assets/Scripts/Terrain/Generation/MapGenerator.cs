@@ -22,6 +22,7 @@ public class MapGenerator : MonoBehaviour
     public float[,] heightMap;
     public float[,] waterMap;
 
+    public Vector2[,] GradientMap;
     public Vector2[,] LayeredGradientMap;
     public TerrainGenerator HeightmapGen;
 
@@ -72,12 +73,12 @@ public class MapGenerator : MonoBehaviour
             waterMap[x, y] = HeightmapGen.WaterMap[borderedMapIndex];
         }
 
-        RawHeightMap = (float[,])heightMap.Clone();
-        Vector2[,] unflattendGradientMap = null;
+        RawHeightMap = heightMap.Clone() as float[,];
+        GradientMap = null;
         LayerMapFunctions.LogAction(() =>
         {
             //LayerMapFunctions.Smooth(ref heightMap);
-            unflattendGradientMap = CalculateGradients(heightMap);
+            GradientMap = (Vector2[,]) CalculateGradients(heightMap).Clone();
             LayerHeightMap(numZLayers);
             LayeredGradientMap = CalculateGradients(heightMap);
         }
@@ -98,7 +99,7 @@ public class MapGenerator : MonoBehaviour
             }
             else
             {
-                gradientMapInUse = unflattendGradientMap;
+                gradientMapInUse = GradientMap;
             }
 
             if (layerSetting.randomSeed)
