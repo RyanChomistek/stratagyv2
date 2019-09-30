@@ -22,7 +22,9 @@ public class TerrainGenerator : MonoBehaviour {
     public float inertia = 0.3f;
 
     // Internal
-    public float[] Map { get; private set; }
+    public float[] HeightMap { get; private set; }
+    public float[] WaterMap { get; private set; }
+
     public int mapSizeWithBorder;
 
     MeshRenderer meshRenderer;
@@ -30,7 +32,8 @@ public class TerrainGenerator : MonoBehaviour {
 
     public void GenerateHeightMap (int mapSize) {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
-        Map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
+        HeightMap = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
+        WaterMap = new float[mapSizeWithBorder * mapSizeWithBorder];
     }
 
     public void Erode (int mapSize) {
@@ -78,9 +81,14 @@ public class TerrainGenerator : MonoBehaviour {
         erosion.SetBuffer (0, "randomIndices", randomIndexBuffer);
 
         // Heightmap buffer
-        ComputeBuffer mapBuffer = new ComputeBuffer (Map.Length, sizeof (float));
-        mapBuffer.SetData (Map);
+        ComputeBuffer mapBuffer = new ComputeBuffer (HeightMap.Length, sizeof (float));
+        mapBuffer.SetData (HeightMap);
         erosion.SetBuffer (0, "map", mapBuffer);
+
+        // WaterMap buffer
+        ComputeBuffer waterMapBuffer = new ComputeBuffer(WaterMap.Length, sizeof(float));
+        waterMapBuffer.SetData(WaterMap);
+        erosion.SetBuffer(0, "waterMap", waterMapBuffer);
 
         // Settings
         erosion.SetInt ("borderSize", erosionBrushRadius);
@@ -99,7 +107,8 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Run compute shader
         erosion.Dispatch (0, numThreads, 1, 1);
-        mapBuffer.GetData (Map);
+        mapBuffer.GetData (HeightMap);
+        waterMapBuffer.GetData (WaterMap);
 
         // Release buffers
         mapBuffer.Release ();

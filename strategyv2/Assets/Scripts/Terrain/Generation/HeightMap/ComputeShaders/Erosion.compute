@@ -1,6 +1,7 @@
 ﻿#pragma kernel CSMain
 
 RWStructuredBuffer<float> map;
+RWStructuredBuffer<float> waterMap;
 StructuredBuffer<int> randomIndices;
 StructuredBuffer<int> brushIndices;
 StructuredBuffer<float> brushWeights;
@@ -123,6 +124,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         // Update droplet's speed and water content
         speed = sqrt (max(0,speed * speed + deltaHeight * gravity));
         water *= (1 - evaporateSpeed);
+		waterMap[dropletIndex] += water;
     }
     
 }

@@ -20,6 +20,7 @@ public class MapGenerator : MonoBehaviour
     public Improvement[,] improvmentMap;
     public float[,] RawHeightMap;
     public float[,] heightMap;
+    public float[,] waterMap;
 
     public Vector2[,] LayeredGradientMap;
     public TerrainGenerator HeightmapGen;
@@ -45,6 +46,7 @@ public class MapGenerator : MonoBehaviour
         terrainMap = new Terrain[mapSize, mapSize];
         improvmentMap = new Improvement[mapSize, mapSize];
         heightMap = new float[mapSize, mapSize];
+        waterMap = new float[mapSize, mapSize];
 
         float seed;
         seed = System.DateTime.Now.Millisecond;
@@ -65,8 +67,9 @@ public class MapGenerator : MonoBehaviour
             var erosionBrushRadius = HeightmapGen.erosionBrushRadius;
             var mapSizeWithBorder = HeightmapGen.mapSizeWithBorder;
             int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
-            heightMap[x, y] = HeightmapGen.Map[borderedMapIndex];
+            heightMap[x, y] = HeightmapGen.HeightMap[borderedMapIndex];
             terrainMap[x, y] = Terrain.Grass;
+            waterMap[x, y] = HeightmapGen.WaterMap[borderedMapIndex];
         }
 
         RawHeightMap = (float[,])heightMap.Clone();
@@ -112,12 +115,12 @@ public class MapGenerator : MonoBehaviour
             if (layerSetting.MapTile.Layer == MapLayer.Terrain)
             {
                 RunAlgorithmGeneric(ref terrainMap, layerSetting.terrain, ref terrainMap, ref improvmentMap, 
-                    ref gradientMapInUse, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
+                    ref gradientMapInUse, ref waterMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
             }
             else
             {
                 RunAlgorithmGeneric(ref improvmentMap, layerSetting.Improvement, ref terrainMap, ref improvmentMap,
-                    ref gradientMapInUse, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
+                    ref gradientMapInUse, ref waterMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
             }
 
             //recalculate gradients becasue they might have changed
@@ -136,6 +139,7 @@ public class MapGenerator : MonoBehaviour
         ref Terrain[,] terrainMap,
         ref Improvement[,] improvementMap,
         ref Vector2[,] gradientMap,
+        ref float[,] waterMap,
         ref System.Random rand,
         Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
         Dictionary<Improvement, ImprovementMapTile> improvementTileLookup,
@@ -181,9 +185,8 @@ public class MapGenerator : MonoBehaviour
                         layerSetting.radius, layerSetting.SpawnChance, terrainTileLookup, improvementTileLookup);
                     break;
                 case LayerFillAlgorithm.Droplets:
-                    LayerMapFunctions.Droplets(ref currentMap, ref heightMap, ref gradientMap, rand, currentTileValue, 
-                        layerSetting.PercentCovered, layerSetting.MaxSteps, layerSetting.WaterPercentThreshold,
-                        layerSetting.InitialMomentum, layerSetting.MaxMomentum, layerSetting.StopMomentum, layerSetting.MaxWaterDepth);
+                    LayerMapFunctions.Droplets(ref currentMap, ref heightMap, ref waterMap, currentTileValue,
+                        layerSetting.WaterPercentThreshold, layerSetting.MaxWaterDepth);
                     break;
             }
 

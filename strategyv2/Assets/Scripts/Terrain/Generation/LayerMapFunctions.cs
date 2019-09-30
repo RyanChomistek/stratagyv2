@@ -157,80 +157,23 @@ public class LayerMapFunctions : MonoBehaviour
 
     public static void Droplets<T>(ref T[,] map,
         ref float[,] heightMap,
-        ref Vector2[,] gradientMap,
-        System.Random rand,
+        ref float[,] waterMap,
         T currentTerrain,
-        float percentCovered,
-        int maxSteps,
         float waterPercentThreshold,
-        float initialMomentum,
-        float maxMomentum,
-        float stopMomentum,
         float maxWaterDepth)
     {
-        float[,] dropletMap = new float[heightMap.GetUpperBound(0) + 1, heightMap.GetUpperBound(1) + 1];
-        //float[,] dropletPathMap = new float[heightMap.GetUpperBound(0) + 1, heightMap.GetUpperBound(1) + 1];
+        Normalize(ref waterMap);
+        SmoothMT(ref waterMap, 5, 4);
 
-        int numDroplets = (int) (heightMap.GetUpperBound(0) * heightMap.GetUpperBound(1) * percentCovered);
-        float waterAmount = 1;
-        float maxWaterPerTile = .5f;
-        float depositAmountPerTile = .25f;
-
-        for(int i = 0; i < numDroplets; i++)
+        for (int x = 0; x <= waterMap.GetUpperBound(0); x++)
         {
-            Vector2 start = new Vector2(Random.Range(0, map.GetUpperBound(0)), Random.Range(0, map.GetUpperBound(1)));
-            var realPos = start;
-            var gridPos = RoundVector(start);
-            Vector2 momentum = gradientMap[gridPos.x, gridPos.y].normalized * initialMomentum;
-            waterAmount = 1;
-            int cnt = 0;
-
-            // 5000 is good for lakes, 100 for rivers
-            while (momentum.magnitude > stopMomentum && cnt < maxSteps)
+            for (int y = 0; y <= waterMap.GetUpperBound(1); y++)
             {
-                cnt++;
-                if(dropletMap[gridPos.x, gridPos.y] < maxWaterPerTile)
-                {
-                    float depositAmount = waterAmount * depositAmountPerTile;
-                    dropletMap[gridPos.x, gridPos.y] += waterAmount;
-                    waterAmount *= 1 - depositAmountPerTile;
-                }
-                
-                var gradient = gradientMap[gridPos.x, gridPos.y].normalized;
-                
-                momentum += gradient * -1;
-                momentum *= .98f;
-
-                var delta = Vector2.ClampMagnitude(momentum, maxMomentum);
-
-                var nextStep = realPos + delta;
-                var gridNextStep = RoundVector(nextStep);
-                if (!MapManager.InBounds(heightMap, gridNextStep.x, gridNextStep.y))
-                {
-                    break;
-                }
-
-                realPos = nextStep;
-                gridPos = gridNextStep;
-            }
-
-            //Debug.Log($"{i}: {cnt} ending momentum {momentum} {momentum.magnitude}");
-
-            dropletMap[gridPos.x, gridPos.y] += 1;
-        }
-
-        //Normalize(ref dropletMap);
-        SmoothMT(ref dropletMap, 5, 4);
-
-        for (int x = 0; x <= dropletMap.GetUpperBound(0); x++)
-        {
-            for (int y = 0; y <= dropletMap.GetUpperBound(1); y++)
-            {
-                if(dropletMap[x, y] > waterPercentThreshold)
+                if(waterMap[x, y] > waterPercentThreshold)
                 //if(dropletMap[x, y] > 0)
                 {
                     map[x, y] = currentTerrain;
-                    heightMap[x, y] -= Mathf.Clamp(dropletMap[x, y], 0, maxWaterDepth);
+                    heightMap[x, y] -= Mathf.Clamp(waterMap[x, y], 0, maxWaterDepth);
                 }
                     
             }
@@ -794,7 +737,7 @@ public class LayerMapFunctions : MonoBehaviour
 
     public static void Normalize(ref float[,] arr)
     {
-        float min = 1000, max = -1000;
+        float min = 100000, max = -100000;
 
         for (int x = 0; x <= arr.GetUpperBound(0); x++)
         {
