@@ -76,13 +76,13 @@ public class TerrainMeshGenerator : MonoBehaviour
 
                 if(terrain == Terrain.Water)
                 {
-                    alphaData[x, y, 0] = 0;
-                    alphaData[x, y, 1] = 1;
+                    alphaData[y, x, 0] = 0;
+                    alphaData[y, x, 1] = 1;
                 }
                 else
                 {
-                    alphaData[x, y, 0] = 1;
-                    alphaData[x, y, 1] = 0;
+                    alphaData[y, x, 0] = 1;
+                    alphaData[y, x, 1] = 0;
                 }
             }
         }
@@ -127,7 +127,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                 else if(WaterComponentMap[x, y] == 0)
                 {
                     // If its land mark as -1
-                    WaterComponentMap[x, y] = -1;
+                    // WaterComponentMap[x, y] = -1;
                 }
             }
         }
@@ -220,7 +220,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                 index = verts.Count;
                 Vector2 uv = new Vector2(vert.x / (meshSize - 1f), vert.y / (meshSize - 1f));
                 Vector3 worldPos = new Vector3(uv.x, 0, uv.y) * m_Terrain.terrainData.bounds.max.x;
-                worldPos += Vector3.up * heightMap[vert.x, vert.y] * m_Terrain.terrainData.bounds.max.y;
+                worldPos += Vector3.up * heightMap[vert.x, vert.y] * (m_Terrain.terrainData.size.y + 50);// m_Terrain.terrainData.bounds.max.y;
 
                 verts.Add(worldPos);
                 uvs.Add(uv);
@@ -293,15 +293,52 @@ public class TerrainMeshGenerator : MonoBehaviour
         foreach (var dir in floodFillDirections)
         {
             Vector2Int newPos = startPos + dir;
-            if (LayerMapFunctions.InBounds(terrainTileMap, new Vector2Int(newPos.x, newPos.y)) && 
-                terrainTileMap[newPos.x, newPos.y] == Terrain.Water && 
-                waterComponentMap[newPos.x, newPos.y] == 0)
+            if (IsUnmarkedWaterTile(newPos, ref waterComponentMap, ref terrainTileMap))
             {
                 componet.UnionWith(FloodFill(newPos, componentNumber, floodFillDirections, ref waterComponentMap, ref heightMap, ref waterMap, ref terrainTileMap));
             }
         }
 
         return componet;
+    }
+
+    private bool IsUnmarkedWaterTile(Vector2Int Pos, ref int[,] waterComponentMap, ref Terrain[,] terrainTileMap)
+    {
+        bool inBounds = LayerMapFunctions.InBounds(waterComponentMap, Pos);
+        if (inBounds && waterComponentMap[Pos.x, Pos.y] == 0)
+        {
+            bool isWaterTile = terrainTileMap[Pos.x, Pos.y] == Terrain.Water;
+
+            if (isWaterTile)
+            {
+                return true;
+            }
+            else
+            {
+                // check adjacent tiles
+                Vector2Int[] adjacentDirections = {
+                    Vector2Int.up,
+                    Vector2Int.down,
+                    Vector2Int.left,
+                    Vector2Int.right,
+                    Vector2Int.up + Vector2Int.left,
+                    Vector2Int.up + Vector2Int.right,
+                    Vector2Int.down + Vector2Int.left,
+                    Vector2Int.down + Vector2Int.right,
+                };
+
+                foreach(var adj in adjacentDirections)
+                {
+                    Vector2Int adjacentPos = new Vector2Int(Pos.x + adj.x, Pos.y + adj.y);
+                    if(LayerMapFunctions.InBounds(waterComponentMap, adjacentPos) && terrainTileMap[adjacentPos.x, adjacentPos.y] == Terrain.Water)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
 
     public float QuadLerp(float a, float b, float c, float d, float u, float v)
@@ -345,7 +382,8 @@ public class TerrainMeshGenerator : MonoBehaviour
 
             Vector2 uv = rawPosition - rawIndex;
             float height = QuadLerp(heights[0], heights[1], heights[2], heights[3], uv.x, uv.y);
-            scaledMap[x, y] = height;
+            // flip x and y for the terrain
+            scaledMap[y, x] = height;
         });
 
         LayerMapFunctions.LogAction(() => LayerMapFunctions.SmoothMT(ref scaledMap, (int) (resolutionScale * resolutionScale)), "smooth time");
