@@ -25,6 +25,9 @@ public class TerrainMeshGenerator : MonoBehaviour
     public static TerrainMeshGenerator Instance;
 
     #region Terrain Mesh
+    [SerializeField]
+    private UnityEngine.Terrain m_Terrain;
+
     private Mesh m_Mesh;
     [SerializeField]
     private MeshRenderer m_MeshRenderer;
@@ -50,114 +53,41 @@ public class TerrainMeshGenerator : MonoBehaviour
     }
 
     //TODO Block this into chuncks 
-    public void ConstructMesh(float[,] rawMap, MeshGeneratorArgs otherArgs)
+    public void ConstructMesh(float[,] heightMap, MeshGeneratorArgs otherArgs, Terrain[,] map, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
-        float[,] map = ScaleHeightMapResolution(rawMap, otherArgs.resolutionScale);
-        int heightMapSize = map.GetUpperBound(0);
-        int meshSize = map.GetUpperBound(0);
-        Vector3[] verts = new Vector3[meshSize * meshSize];
-        int[] triangles = new int[(meshSize - 1) * (meshSize - 1) * 6];
-        Vector2[] uvs = new Vector2[meshSize * meshSize];
-        int t = 0;
-        int mapSizeWithBorder = meshSize + otherArgs.BorderSize * 2;
+        Debug.Log(m_Terrain.terrainData.alphamapWidth+ " " + m_Terrain.terrainData.alphamapHeight);
 
-        for (int x = 0; x < meshSize; x++)
+        TerrainData tData = m_Terrain.terrainData;
+
+        float resolutionScale = tData.heightmapResolution / (float) heightMap.GetUpperBound(0);
+        float alphaMapScale = tData.alphamapWidth / (float) map.GetUpperBound(0);
+        float[,] scaledMap = ScaleHeightMapResolution(heightMap, resolutionScale);
+        Debug.Log(resolutionScale + " " + scaledMap.GetUpperBound(0));
+        //m_Terrain.terrainData.set
+        m_Terrain.terrainData.SetHeights(0, 0, scaledMap);
+
+        float[,,] alphaData = tData.GetAlphamaps(0, 0, tData.alphamapWidth, tData.alphamapHeight);
+        for (int y = 0; y < tData.alphamapHeight; y++)
         {
-            for (int y = 0; y < meshSize; y++)
+            for (int x = 0; x < tData.alphamapWidth; x++)
             {
-                //int borderedMapIndex = (y + otherArgs.BorderSize) * mapSizeWithBorder + x + otherArgs.BorderSize;
-                int meshMapIndex = y * meshSize + x;
+                Vector2Int terrainMapPos =  new Vector2Int((int) (x / alphaMapScale), (int) (y / alphaMapScale));
+                Terrain terrain = map[terrainMapPos.x, terrainMapPos.y];
 
-                Vector2 uv = new Vector2(x / (meshSize - 1f), y / (meshSize - 1f));
-                uvs[meshMapIndex] = uv;
-
-                Vector3 pos = new Vector3(uv.x, 0, uv.y) * otherArgs.Scale;
-                Vector2Int heightMapIndex = new Vector2Int((int)(heightMapSize * uv.x), (int)(heightMapSize * uv.y));
-                float normalizedHeight = map[heightMapIndex.x, heightMapIndex.y];
-                pos += Vector3.up * normalizedHeight * otherArgs.ElevationScale;
-                verts[meshMapIndex] = pos;
-
-                // Construct triangles
-                if (x != meshSize - 1 && y != meshSize - 1)
+                if(terrain == Terrain.Water)
                 {
-                    t = (y * (meshSize - 1) + x) * 3 * 2;
-
-                    triangles[t + 0] = meshMapIndex + meshSize;
-                    triangles[t + 1] = meshMapIndex + meshSize + 1;
-                    triangles[t + 2] = meshMapIndex;
-
-                    triangles[t + 3] = meshMapIndex + meshSize + 1;
-                    triangles[t + 4] = meshMapIndex + 1;
-                    triangles[t + 5] = meshMapIndex;
-                    t += 6;
-                }
-            }
-        }
-
-        if (m_Mesh == null)
-        {
-            m_Mesh = new Mesh();
-        }
-        else
-        {
-            m_Mesh.Clear();
-        }
-
-        m_Mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        m_Mesh.vertices = verts;
-        m_Mesh.triangles = triangles;
-        m_Mesh.uv = uvs;
-        m_Mesh.RecalculateNormals();
-        m_MeshFilter.sharedMesh = m_Mesh;
-        //m_MeshRenderer.sharedMaterial = m_Material;
-
-        //m_MeshRenderer.material.SetFloat("_MaxHeight", otherArgs.ElevationScale);
-    }
-
-    public void GenerateAndSetTextures(Terrain[,] map, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
-    {
-        int width = map.GetUpperBound(0);
-        int height = map.GetUpperBound(1);
-        texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
-        texture.filterMode = FilterMode.Point;
-
-        Dictionary<int, Color> waterComponentColorMap = new Dictionary<int, Color>();
-
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                int x = j;
-                int y = height - 1 - i;
-
-                if(map[x, y] == Terrain.Water)
-                {
-                    if(waterComponentColorMap.TryGetValue(WaterComponentMap[x,y], out Color color))
-                    {
-                        texture.SetPixel(x, y, color);
-                    }
-                    else
-                    {
-                        Color randColor = UnityEngine.Random.ColorHSV();
-                        waterComponentColorMap.Add(WaterComponentMap[x, y], randColor);
-                        texture.SetPixel(x, y, randColor);
-
-                    }
+                    alphaData[x, y, 0] = 0;
+                    alphaData[x, y, 1] = 1;
                 }
                 else
                 {
-                    texture.SetPixel(x, y, terrainTileLookup[map[x, y]].SimpleDisplayColor);
+                    alphaData[x, y, 0] = 1;
+                    alphaData[x, y, 1] = 0;
                 }
-                
             }
         }
 
-        texture.Apply();
-        //byte[] bytes = texture.EncodeToPNG();
-        //File.WriteAllBytes(Application.dataPath + "/Textures/SavedScreen.png", bytes);
-        m_MeshRenderer.material.SetTexture("_MainTex", texture);
-        //m_MeshRenderer.sharedMaterial = m_Material;
-        
+        tData.SetAlphamaps(0, 0, alphaData);
     }
 
     public void ConstructWaterMeshes(MeshGeneratorArgs meshArgs, ref float[,] heightMap, ref float[,] waterMap, ref Terrain[,] terrainTileMap)
@@ -289,8 +219,8 @@ public class TerrainMeshGenerator : MonoBehaviour
             {
                 index = verts.Count;
                 Vector2 uv = new Vector2(vert.x / (meshSize - 1f), vert.y / (meshSize - 1f));
-                Vector3 worldPos = new Vector3(uv.x, 0, uv.y) * meshArgs.Scale;
-                worldPos += Vector3.up * heightMap[vert.x, vert.y] * meshArgs.ElevationScale;
+                Vector3 worldPos = new Vector3(uv.x, 0, uv.y) * m_Terrain.terrainData.bounds.max.x;
+                worldPos += Vector3.up * heightMap[vert.x, vert.y] * m_Terrain.terrainData.bounds.max.y;
 
                 verts.Add(worldPos);
                 uvs.Add(uv);
@@ -382,10 +312,10 @@ public class TerrainMeshGenerator : MonoBehaviour
         return Mathf.Lerp(abu, dcu, v);
     }
 
-    private float[,] ScaleHeightMapResolution(float[,] rawMap, int resolutionScale)
+    private float[,] ScaleHeightMapResolution(float[,] rawMap, float resolutionScale)
     {
         int rawMapSize = rawMap.GetUpperBound(0);
-        int scaledMapSize = rawMapSize * resolutionScale;
+        int scaledMapSize = (int) (rawMapSize * resolutionScale);
         float[,] scaledMap = new float[scaledMapSize, scaledMapSize];
         float maxDistance = resolutionScale * Mathf.Sqrt(2);
 
@@ -393,7 +323,6 @@ public class TerrainMeshGenerator : MonoBehaviour
         {
             Vector2.left, Vector2.right, Vector2.up, Vector2.down
         };
-
 
         LayerMapFunctions.ParallelForFast(scaledMap, (x, y) => {
             Vector2 rawPosition = new Vector2(x, y) / resolutionScale;
@@ -419,7 +348,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             scaledMap[x, y] = height;
         });
 
-        LayerMapFunctions.LogAction(() => LayerMapFunctions.SmoothMT(ref scaledMap, resolutionScale * resolutionScale), "smooth time");
+        LayerMapFunctions.LogAction(() => LayerMapFunctions.SmoothMT(ref scaledMap, (int) (resolutionScale * resolutionScale)), "smooth time");
 
         return scaledMap;
     }

@@ -15,7 +15,6 @@ MonoBehaviour:
   terrain: 0
   Improvement: 0
   algorithm: 0
-  Layer: 1
   tile: {fileID: 11400000, guid: 76aad4034e2cdc94986624f1bcbf7eaf, type: 2}
   useLayeredGradients: 1
   randomSeed: 1
@@ -23,7 +22,7 @@ MonoBehaviour:
   iterations: 1
   radius: 1
   MapTile: {fileID: 11400000, guid: 3dca2d966d577744fb76ec867d56d93e, type: 2}
-  IsEnabled: 1
+  IsEnabled: 0
   PerlinNoiseScale: 2.5
   PerlinNoiseThreshold: 0.5
   MinHeight: 0
@@ -36,4 +35,5 @@ MonoBehaviour:
   MinThreshold: 0
   SpawnChance: 0
   MaxGradient: 0
-  PercentCovered: 0
+  WaterPercentThreshold: 0
+  MaxWaterDepth: 0
