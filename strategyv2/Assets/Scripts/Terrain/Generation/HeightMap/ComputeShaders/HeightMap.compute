@@ -6,6 +6,9 @@ StructuredBuffer<float2> offsets;
 int floatToIntMultiplier;
 
 int mapSize;
+int numThreads;
+int numElementsToProcess;
+
 int octaves;
 float lacunarity;
 float persistence;
@@ -103,17 +106,26 @@ float snoise(float2 v)
 [numthreads(1,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    int x = id.x % mapSize;
-    int y = id.x / mapSize;
+	int mapBufferLength = mapSize * mapSize;
+	int startIndex = id.x * numElementsToProcess;
 
-    float scale = scaleFactor;
-    float weight = 1;
-    for (int i = 0; i < octaves; i ++) {
-        heightMap[id.x] += snoise(float2(x,y)/mapSize * scale + offsets[i]) * weight;
-        scale *= lacunarity;
-        weight *= persistence;
-    }
-    int val = int(heightMap[id.x] * floatToIntMultiplier);
-    InterlockedMin(minMax[0],val);
-    InterlockedMax(minMax[1],val); 
+	for (int offset = 0; offset < numElementsToProcess && offset + startIndex < mapBufferLength; offset++)
+	{
+		int oneDimensionalIndex = startIndex + offset;
+
+		int x = oneDimensionalIndex % mapSize;
+		int y = oneDimensionalIndex / mapSize;
+
+		float scale = scaleFactor;
+		float weight = 1;
+		for (int i = 0; i < octaves; i++) {
+			heightMap[oneDimensionalIndex] += snoise(float2(x, y) / mapSize * scale + offsets[i]) * weight;
+			scale *= lacunarity;
+			weight *= persistence;
+		}
+
+		int val = int(heightMap[oneDimensionalIndex] * floatToIntMultiplier);
+		InterlockedMin(minMax[0], val);
+		InterlockedMax(minMax[1], val);
+	}
 }

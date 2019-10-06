@@ -22,6 +22,8 @@ public class MapManager : MonoBehaviour
     public TerrainMeshGenerator MeshGen;
     [SerializeField]
     private MeshGeneratorArgs m_MeshArgs;
+    [SerializeField]
+    private ErosionOptions m_ErosionOptions;
 
     [Tooltip("The Tilemap to draw onto")]
     public List<Tilemap> TerrainTileLayers;
@@ -242,7 +244,7 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        LayerMapFunctions.LogAction(() => MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers), "map gen time");
+        LayerMapFunctions.LogAction(() => MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers, m_ErosionOptions), "map gen time");
         
         ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
         SetUpAjdacentTiles();
@@ -254,6 +256,7 @@ public class MapManager : MonoBehaviour
         else
         {
             LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.heightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, terrainTileLookup), "mesh time");
+            //MeshGen.ConstructWaterMeshes(m_MeshArgs, ref MapGen.heightMap, ref MapGen.waterMap, ref MapGen.terrainMap);
             MeshGen.ConstructWaterMeshes(m_MeshArgs, ref MapGen.RawHeightMap, ref MapGen.waterMap, ref MapGen.terrainMap);
         }
     }

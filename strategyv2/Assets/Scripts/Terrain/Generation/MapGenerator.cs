@@ -11,7 +11,6 @@ public class MapGenerator : MonoBehaviour
 {
     public int mapSize;
 
-    public bool UseErosion = true;
     public List<MapLayerSettings> LayerSettings = new List<MapLayerSettings>();
 
     [SerializeField]
@@ -35,7 +34,7 @@ public class MapGenerator : MonoBehaviour
     /// <param name="improvementTileLookup"></param>
     /// <param name="numZLayers"> number of z layers to produce, height map is flattened to z layers so more z layers will make the mape more hilly, also much slower to render</param>
     public void GenerateMap(Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
-        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, int numZLayers)
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, int numZLayers, ErosionOptions erosionOptions)
     {
         ClearMap();
         if(LoadFromFile)
@@ -54,10 +53,10 @@ public class MapGenerator : MonoBehaviour
         System.Random rand = new System.Random((int)seed);
 
         //generate heightmap
-        HeightmapGen.GenerateHeightMap(mapSize);
-        if (UseErosion)
+        LayerMapFunctions.LogAction(() => HeightmapGen.GenerateHeightMap(mapSize), "Base Height Map Time");
+        if (erosionOptions.enabled)
         {
-            LayerMapFunctions.LogAction(() => HeightmapGen.Erode(mapSize), "Erosion time");
+            LayerMapFunctions.LogAction(() => HeightmapGen.Erode(mapSize, erosionOptions), "Erosion time");
         }
 
         for (int i = 0; i < mapSize * mapSize; i++)

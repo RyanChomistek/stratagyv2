@@ -1,11 +1,19 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class ErosionOptions
+{
+    public bool enabled = true;
+    public int numDropletsPerCell = 8;
+}
+
 public class TerrainGenerator : MonoBehaviour {
 
     [Header ("Erosion Settings")]
     public ComputeShader erosion;
-    public int numErosionIterations = 50000;
+    public int MaxNumThreads = 65535;
+
     public int erosionBrushRadius = 3;
 
     public int maxLifetime = 30;
@@ -36,9 +44,7 @@ public class TerrainGenerator : MonoBehaviour {
         WaterMap = new float[mapSizeWithBorder * mapSizeWithBorder];
     }
 
-    public void Erode (int mapSize) {
-        int numThreads = numErosionIterations / 1024;
-
+    public void Erode (int mapSize, ErosionOptions options) {
         // Create brush
         List<int> brushIndexOffsets = new List<int> ();
         List<float> brushWeights = new List<float> ();
@@ -67,18 +73,9 @@ public class TerrainGenerator : MonoBehaviour {
         erosion.SetBuffer (0, "brushIndices", brushIndexBuffer);
         erosion.SetBuffer (0, "brushWeights", brushWeightBuffer);
 
-        // Generate random indices for droplet placement
-        int[] randomIndices = new int[numErosionIterations];
-        for (int i = 0; i < numErosionIterations; i++) {
-            int randomX = Random.Range (erosionBrushRadius, mapSize + erosionBrushRadius);
-            int randomY = Random.Range (erosionBrushRadius, mapSize + erosionBrushRadius);
-            randomIndices[i] = randomY * mapSize + randomX;
-        }
-
-        // Send random indices to compute shader
-        ComputeBuffer randomIndexBuffer = new ComputeBuffer (randomIndices.Length, sizeof (int));
-        randomIndexBuffer.SetData (randomIndices);
-        erosion.SetBuffer (0, "randomIndices", randomIndexBuffer);
+        int numThreads = System.Math.Min(HeightMap.Length, MaxNumThreads);
+        int numElementsToProcess = Mathf.CeilToInt(HeightMap.Length / (float)numThreads);
+        Debug.Log($"Erosion: num elements = {HeightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
 
         // Heightmap buffer
         ComputeBuffer mapBuffer = new ComputeBuffer (HeightMap.Length, sizeof (float));
@@ -93,6 +90,12 @@ public class TerrainGenerator : MonoBehaviour {
         // Settings
         erosion.SetInt ("borderSize", erosionBrushRadius);
         erosion.SetInt ("mapSize", mapSizeWithBorder);
+
+        erosion.SetInt ("numThreads", numThreads);
+        erosion.SetInt ("numElementsToProcess", numElementsToProcess);
+
+        erosion.SetInt ("numDropletsPerCell", options.numDropletsPerCell);
+
         erosion.SetInt ("brushLength", brushIndexOffsets.Count);
         erosion.SetInt ("maxLifetime", maxLifetime);
         erosion.SetFloat ("inertia", inertia);
@@ -112,7 +115,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Release buffers
         mapBuffer.Release ();
-        randomIndexBuffer.Release ();
+        //randomIndexBuffer.Release ();
         brushIndexBuffer.Release ();
         brushWeightBuffer.Release ();
     }

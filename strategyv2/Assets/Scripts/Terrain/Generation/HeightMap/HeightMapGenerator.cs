@@ -4,6 +4,8 @@ public class HeightMapGenerator : MonoBehaviour {
     public int seed;
     public bool randomizeSeed;
 
+    public int MaxNumThreads = 65535;
+
     public int numOctaves = 7;
     public float persistence = .5f;
     public float lacunarity = 2;
@@ -43,13 +45,20 @@ public class HeightMapGenerator : MonoBehaviour {
         minMaxBuffer.SetData (minMaxHeight);
         heightMapComputeShader.SetBuffer (0, "minMax", minMaxBuffer);
 
+        int numThreads = System.Math.Min(map.Length, MaxNumThreads);
+        int numElementsToProcess = Mathf.CeilToInt(map.Length / (float) numThreads);
+        Debug.Log($"HeightMapGen: num elements = {map.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
+
         heightMapComputeShader.SetInt ("mapSize", mapSize);
+        heightMapComputeShader.SetInt ("numThreads", numThreads);
+        heightMapComputeShader.SetInt ("numElementsToProcess", numElementsToProcess);
+
         heightMapComputeShader.SetInt ("octaves", numOctaves);
         heightMapComputeShader.SetFloat ("lacunarity", lacunarity);
         heightMapComputeShader.SetFloat ("persistence", persistence);
         heightMapComputeShader.SetFloat ("scaleFactor", initialScale);
         heightMapComputeShader.SetInt ("floatToIntMultiplier", floatToIntMultiplier);
-        heightMapComputeShader.Dispatch (0, map.Length, 1, 1);
+        heightMapComputeShader.Dispatch (0, numThreads, 1, 1);
 
         mapBuffer.GetData (map);
         minMaxBuffer.GetData (minMaxHeight);
