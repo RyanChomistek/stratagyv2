@@ -255,9 +255,8 @@ public class MapManager : MonoBehaviour
         }
         else
         {
+            MeshGen.ConstructWaterMeshes(m_MeshArgs, MapGen.heightMap, MapGen.LakeMap, MapGen.terrainMap);
             LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.heightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, terrainTileLookup), "mesh time");
-            //MeshGen.ConstructWaterMeshes(m_MeshArgs, ref MapGen.heightMap, ref MapGen.waterMap, ref MapGen.terrainMap);
-            MeshGen.ConstructWaterMeshes(m_MeshArgs, ref MapGen.RawHeightMap, ref MapGen.waterMap, ref MapGen.terrainMap);
         }
     }
 

@@ -44,7 +44,6 @@ public class TerrainMeshGenerator : MonoBehaviour
     private GameObject m_WaterMeshPrefab;
     [SerializeField]
     private List<GameObject> m_WaterMeshes = new List<GameObject>();
-    public int[,] WaterComponentMap;
     #endregion Water Meshes
 
     void Awake()
@@ -70,7 +69,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         int GRASS = 0;
         int WATER = 1;
-        int ROCK = 1;
+        int ROCK = 2;
 
         for (int y = 0; y < tData.alphamapHeight; y++)
         {
@@ -84,11 +83,19 @@ public class TerrainMeshGenerator : MonoBehaviour
                 {
                     alphaData[y, x, GRASS] = 0;
                     alphaData[y, x, WATER] = 1;
+                    alphaData[y, x, ROCK] = 0;
                 }
                 else
                 {
-                    float rockyness = Mathf.Abs(gradient.normalized.y);
+                    float rockyness = 0;
+                    //if(heightMap[terrainMapPos.x, terrainMapPos.y] > .3f)
+                    {
+                        //rockyness = 0f + heightMap[terrainMapPos.x, terrainMapPos.y] + gradient.magnitude * 4;
+                        rockyness = gradient.magnitude * 10;
+                    }
+
                     alphaData[y, x, GRASS] = 1 - rockyness;
+                    alphaData[y, x, WATER] = 0;
                     alphaData[y, x, ROCK] = rockyness;
                 }
             }
@@ -99,52 +106,24 @@ public class TerrainMeshGenerator : MonoBehaviour
         tData.SetAlphamaps(0, 0, alphaData);
     }
 
-    public void ConstructWaterMeshes(MeshGeneratorArgs meshArgs, ref float[,] heightMap, ref float[,] waterMap, ref Terrain[,] terrainTileMap)
+    public void ConstructWaterMeshes(MeshGeneratorArgs meshArgs, float[,] heightMap, float[,] waterMap, Terrain[,] terrainTileMap)
     {
         Debug.Log($"terrain y size {(m_Terrain.terrainData.size.y)} {m_Terrain.terrainData.bounds.max.y }");
         // Clear any old water meshes
         m_WaterMeshes.ForEach(x => DestroyImmediate(x));
         m_WaterMeshes.Clear();
 
-        // Flood fill water components
-        WaterComponentMap = new int[heightMap.GetUpperBound(0), heightMap.GetUpperBound(1)];
-        int componentCounter = 1;
+        List<HashSet<Vector2Int>> components = null;
+        LayerMapFunctions.LogAction(() => {
+            components = LayerMapFunctions.FindComponents(Terrain.Water, heightMap.GetUpperBound(0), ref terrainTileMap);
+        }, "create components time");
 
-        // MUST NOT USE DIAGONALS will mess up mesh generation
-        Vector2Int[] floodFillDirections = {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right,
-        };
-
-        List<HashSet<Vector2Int>> components = new List<HashSet<Vector2Int>>();
-
-        // 0 represents unmarked, -1 is land, and any other number is a water component
-        for (int y = 0; y <= WaterComponentMap.GetUpperBound(0); y++)
+        foreach(var componet in components)
         {
-            for (int x = 0; x <= WaterComponentMap.GetUpperBound(1); x++)
-            {
-                // Make sure that the tile is water, and that we havent set a component number on it yet
-                if(terrainTileMap[x,y] == Terrain.Water && WaterComponentMap[x,y] == 0)
-                {
-                    HashSet<Vector2Int> componet = FloodFill(new Vector2Int(x,y), componentCounter, floodFillDirections, ref WaterComponentMap, ref heightMap, ref waterMap, ref terrainTileMap);
-                    components.Add(componet);
-                    ConstructWaterMeshFromComponent(componet, meshArgs, ref heightMap, ref terrainTileMap);
-                    //Debug.Log($"componenet :{componentCounter}, size: {componet.Count}");
-                    componentCounter++;
-                }
-                else if(WaterComponentMap[x, y] == 0)
-                {
-                    // If its land mark as -1
-                    // WaterComponentMap[x, y] = -1;
-                }
-            }
+            ConstructWaterMeshFromComponent(componet, meshArgs, ref heightMap, ref terrainTileMap);
         }
 
-        Debug.Log($"{componentCounter} unique water zones");
-
-        // Construct mesh for each component
+        Debug.Log($"{components.Count} unique water zones");
     }
 
     public void ConstructWaterMeshFromComponent(HashSet<Vector2Int> componet, MeshGeneratorArgs meshArgs, ref float[,] heightMap, ref Terrain[,] terrainTileMap)
@@ -233,10 +212,13 @@ public class TerrainMeshGenerator : MonoBehaviour
 
                 float height = heightMap[vert.x, vert.y];
 
-                //if this vert is actually on land go a little below the land
-                //if(terrainTileMap[vert.x, vert.y] == Terrain.Grass)
+                height += .001f;
+
+                //if this vert is actually on water go a little below the land
+                if (terrainTileMap[vert.x, vert.y] == Terrain.Water)
                 {
-                    height -= .025f;
+                    
+                    heightMap[vert.x, vert.y] -= .1f;
                 }
 
                 worldPos += Vector3.up * height * (m_Terrain.terrainData.size.y);// m_Terrain.terrainData.bounds.max.y;
@@ -304,75 +286,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         return orderedVerts;
     }
 
-    private HashSet<Vector2Int> FloodFill(Vector2Int startPos, int componentNumber, Vector2Int[] floodFillDirections, ref int[,] waterComponentMap, ref float[,] heightMap, ref float[,] waterMap, ref Terrain[,] terrainTileMap)
-    {
-        HashSet<Vector2Int> componet = new HashSet<Vector2Int>();
-
-        Stack<Vector2Int> cellsToBeProcessed = new Stack<Vector2Int>();
-        cellsToBeProcessed.Push(startPos);
-        
-        while(cellsToBeProcessed.Count > 0)
-        {
-            Vector2Int currPos = cellsToBeProcessed.Pop();
-            componet.Add(currPos);
-            WaterComponentMap[currPos.x, currPos.y] = componentNumber;
-
-            foreach (var dir in floodFillDirections)
-            {
-                Vector2Int newPos = currPos + dir;
-                if (IsUnmarkedWaterTile(newPos, ref waterComponentMap, ref terrainTileMap))
-                {
-                    //componet.UnionWith(FloodFill(newPos, componentNumber, floodFillDirections, ref waterComponentMap, ref heightMap, ref waterMap, ref terrainTileMap));
-                    cellsToBeProcessed.Push(newPos);
-                }
-            }
-        }
-
-        return componet;
-    }
-
-    private bool IsUnmarkedWaterTile(Vector2Int Pos, ref int[,] waterComponentMap, ref Terrain[,] terrainTileMap)
-    {
-        bool inBounds = LayerMapFunctions.InBounds(waterComponentMap, Pos);
-        if (inBounds && waterComponentMap[Pos.x, Pos.y] == 0)
-        {
-            bool isWaterTile = terrainTileMap[Pos.x, Pos.y] == Terrain.Water;
-
-            if (isWaterTile)
-            {
-                return true;
-            }
-            else
-            {
-                // check adjacent tiles
-                Vector2Int[] adjacentDirections = {
-                    Vector2Int.zero,
-                    Vector2Int.up,
-                    Vector2Int.down,
-                    Vector2Int.left,
-                    Vector2Int.right,
-                    Vector2Int.up + Vector2Int.left,
-                    Vector2Int.up + Vector2Int.right,
-                    Vector2Int.down + Vector2Int.left,
-                    Vector2Int.down + Vector2Int.right,
-                };
-
-                foreach(var adj in adjacentDirections)
-                {
-                    foreach (var adj2 in adjacentDirections)
-                    {
-                        Vector2Int adjacentPos = new Vector2Int(Pos.x + adj.x + adj2.x, Pos.y + adj.y + adj2.y);
-                        if (LayerMapFunctions.InBounds(waterComponentMap, adjacentPos) && terrainTileMap[adjacentPos.x, adjacentPos.y] == Terrain.Water)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
+    
 
     public float QuadLerp(float a, float b, float c, float d, float u, float v)
     {

@@ -4,6 +4,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Threading.Tasks;
+using System.Linq;
 
 public class LayerMapFunctions : MonoBehaviour
 {
@@ -155,29 +156,438 @@ public class LayerMapFunctions : MonoBehaviour
         }
     }
 
-    public static void Droplets<T>(ref T[,] map,
+    public static void Lake<T>(ref T[,] map,
         ref float[,] heightMap,
-        ref float[,] waterMap,
+        ref float[,] lakeMap,
+        ref Vector2[,] gradientMap,
+        ref Terrain[,] baseTerrainMap,
         T currentTerrain,
-        float waterPercentThreshold,
-        float maxWaterDepth)
+        MapLayerSettings layerSetting)
     {
-        Normalize(ref waterMap);
-        SmoothMT(ref waterMap, 5, 4);
+        SmoothMT(ref lakeMap, 5, 4);
+        Normalize(ref lakeMap);
 
-        for (int x = 0; x <= waterMap.GetUpperBound(0); x++)
+        for (int x = 0; x <= lakeMap.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= waterMap.GetUpperBound(1); y++)
+            for (int y = 0; y <= lakeMap.GetUpperBound(1); y++)
             {
-                if(waterMap[x, y] > waterPercentThreshold)
-                //if(dropletMap[x, y] > 0)
+                if(lakeMap[x, y] > layerSetting.WaterPercentThreshold &&
+                   gradientMap[x, y].magnitude < layerSetting.MaxWaterGradient)
                 {
                     map[x, y] = currentTerrain;
-                    heightMap[x, y] -= Mathf.Clamp(waterMap[x, y], 0, maxWaterDepth);
+                    //heightMap[x, y] -= Mathf.Clamp(lakeMap[x, y], 0, layerSetting.MaxWaterDepth);
+                   //heightMap[x, y] -= .01f;
+                }    
+            }
+        }
+
+        // TODO store this value so we can use it later when doing water meshes
+        List<HashSet<Vector2Int>> components = FindComponents(Terrain.Water, heightMap.GetUpperBound(0), ref baseTerrainMap);
+        float averageComponentSize = 0;
+        // flatten each water componenet to the level of its lowest point
+        foreach (var componet in components)
+        {
+            averageComponentSize += componet.Count;
+            float minHeight = 0;
+            foreach (var pos in componet)
+            {
+                minHeight = Mathf.Max(heightMap[pos.x, pos.y], minHeight);
+            }
+
+            foreach (var pos in componet)
+            {
+                heightMap[pos.x, pos.y] = minHeight;
+            }
+        }
+
+        averageComponentSize /= components.Count();
+
+        //List<Vector2Int> centroids = FindCentroids(components);
+
+        //if(centroids.Count == 0)
+        //{
+        //    return;
+        //}
+
+        //Vector2Int start = centroids[Random.Range(0, centroids.Count)];
+        //Vector2Int End = centroids[Random.Range(0, centroids.Count)];
+        //for (int i = 0; i < centroids.Count; i++)
+        //{
+        //    Vector2Int centroid = centroids[i];
+        //    var component = components[i];
+        //    Stream(currentTerrain, ref heightMap, ref gradientMap, ref map, centroid, 20, Mathf.RoundToInt(component.Count / (averageComponentSize*2)));
+        //}
+    }
+
+    public static void Stream<T>(
+        T currentTerrain,
+        ref float[,] heightMap,
+        ref Vector2[,] gradientMap,
+        ref T[,] map,
+        Vector2Int center,
+        int searchRadius,
+        int numStreams)
+    {
+        
+        float maxHeight = 0;
+        // Find the delta heights in the area around the center
+        for(int i = -searchRadius; i < searchRadius; i++)
+        {
+            for (int j = -searchRadius; j < searchRadius; j++)
+            {
+                Vector2Int pos = new Vector2Int(i, j) + center;
+                if(InBounds(heightMap, pos) && heightMap[pos.x, pos.y] > maxHeight)
+                {
+                    maxHeight = heightMap[pos.x, pos.y];
+                }
+            }
+        }
+
+        // pick a random elem thats with 25% of the heighest
+        float heightThreshold = maxHeight * .75f;
+
+        Vector2Int maxHeightPos = Vector2Int.zero;
+        List<Vector2Int> positionsInThreshold = new List<Vector2Int>();
+        for (int i = -searchRadius; i < searchRadius; i++)
+        {
+            for (int j = -searchRadius; j < searchRadius; j++)
+            {
+                Vector2Int pos = new Vector2Int(i, j) + center;
+                if (InBounds(heightMap, pos) && heightMap[pos.x, pos.y] > heightThreshold)
+                {
+                    positionsInThreshold.Add(pos);
+                }
+            }
+        }
+
+        for(int i = 0; i < numStreams; i++)
+        {
+            Vector2 currPos = positionsInThreshold[Random.Range(0, positionsInThreshold.Count)];
+            Vector2Int gridCurrPos = RoundVector(currPos);
+            int step = 0;
+            Vector2 mementum = (new Vector2(center.x, center.y) - currPos).normalized * 0f;
+            HashSet<Vector2Int> path = new HashSet<Vector2Int>();
+
+            // follow gradient down
+            while (step < searchRadius * 100 && InBounds(gradientMap, gridCurrPos) && !map[gridCurrPos.x, gridCurrPos.y].Equals(currentTerrain))
+            {
+                Vector2 dirToEnd = (new Vector2(center.x, center.y) - currPos).normalized * .025f;
+                Vector2 gradient = gradientMap[gridCurrPos.x, gridCurrPos.y];
+                mementum -= gradient;
+                Vector2 dir = (mementum + dirToEnd).normalized * .5f;
+                //var gridNextPos = RoundVector(currPos + dir);
+                //var deltaHeight = heightMap[gridNextPos.x, gridNextPos.y] - heightMap[gridCurrPos.x, gridCurrPos.y];
+
+                currPos += dir;
+                gridCurrPos = RoundVector(currPos);
+                //heightMap[gridCurrPos.x, gridCurrPos.y] -= .01f;
+                if(InBounds(map, gridCurrPos))
+                    path.Add(gridCurrPos);
+                step++;
+            }
+
+            foreach(var pos in path)
+            {
+                map[pos.x, pos.y] = currentTerrain;
+            }
+        }
+    }
+
+    private class CentroidDistance
+    {
+        public Vector2Int Centroid;
+        public Vector2 displacement;
+        public int step;
+    }
+
+    /// <summary>
+    /// connect two lakes by going through other lakes, doesnt work well
+    /// </summary>
+    /// <typeparam name="T"> terrain or improvement</typeparam>
+    /// <param name="currentTerrain"></param>
+    /// <param name="heightMap"></param>
+    /// <param name="map"></param>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <param name="centroids"></param>
+    public static void River<T>(
+        T currentTerrain,
+        ref float[,] heightMap,
+        ref Vector2[,] gradientMap,
+        ref T[,] map,
+        Vector2Int start,
+        Vector2Int end,
+        List<Vector2Int> centroids,
+        HashSet<Vector2Int> prevCentroids)
+    {
+        if(start == end)
+        {
+            return;
+        }
+        prevCentroids.Add(start);
+
+        Debug.Log($"start {start} end {end}");
+        float startHeight = heightMap[start.x, start.y];
+
+        Vector2 currPos = start;
+        Vector2Int gridCurrPos = RoundVector(currPos);
+        int step = 0;
+        Dictionary<Vector2Int, CentroidDistance> CentroidDistanceMap = new Dictionary<Vector2Int, CentroidDistance>();
+        // map[gridCurrPos.x, gridCurrPos.y] = currentTerrain;
+        // 
+
+        // draw a line a build a list of how far the min distance from each lake is to the line, and consider the number of steps it took to get there 
+        while (step < heightMap.GetUpperBound(0) * 2 && gridCurrPos != end)
+        {
+            Vector2 dir = (new Vector2(end.x, end.y) - currPos).normalized;
+            currPos += dir;
+            gridCurrPos = RoundVector(currPos);
+            step++;
+            //heightMap[gridCurrPos.x, gridCurrPos.y] = 1f;
+            var distanceToEnd = (end - currPos).magnitude;
+
+            float minDistance = float.MaxValue;
+            CentroidDistance minCentroidDistance = null;
+            // Update centroid Distances
+            foreach (var centroid in centroids)
+            {
+                if (centroid == start || centroid == end || prevCentroids.Contains(centroid))
+                {
+                    continue;
+                }
+
+                Vector2 displacement = (currPos - centroid);
+                float distance = displacement.magnitude;
+                if (distance < distanceToEnd && distance < minDistance)
+                {
+                    minDistance = distance;
+
+                    CentroidDistance CD = new CentroidDistance
+                    {
+                        displacement = displacement,
+                        Centroid = centroid,
+                        step = step
+                    };
+                    minCentroidDistance = CD;
+                }
+            }
+
+            // Update the CD value for this position if we havent added it before, or if this distance is smaller than its last one
+            if (minCentroidDistance != null)
+            {
+                if(CentroidDistanceMap.TryGetValue(minCentroidDistance.Centroid, out CentroidDistance lastCD))
+                {
+                    if(minDistance < lastCD.displacement.magnitude)
+                    {
+                        CentroidDistanceMap[minCentroidDistance.Centroid] = minCentroidDistance;
+                    }
+                }
+                else
+                {
+                    CentroidDistanceMap[minCentroidDistance.Centroid] = minCentroidDistance;
+                }
+
+                break;
+            }
+        }
+
+        List<CentroidDistance> centroidDistances = CentroidDistanceMap.Values.ToList();
+        centroidDistances.Sort( (l,r) => {
+            return l.step - r.step;
+        });
+
+        // Just handle going to the next one and recurse
+        currPos = start;
+        step = 0;
+        gridCurrPos = RoundVector(currPos);
+
+        var nextCentroid = end;
+        if (centroidDistances.Count > 0)
+        {
+            nextCentroid = centroidDistances[0].Centroid;
+        }
+
+        //float waterLevel = (nextCentroid - start).magnitude * .25f;
+        float waterLevel = .25f;
+
+        while (step < heightMap.GetUpperBound(0) * 2 && gridCurrPos != nextCentroid)
+        {
+            Vector2 dir = (new Vector2(nextCentroid.x, nextCentroid.y) - currPos).normalized;
+            var gridNextPos = RoundVector(currPos + dir);
+            var deltaHeight = heightMap[gridNextPos.x, gridNextPos.y] - heightMap[gridCurrPos.x, gridCurrPos.y];
+
+            waterLevel -= deltaHeight;
+            if(waterLevel > 0)
+                map[gridCurrPos.x, gridCurrPos.y] = currentTerrain;
+
+            currPos += dir;
+            gridCurrPos = RoundVector(currPos);
+            //heightMap[gridCurrPos.x, gridCurrPos.y] -= .01f;
+            
+            step++;
+
+        }
+
+        River(currentTerrain, ref heightMap, ref gradientMap, ref map, nextCentroid, end, centroids, prevCentroids);
+    }
+
+    public static List<Vector2Int> FindCentroids(List<HashSet<Vector2Int>> components)
+    {
+        List<Vector2Int> centroids = new List<Vector2Int>();
+        foreach(var component in components)
+        {
+            centroids.Add(FindCentroid(component));
+        }
+
+        return centroids;
+    }
+
+    public static Vector2Int FindCentroid(HashSet<Vector2Int> component)
+    {
+        Vector2Int min = new Vector2Int(int.MaxValue, int.MaxValue);
+        Vector2Int max = new Vector2Int(int.MinValue, int.MinValue);
+
+        foreach (var pos in component)
+        {
+            min.x = Mathf.Min(min.x, pos.x);
+            min.y = Mathf.Min(min.y, pos.y);
+            max.x = Mathf.Max(max.x, pos.x);
+            max.y = Mathf.Max(max.y, pos.y);
+        }
+
+        Vector2 centroid = Vector2.zero;
+
+        foreach (var pos in component)
+        {
+            Vector2Int posOffset = pos - min;
+            centroid += posOffset;
+        }
+
+        centroid /= component.Count;
+
+        return RoundVector(centroid) + min;
+    }
+
+    public static List<HashSet<Vector2Int>> FindComponents(Terrain terrain, int mapSize, ref Terrain[,] terrainTileMap)
+    {
+        int[,] componentMap = new int[mapSize, mapSize];
+
+        int componentCounter = 1;
+
+        // MUST NOT USE DIAGONALS will mess up mesh generation
+        Vector2Int[] floodFillDirections = {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right,
+        };
+
+        List<HashSet<Vector2Int>> components = new List<HashSet<Vector2Int>>();
+
+        // 0 represents unmarked, -1 is a failure, and any other number is a component
+        for (int y = 0; y <= componentMap.GetUpperBound(0); y++)
+        {
+            for (int x = 0; x <= componentMap.GetUpperBound(1); x++)
+            {
+                if (terrainTileMap[x, y] == terrain && componentMap[x, y] == 0)
+                {
+                    HashSet<Vector2Int> componet = FloodFill(
+                        terrain,
+                        ref componentMap,
+                        new Vector2Int(x, y),
+                        componentCounter,
+                        floodFillDirections,
+                        ref componentMap,
+                        ref terrainTileMap);
+
+                    components.Add(componet);
+                    componentCounter++;
                 }
                     
             }
         }
+
+        return components;
+    }
+
+    private static HashSet<Vector2Int> FloodFill(
+        Terrain terrain,
+        ref int[,] componentMap,
+        Vector2Int startPos,
+        int componentNumber,
+        Vector2Int[] floodFillDirections,
+        ref int[,] waterComponentMap,
+        ref Terrain[,] terrainTileMap)
+    {
+        HashSet<Vector2Int> componet = new HashSet<Vector2Int>();
+
+        Stack<Vector2Int> cellsToBeProcessed = new Stack<Vector2Int>();
+        cellsToBeProcessed.Push(startPos);
+
+        while (cellsToBeProcessed.Count > 0)
+        {
+            Vector2Int currPos = cellsToBeProcessed.Pop();
+            componet.Add(currPos);
+            componentMap[currPos.x, currPos.y] = componentNumber;
+
+            foreach (var dir in floodFillDirections)
+            {
+                Vector2Int newPos = currPos + dir;
+                if (IsUnmarkedTile(terrain, newPos, ref waterComponentMap, ref terrainTileMap))
+                {
+                    cellsToBeProcessed.Push(newPos);
+                }
+            }
+        }
+
+        return componet;
+    }
+
+    private static bool IsUnmarkedTile( 
+        Terrain terrain,
+        Vector2Int Pos,
+        ref int[,] componentMap,
+        ref Terrain[,] terrainTileMap)
+    {
+        bool inBounds = LayerMapFunctions.InBounds(componentMap, Pos);
+        if (inBounds && componentMap[Pos.x, Pos.y] == 0)
+        {
+            bool isWaterTile = terrainTileMap[Pos.x, Pos.y] == Terrain.Water;
+
+            if (isWaterTile)
+            {
+                return true;
+            }
+            else
+            {
+                // check adjacent tiles
+                Vector2Int[] adjacentDirections = {
+                    Vector2Int.zero,
+                    Vector2Int.up,
+                    Vector2Int.down,
+                    Vector2Int.left,
+                    Vector2Int.right,
+                    Vector2Int.up + Vector2Int.left,
+                    Vector2Int.up + Vector2Int.right,
+                    Vector2Int.down + Vector2Int.left,
+                    Vector2Int.down + Vector2Int.right,
+                };
+
+                foreach (var adj in adjacentDirections)
+                {
+                    foreach (var adj2 in adjacentDirections)
+                    {
+                        Vector2Int adjacentPos = new Vector2Int(Pos.x + adj.x + adj2.x, Pos.y + adj.y + adj2.y);
+                        if (LayerMapFunctions.InBounds(componentMap, adjacentPos) && terrainTileMap[adjacentPos.x, adjacentPos.y] == terrain)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public static void GadientDescent<T>(ref T[,] map,

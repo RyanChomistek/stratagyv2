@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 
 public enum LayerFillAlgorithm
 {
-    Solid, RandomWalk, Square, PerlinNoise, RandomWalkBlocking, HeightRange, FollowGradient, FollowAlongGradient, AdjacentTiles, Droplets
+    Solid, RandomWalk, Square, PerlinNoise, RandomWalkBlocking, HeightRange, FollowGradient, FollowAlongGradient, AdjacentTiles, Lake, River
 }
 
 [System.Serializable]
@@ -66,6 +66,7 @@ public class MapLayerSettings : ScriptableObject
     // Droplets
     public float WaterPercentThreshold;
     public float MaxWaterDepth;
+    public float MaxWaterGradient;
 
 }
 
@@ -142,9 +143,10 @@ public class MapLayerSettings_Editor : Editor
                 mapLayer.SpawnChance = EditorGUILayout.FloatField("SpawnChance", mapLayer.SpawnChance);
                 mapLayer.radius = EditorGUILayout.IntField("Radius", mapLayer.radius);
                 break;
-            case LayerFillAlgorithm.Droplets:
+            case LayerFillAlgorithm.Lake:
                 mapLayer.WaterPercentThreshold = EditorGUILayout.FloatField("WaterPercentThreshold", mapLayer.WaterPercentThreshold);
                 mapLayer.MaxWaterDepth = EditorGUILayout.FloatField("maxWaterDepth", mapLayer.MaxWaterDepth);
+                mapLayer.MaxWaterGradient = EditorGUILayout.FloatField("MaxWaterGradient", mapLayer.MaxWaterGradient);
                 break;
         }
 
