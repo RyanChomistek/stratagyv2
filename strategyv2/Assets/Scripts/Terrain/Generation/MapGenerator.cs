@@ -188,7 +188,7 @@ public class MapGenerator : MonoBehaviour
                     break;
                 case LayerFillAlgorithm.Lake:
                 case LayerFillAlgorithm.River:
-                    LayerMapFunctions.Lake(ref currentMap, ref heightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
+                    LakeGenerator.Lake(ref currentMap, ref heightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
                     break;
             }
 

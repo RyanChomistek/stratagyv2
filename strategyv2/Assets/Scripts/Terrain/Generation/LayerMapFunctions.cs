@@ -156,69 +156,6 @@ public class LayerMapFunctions : MonoBehaviour
         }
     }
 
-    public static void Lake<T>(ref T[,] map,
-        ref float[,] heightMap,
-        ref float[,] lakeMap,
-        ref Vector2[,] gradientMap,
-        ref Terrain[,] baseTerrainMap,
-        T currentTerrain,
-        MapLayerSettings layerSetting)
-    {
-        SmoothMT(ref lakeMap, 5, 4);
-        Normalize(ref lakeMap);
-
-        for (int x = 0; x <= lakeMap.GetUpperBound(0); x++)
-        {
-            for (int y = 0; y <= lakeMap.GetUpperBound(1); y++)
-            {
-                if(lakeMap[x, y] > layerSetting.WaterPercentThreshold &&
-                   gradientMap[x, y].magnitude < layerSetting.MaxWaterGradient)
-                {
-                    map[x, y] = currentTerrain;
-                    //heightMap[x, y] -= Mathf.Clamp(lakeMap[x, y], 0, layerSetting.MaxWaterDepth);
-                   //heightMap[x, y] -= .01f;
-                }    
-            }
-        }
-
-        // TODO store this value so we can use it later when doing water meshes
-        List<HashSet<Vector2Int>> components = FindComponents(Terrain.Water, heightMap.GetUpperBound(0), ref baseTerrainMap);
-        float averageComponentSize = 0;
-        // flatten each water componenet to the level of its lowest point
-        foreach (var componet in components)
-        {
-            averageComponentSize += componet.Count;
-            float minHeight = 0;
-            foreach (var pos in componet)
-            {
-                minHeight = Mathf.Max(heightMap[pos.x, pos.y], minHeight);
-            }
-
-            foreach (var pos in componet)
-            {
-                heightMap[pos.x, pos.y] = minHeight;
-            }
-        }
-
-        averageComponentSize /= components.Count();
-
-        //List<Vector2Int> centroids = FindCentroids(components);
-
-        //if(centroids.Count == 0)
-        //{
-        //    return;
-        //}
-
-        //Vector2Int start = centroids[Random.Range(0, centroids.Count)];
-        //Vector2Int End = centroids[Random.Range(0, centroids.Count)];
-        //for (int i = 0; i < centroids.Count; i++)
-        //{
-        //    Vector2Int centroid = centroids[i];
-        //    var component = components[i];
-        //    Stream(currentTerrain, ref heightMap, ref gradientMap, ref map, centroid, 20, Mathf.RoundToInt(component.Count / (averageComponentSize*2)));
-        //}
-    }
-
     public static void Stream<T>(
         T currentTerrain,
         ref float[,] heightMap,
