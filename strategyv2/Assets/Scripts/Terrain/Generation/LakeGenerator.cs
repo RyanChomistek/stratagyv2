@@ -42,7 +42,7 @@ public class LakeGenerator
         int numWaterFlooded = 10000;
         int numIterations = 0;
 
-        while (numWaterFlooded > (lakeMap.GetUpperBound(0) * .01f) && numIterations < 100)
+        while (numWaterFlooded > (lakeMap.GetUpperBound(0) * .01f) && numIterations < 4)
         {
             numIterations++;
             numWaterFlooded = 0;
@@ -52,10 +52,10 @@ public class LakeGenerator
                 for (int y = 0; y <= lakeMap.GetUpperBound(1); y++)
                 {
                     // skip this tile if it is water
-                    if (map[x, y].Equals(currentTerrain))
-                    {
-                        continue;
-                    }
+                    //if (map[x, y].Equals(currentTerrain))
+                    //{
+                    //    continue;
+                    //}
 
                     FloodTile(x, y, currentTerrain, map, heightMap, floodFillDirections, ref numWaterFlooded);
                 }
@@ -66,10 +66,10 @@ public class LakeGenerator
                 for (int y = lakeMap.GetUpperBound(1); y >= 0; y--)
                 {
                     // skip this tile if it is water
-                    if (map[x, y].Equals(currentTerrain))
-                    {
-                        continue;
-                    }
+                    //if (map[x, y].Equals(currentTerrain))
+                    //{
+                    //    continue;
+                    //}
 
                     FloodTile(x, y, currentTerrain, map, heightMap, floodFillDirections, ref numWaterFlooded);
                 }
@@ -89,15 +89,15 @@ public class LakeGenerator
         foreach (var componet in components)
         {
             averageComponentSize += componet.Count;
-            float minHeight = 0;
+            float maxHeight = 10;
             foreach (var pos in componet)
             {
-                minHeight = Mathf.Max(heightMap[pos.x, pos.y], minHeight);
+                maxHeight = Mathf.Min(heightMap[pos.x, pos.y], maxHeight);
             }
 
             foreach (var pos in componet)
             {
-                //heightMap[pos.x, pos.y] = minHeight;
+                //heightMap[pos.x, pos.y] = maxHeight;
             }
         }
 
@@ -108,6 +108,7 @@ public class LakeGenerator
     {
         bool hasAdjacentWater = false;
         float heighestAdjacentWater = -1;
+        float lowestAdjacentWater = 1000;
         Vector2Int dirToWater;
 
         foreach (Vector2Int dir in floodFillDirections)
@@ -117,6 +118,7 @@ public class LakeGenerator
             {
                 hasAdjacentWater = true;
                 heighestAdjacentWater = Mathf.Max(heighestAdjacentWater, heightMap[pos.x, pos.y]);
+                lowestAdjacentWater = Mathf.Min(lowestAdjacentWater, heightMap[pos.x, pos.y]);
                 dirToWater = dir;
             }
         }
@@ -125,6 +127,7 @@ public class LakeGenerator
         {
             numWaterFlooded++;
             map[x, y] = currentTerrain;
+            heightMap[x, y] = heighestAdjacentWater;
         }
     }
 }

@@ -35,6 +35,6 @@ MonoBehaviour:
   MinThreshold: 0
   SpawnChance: 0
   MaxGradient: 0
-  WaterPercentThreshold: 0.75
+  WaterPercentThreshold: 0.9
   MaxWaterDepth: 0.1
   MaxWaterGradient: 0.025
