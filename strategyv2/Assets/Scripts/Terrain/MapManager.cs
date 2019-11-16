@@ -255,8 +255,8 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            MeshGen.ConstructWaterMeshes(m_MeshArgs, MapGen.heightMap, MapGen.LakeMap, MapGen.terrainMap);
-            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.heightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, terrainTileLookup), "mesh time");
+            MeshGen.ConstructWaterMeshes(m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
+            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.HeightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, terrainTileLookup), "mesh time");
         }
     }
 
@@ -389,11 +389,11 @@ public class MapManager : MonoBehaviour
         {
             for (int j = 0; j <= MapGen.terrainMap.GetUpperBound(1); j++)
             {
-                map[i, j] = new TerrainMapTile(terrainTileLookup[MapGen.terrainMap[i, j]], MapGen.heightMap[i,j], MapGen.LayeredGradientMap[i, j]);
+                map[i, j] = new TerrainMapTile(terrainTileLookup[MapGen.terrainMap[i, j]], MapGen.HeightMap[i,j], MapGen.LayeredGradientMap[i, j]);
                 map[i, j].Improvement = new ImprovementMapTile(improvementTileLookup[MapGen.improvmentMap[i, j]]);
                 map[i, j].ModifyBaseWithImprovement();
-                _minHeight = Mathf.Min(_minHeight, MapGen.heightMap[i, j]);
-                _maxHeight = Mathf.Max(_maxHeight, MapGen.heightMap[i, j]);
+                _minHeight = Mathf.Min(_minHeight, MapGen.HeightMap[i, j]);
+                _maxHeight = Mathf.Max(_maxHeight, MapGen.HeightMap[i, j]);
             }
         }
 

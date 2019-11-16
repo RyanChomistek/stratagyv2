@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -13,20 +14,21 @@ public class MapGenerator : MonoBehaviour
 
     public List<MapLayerSettings> LayerSettings = new List<MapLayerSettings>();
 
-    [SerializeField]
-    public Terrain[,] terrainMap;
-    [SerializeField]
-    public Improvement[,] improvmentMap;
-    public float[,] RawHeightMap;
-    public float[,] heightMap;
-    public float[,] LakeMap;
-    public float[,] RiverMap;
+    private MapData m_MapData;
 
-    public Vector2[,] GradientMap;
-    public Vector2[,] LayeredGradientMap;
+    public Terrain[,] terrainMap { get  { return m_MapData.terrainMap; } }
+    public Improvement[,] improvmentMap { get { return m_MapData.improvmentMap; } }
+    public float[,] RawHeightMap { get { return m_MapData.RawHeightMap; } }
+    public float[,] HeightMap { get { return m_MapData.HeightMap; } }
+    public float[,] WaterMap { get { return m_MapData.WaterMap; } }
+    public Vector2[,] GradientMap { get { return m_MapData.GradientMap; } }
+    public Vector2[,] LayeredGradientMap { get { return m_MapData.LayeredGradientMap; } }
+
     public TerrainGenerator HeightmapGen;
 
     public bool LoadFromFile = false;
+
+    
 
     /// <summary>
     /// Generates  terrain and improvment maps based on provided layers
@@ -40,15 +42,14 @@ public class MapGenerator : MonoBehaviour
         ClearMap();
         if(LoadFromFile)
         {
-            LoadMap();
+            LayerMapFunctions.LogAction(() => LoadMap(), "Load Map Time");
             return;
-        } 
+        }
 
-        terrainMap = new Terrain[mapSize, mapSize];
-        improvmentMap = new Improvement[mapSize, mapSize];
-        heightMap = new float[mapSize, mapSize];
-        LakeMap = new float[mapSize, mapSize];
-        RiverMap = new float[mapSize, mapSize];
+        m_MapData.terrainMap = new Terrain[mapSize, mapSize];
+        m_MapData.improvmentMap = new Improvement[mapSize, mapSize];
+        m_MapData.HeightMap = new float[mapSize, mapSize];
+        m_MapData.WaterMap = new float[mapSize, mapSize];
 
         float seed;
         seed = System.DateTime.Now.Millisecond;
@@ -69,19 +70,19 @@ public class MapGenerator : MonoBehaviour
             var erosionBrushRadius = HeightmapGen.erosionBrushRadius;
             var mapSizeWithBorder = HeightmapGen.mapSizeWithBorder;
             int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
-            heightMap[x, y] = HeightmapGen.HeightMap[borderedMapIndex];
-            terrainMap[x, y] = Terrain.Grass;
-            LakeMap[x, y] = HeightmapGen.LakeMap[borderedMapIndex];
+            m_MapData.HeightMap[x, y] = HeightmapGen.HeightMap[borderedMapIndex];
+            m_MapData.terrainMap[x, y] = Terrain.Grass;
+            m_MapData.WaterMap[x, y] = HeightmapGen.LakeMap[borderedMapIndex];
         }
 
-        RawHeightMap = heightMap.Clone() as float[,];
-        GradientMap = null;
+        m_MapData.RawHeightMap = m_MapData.HeightMap.Clone() as float[,];
+        m_MapData.GradientMap = null;
         LayerMapFunctions.LogAction(() =>
         {
             //LayerMapFunctions.Smooth(ref heightMap);
-            GradientMap = (Vector2[,]) CalculateGradients(heightMap).Clone();
+            m_MapData.GradientMap = (Vector2[,]) CalculateGradients(m_MapData.HeightMap).Clone();
             LayerHeightMap(numZLayers);
-            LayeredGradientMap = CalculateGradients(heightMap);
+            m_MapData.LayeredGradientMap = CalculateGradients(m_MapData.HeightMap);
         }
         , "other gen times");
         
@@ -96,11 +97,11 @@ public class MapGenerator : MonoBehaviour
 
             if (layerSetting.useLayeredGradients)
             {
-                gradientMapInUse = LayeredGradientMap;
+                gradientMapInUse = m_MapData.LayeredGradientMap;
             }
             else
             {
-                gradientMapInUse = GradientMap;
+                gradientMapInUse = m_MapData.GradientMap;
             }
 
             if (layerSetting.randomSeed)
@@ -116,17 +117,17 @@ public class MapGenerator : MonoBehaviour
 
             if (layerSetting.MapTile.Layer == MapLayer.Terrain)
             {
-                RunAlgorithmGeneric(ref terrainMap, layerSetting.terrain, ref terrainMap, ref improvmentMap, 
-                    ref gradientMapInUse, ref LakeMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
+                RunAlgorithmGeneric(ref m_MapData.terrainMap, layerSetting.terrain, ref m_MapData.terrainMap, ref m_MapData.improvmentMap, 
+                    ref gradientMapInUse, ref m_MapData.WaterMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
             }
             else
             {
-                RunAlgorithmGeneric(ref improvmentMap, layerSetting.Improvement, ref terrainMap, ref improvmentMap,
-                    ref gradientMapInUse, ref LakeMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
+                RunAlgorithmGeneric(ref m_MapData.improvmentMap, layerSetting.Improvement, ref m_MapData.terrainMap, ref m_MapData.improvmentMap,
+                    ref gradientMapInUse, ref m_MapData.WaterMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
             }
 
             //recalculate gradients becasue they might have changed
-            LayeredGradientMap = CalculateGradients(heightMap);
+            m_MapData.LayeredGradientMap = CalculateGradients(m_MapData.HeightMap);
         }
         
         FixImprovmentsOnWater();
@@ -155,7 +156,7 @@ public class MapGenerator : MonoBehaviour
                     currentMap = LayerMapFunctions.GenerateArray(mapSize, mapSize, currentTileValue);
                     break;
                 case LayerFillAlgorithm.RandomWalk:
-                    currentMap = LayerMapFunctions.RandomWalk2D(ref currentMap, ref terrainMap, ref heightMap, rand, currentTileValue,
+                    currentMap = LayerMapFunctions.RandomWalk2D(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand, currentTileValue,
                         layerSetting.radius, false, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.Square:
@@ -165,30 +166,30 @@ public class MapGenerator : MonoBehaviour
                     currentMap = LayerMapFunctions.PerlinNoise(ref currentMap, ref terrainMap, ref gradientMap, currentTileValue, rand, layerSetting.PerlinNoiseScale, layerSetting.PerlinNoiseThreshold, layerSetting.MaxGradient, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.RandomWalkBlocking:
-                    currentMap = LayerMapFunctions.RandomWalk2D(ref currentMap, ref terrainMap, ref heightMap, rand,
+                    currentMap = LayerMapFunctions.RandomWalk2D(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand,
                         currentTileValue, layerSetting.radius, true, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.HeightRange:
-                    LayerMapFunctions.FillHeightRange(ref currentMap, ref heightMap, currentTileValue,
+                    LayerMapFunctions.FillHeightRange(ref currentMap, ref m_MapData.HeightMap, currentTileValue,
                         layerSetting.MinHeight, layerSetting.MaxHeight);
                     break;
                 case LayerFillAlgorithm.FollowGradient:
-                    LayerMapFunctions.GadientDescent(ref currentMap, ref heightMap, ref gradientMap, rand, currentTileValue,
+                    LayerMapFunctions.GadientDescent(ref currentMap, ref m_MapData.HeightMap, ref gradientMap, rand, currentTileValue,
                         layerSetting.MinStartHeight, layerSetting.MinStopHeight, layerSetting.MaxWidth,
                         layerSetting.WidthChangeThrotle);
                     break;
                 case LayerFillAlgorithm.FollowAlongGradient:
-                    LayerMapFunctions.FollowAlongGradient(ref currentMap, ref heightMap, ref gradientMap, rand,
+                    LayerMapFunctions.FollowAlongGradient(ref currentMap, ref m_MapData.HeightMap, ref gradientMap, rand,
                         currentTileValue, layerSetting.Width);
                     break;
                 case LayerFillAlgorithm.AdjacentTiles:
-                    LayerMapFunctions.AjdacentTiles(ref currentMap, ref heightMap, ref gradientMap, ref terrainMap, ref improvementMap,
+                    LayerMapFunctions.AjdacentTiles(ref currentMap, ref m_MapData.HeightMap, ref gradientMap, ref terrainMap, ref improvementMap,
                         rand, currentTileValue, layerSetting.MinThreshold, layerSetting.MaxGradient,
                         layerSetting.radius, layerSetting.SpawnChance, terrainTileLookup, improvementTileLookup);
                     break;
                 case LayerFillAlgorithm.Lake:
                 case LayerFillAlgorithm.River:
-                    LakeGenerator.Lake(ref currentMap, ref heightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
+                    LakeGenerator.Lake(ref currentMap, ref m_MapData.HeightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
                     break;
             }
 
@@ -201,13 +202,13 @@ public class MapGenerator : MonoBehaviour
     /// </summary>
     private void FixImprovmentsOnWater()
     {
-        for (int x = 0; x <= improvmentMap.GetUpperBound(0); x++)
+        for (int x = 0; x <= m_MapData.improvmentMap.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= improvmentMap.GetUpperBound(1); y++)
+            for (int y = 0; y <= m_MapData.improvmentMap.GetUpperBound(1); y++)
             {
-                if (terrainMap[x, y] == Terrain.Water && improvmentMap[x,y] != Improvement.Empty)
+                if (m_MapData.terrainMap[x, y] == Terrain.Water && m_MapData.improvmentMap[x,y] != Improvement.Empty)
                 {
-                    terrainMap[x, y] = Terrain.Grass;
+                    m_MapData.terrainMap[x, y] = Terrain.Grass;
                 }
             }
         }
@@ -226,44 +227,36 @@ public class MapGenerator : MonoBehaviour
 
     private void SaveMap()
     {
-        var terrainMapJson = JsonConvert.SerializeObject(terrainMap);
-        var sr = File.CreateText("Assets/Saves/TerrainMap.txt");
-        sr.WriteLine(terrainMapJson);
-        sr.Close();
-
-        var improvementMapJson = JsonConvert.SerializeObject(improvmentMap);
-        sr = File.CreateText("Assets/Saves/ImprovementMap.txt");
-        sr.WriteLine(improvementMapJson);
-        sr.Close();
-
-        var heightMapJson = JsonConvert.SerializeObject(heightMap);
-        sr = File.CreateText("Assets/Saves/HeightMap.txt");
-        sr.WriteLine(heightMapJson);
-        sr.Close();
+        ThreadPool.QueueUserWorkItem(delegate (object state)
+        {
+            try
+            {
+                var MapDataJson = JsonConvert.SerializeObject(m_MapData);
+                var sr = File.CreateText("Assets/Saves/MapDataJson.MapData");
+                sr.WriteLine(MapDataJson);
+                sr.Close();
+            }
+            finally
+            {
+                Debug.Log("Done saving");
+            }
+        },
+        null);
     }
 
     private void LoadMap()
     {
-        var terrainMapJson = JsonConvert.SerializeObject(terrainMap);
-        var sr = File.ReadAllText("Assets/Saves/TerrainMap.txt");
-        terrainMap = JsonConvert.DeserializeObject<Terrain[,]>(sr);
-
-        sr = File.ReadAllText("Assets/Saves/ImprovementMap.txt");
-        improvmentMap = JsonConvert.DeserializeObject<Improvement[,]>(sr);
-
-        sr = File.ReadAllText("Assets/Saves/HeightMap.txt");
-        heightMap = JsonConvert.DeserializeObject<float[,]>(sr);
-
-        LayeredGradientMap = CalculateGradients(heightMap);
+        var sr = File.ReadAllText("Assets/Saves/MapDataJson.MapData");
+        m_MapData = JsonConvert.DeserializeObject<MapData>(sr);
     }
 
     private void LayerHeightMap(int numZLayers)
     {
-        for (int x = 0; x <= heightMap.GetUpperBound(0); x++)
+        for (int x = 0; x <= m_MapData.HeightMap.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= heightMap.GetUpperBound(1); y++)
+            for (int y = 0; y <= m_MapData.HeightMap.GetUpperBound(1); y++)
             {
-                heightMap[x, y] = GetLayerIndexByHeight(heightMap[x, y], numZLayers) / (float) numZLayers;
+                m_MapData.HeightMap[x, y] = GetLayerIndexByHeight(m_MapData.HeightMap[x, y], numZLayers) / (float) numZLayers;
             }
         }
     }
@@ -297,6 +290,6 @@ public class MapGenerator : MonoBehaviour
 
     public void ClearMap()
     {
-        terrainMap = new Terrain[mapSize, mapSize];
+        m_MapData.terrainMap = new Terrain[mapSize, mapSize];
     }
 }

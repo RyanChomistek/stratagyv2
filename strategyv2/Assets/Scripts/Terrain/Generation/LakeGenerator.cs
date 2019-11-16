@@ -46,17 +46,11 @@ public class LakeGenerator
         {
             numIterations++;
             numWaterFlooded = 0;
-            // Make water flood lower areas
+            // Make water flood lower areas, go forwards and backwards to make sure we spread evenly
             for (int x = 0; x <= lakeMap.GetUpperBound(0); x++)
             {
                 for (int y = 0; y <= lakeMap.GetUpperBound(1); y++)
                 {
-                    // skip this tile if it is water
-                    //if (map[x, y].Equals(currentTerrain))
-                    //{
-                    //    continue;
-                    //}
-
                     FloodTile(x, y, currentTerrain, map, heightMap, floodFillDirections, ref numWaterFlooded);
                 }
             }
@@ -65,12 +59,6 @@ public class LakeGenerator
             {
                 for (int y = lakeMap.GetUpperBound(1); y >= 0; y--)
                 {
-                    // skip this tile if it is water
-                    //if (map[x, y].Equals(currentTerrain))
-                    //{
-                    //    continue;
-                    //}
-
                     FloodTile(x, y, currentTerrain, map, heightMap, floodFillDirections, ref numWaterFlooded);
                 }
             }
