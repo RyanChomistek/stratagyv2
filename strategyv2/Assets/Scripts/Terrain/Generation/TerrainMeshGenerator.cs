@@ -72,6 +72,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         int GRASS = 0;
         int WATER = 1;
         int ROCK = 2;
+        int ROAD = 3;
 
         for (int y = 0; y < tData.alphamapHeight; y++)
         {
@@ -79,6 +80,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             {
                 Vector2Int terrainMapPos = new Vector2Int((int)(x / alphaMapScale), (int)(y / alphaMapScale));
                 Terrain terrain = map[terrainMapPos.x, terrainMapPos.y];
+                Improvement improvement = improvementMap[terrainMapPos.x, terrainMapPos.y];
                 Vector2 gradient = gradientMap[terrainMapPos.x, terrainMapPos.y];
 
                 if (terrain == Terrain.Water)
@@ -86,6 +88,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                     alphaData[y, x, GRASS] = 0;
                     alphaData[y, x, WATER] = 1;
                     alphaData[y, x, ROCK] = 0;
+                    alphaData[y, x, ROAD] = 0;
                 }
                 else
                 {
@@ -94,6 +97,15 @@ public class TerrainMeshGenerator : MonoBehaviour
                     alphaData[y, x, GRASS] = 1 - rockyness;
                     alphaData[y, x, WATER] = 0;
                     alphaData[y, x, ROCK] = rockyness;
+                    alphaData[y, x, ROAD] = 0;
+                }
+                
+                if(improvement == Improvement.Road)
+                {
+                    alphaData[y, x, GRASS] = 0;
+                    alphaData[y, x, WATER] = 0;
+                    alphaData[y, x, ROCK] = 0;
+                    alphaData[y, x, ROAD] = 1;
                 }
             }
         }
@@ -107,7 +119,7 @@ public class TerrainMeshGenerator : MonoBehaviour
     {
         List<TreeInstance> trees = new List<TreeInstance>();
         Vector3 tileSize = new Vector3(1 / (float)improvementMap.GetUpperBound(0), 0, 1 / (float)improvementMap.GetUpperBound(1));
-        float nudgeRadius = .5f;
+        float nudgeRadius = .25f;
         float scaleNudgeBase = .2f;
         for (int x = 0; x <= improvementMap.GetUpperBound(0); x++)
         {

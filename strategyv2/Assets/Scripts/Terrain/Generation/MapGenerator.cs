@@ -18,7 +18,6 @@ public class MapGenerator : MonoBehaviour
     public int mapSize { get { return m_MapData.mapSize; } set { m_MapData.mapSize = value; } }
     public Terrain[,] terrainMap { get  { return m_MapData.TerrainMap; } }
     public Improvement[,] improvmentMap { get { return m_MapData.ImprovmentMap; } }
-    public float[,] RawHeightMap { get { return m_MapData.RawHeightMap; } }
     public float[,] HeightMap { get { return m_MapData.HeightMap; } }
     public float[,] WaterMap { get { return m_MapData.WaterMap; } }
     public Vector2[,] GradientMap { get { return m_MapData.GradientMap; } }
@@ -75,7 +74,8 @@ public class MapGenerator : MonoBehaviour
             m_MapData.WaterMap[x, y] = HeightmapGen.LakeMap[borderedMapIndex];
         }
 
-        m_MapData.RawHeightMap = m_MapData.HeightMap.Clone() as float[,];
+        LayerMapFunctions.SmoothMT(ref m_MapData.HeightMap, 2);
+
         m_MapData.GradientMap = null;
         LayerMapFunctions.LogAction(() =>
         {
@@ -155,7 +155,7 @@ public class MapGenerator : MonoBehaviour
                     currentMap = LayerMapFunctions.GenerateArray(mapSize, mapSize, currentTileValue);
                     break;
                 case LayerFillAlgorithm.RandomWalk:
-                    currentMap = LayerMapFunctions.RandomWalk2D(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand, currentTileValue,
+                    currentMap = RoadGenerator.GenerateRoad(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand, currentTileValue,
                         layerSetting.radius, false, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.Square:
@@ -165,8 +165,8 @@ public class MapGenerator : MonoBehaviour
                     currentMap = LayerMapFunctions.PerlinNoise(ref currentMap, ref terrainMap, ref gradientMap, currentTileValue, rand, layerSetting.PerlinNoiseScale, layerSetting.PerlinNoiseThreshold, layerSetting.MaxGradient, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.RandomWalkBlocking:
-                    currentMap = LayerMapFunctions.RandomWalk2D(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand,
-                        currentTileValue, layerSetting.radius, true, terrainTileLookup);
+                    //currentMap = RoadGenerator.RandomWalk2D(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand,
+                    //    currentTileValue, layerSetting.radius, true, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.HeightRange:
                     LayerMapFunctions.FillHeightRange(ref currentMap, ref m_MapData.HeightMap, currentTileValue,

@@ -13,8 +13,6 @@ public class MapData
     [SerializeField]
     public Improvement[,] ImprovmentMap;
     [SerializeField]
-    public float[,] RawHeightMap;
-    [SerializeField]
     public float[,] HeightMap;
     [SerializeField]
     public float[,] WaterMap;
@@ -31,7 +29,7 @@ public class MapData
             mapSize = mapSize,
             TerrainMap = TerrainMap.Clone() as Terrain[,],
             ImprovmentMap = ImprovmentMap.Clone() as Improvement[,],
-            RawHeightMap = RawHeightMap.Clone() as float[,],
+            //RawHeightMap = RawHeightMap.Clone() as float[,],
             HeightMap = HeightMap.Clone() as float[,],
             WaterMap = WaterMap.Clone() as float[,],
             GradientMap = GradientMap.Clone() as Vector2[,],
