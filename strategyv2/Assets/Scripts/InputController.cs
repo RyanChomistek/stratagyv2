@@ -47,7 +47,7 @@ public class ButtonHandler : Handler
 
     public virtual void OnButtonDown()
     {
-        this.OnButtonDownCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        this.OnButtonDownCallBack(this, InputController.GetMousePosition2D());
     }
 
     public virtual void OnButton()
@@ -55,7 +55,7 @@ public class ButtonHandler : Handler
 
     public virtual void OnButtonUp()
     {
-        this.OnButtonUpCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        this.OnButtonUpCallBack(this, InputController.GetMousePosition2D());
     }
 }
 
@@ -104,7 +104,7 @@ public class HoverHandler : Handler
 
     public virtual bool IsTemporarilyHovering()
     {
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = InputController.GetMousePosition2D();
         return mousePos == LastMousePosition;
     }
 
@@ -113,7 +113,7 @@ public class HoverHandler : Handler
         //Debug.Log("warm");
         this._warmupTimestamp = Time.time;
         IsCurrentlyWarmingup = true;
-        this.OnHoverWarmupEnterCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        this.OnHoverWarmupEnterCallBack(this, InputController.GetMousePosition2D());
     }
 
     //only called when warmup begins but is exited before hover starts
@@ -129,20 +129,20 @@ public class HoverHandler : Handler
         //Debug.Log("start");
         IsCurrentlyWarmingup = false;
         this.IsCurrentlyHovering = true;
-        this.OnHoverStartCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        this.OnHoverStartCallBack(this, InputController.GetMousePosition2D());
     }
 
     public virtual void OnHover()
     {
         //Debug.Log("hover");
-        this.OnHoverCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        this.OnHoverCallBack(this, InputController.GetMousePosition2D());
     }
 
     public virtual void OnHoverEnd()
     {
         //Debug.Log("end");
         this.IsCurrentlyHovering = false;
-        this.OnHoverEndCallBack(this, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        this.OnHoverEndCallBack(this, InputController.GetMousePosition2D());
     }
 
     public bool IsDoneWarmingup()
@@ -190,7 +190,7 @@ public class DragHandler : ButtonHandler
 
     public override void OnButtonDown()
     {
-        this.LastMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        this.LastMousePosition = InputController.GetMousePosition2D();
         this.IsCurrentlyDragging = true;
         base.OnButtonDown();
     }
@@ -199,9 +199,10 @@ public class DragHandler : ButtonHandler
     {
         if (this.IsCurrentlyDragging)
         {
-            var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var mousePosition = InputController.GetMousePosition2D();
             var mouseDelta = mousePosition - this.LastMousePosition;
-            mouseDelta = new Vector3(mouseDelta.x, mouseDelta.y, 0);
+            //Debug.Log($"last {LastMousePosition}, current {mousePosition}, delta {mouseDelta}");
+
             this.LastMousePosition = mousePosition;
             this.OnDragCallBack(this, mousePosition, mouseDelta);
         }
@@ -274,7 +275,7 @@ public class InputController : MonoBehaviour {
     {
         ProcessHandlerQueue();
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = GetMousePosition2D();
         bool isOverUI = EventSystem.current.IsPointerOverGameObject();
 
         foreach(ButtonHandler handler in _buttonHandlers)
@@ -346,10 +347,28 @@ public class InputController : MonoBehaviour {
                 handler.IsCurrentlyWarmingup = false;
             }
 
-            handler.LastMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            handler.LastMousePosition = GetMousePosition2D();
         }
 
         ProcessHandlerQueue();
+    }
+
+    public static Vector3 GetMousePosition()
+    {
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out hit))
+        {
+            return hit.point;
+        }
+
+        return Vector3.zero;
+    }
+
+    public static Vector3 GetMousePosition2D()
+    {
+        Vector3 mousePos = GetMousePosition();
+        return new Vector3(mousePos.x, 0, mousePos.z);
     }
 
     public void RegisterHandler(Handler handler)

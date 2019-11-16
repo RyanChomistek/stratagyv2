@@ -16,10 +16,6 @@ public class CameraController : MonoBehaviour
             (handler, x) => { handler.IgnoreUI = false; }, 
             (handler, mousePosition, delta) =>
             {
-                if (Camera.main.transform.position != transform.position)
-                {
-                    transform.position = Camera.main.transform.position;
-                }
                 transform.position -= delta;
                 handler.LastMousePosition = mousePosition - delta;
             },
@@ -28,8 +24,9 @@ public class CameraController : MonoBehaviour
         var zoomHandler = new AxisHandler("Mouse ScrollWheel",
             (handler, delta) =>
             {
-                GetComponent<Cinemachine.CinemachineVirtualCamera>().m_Lens.OrthographicSize += delta * -2;
+                Camera.main.transform.localPosition += Vector3.forward * delta * -10f;
             },false);
+
         InputController.Instance.RegisterHandler(zoomHandler);
     }
 
@@ -38,7 +35,5 @@ public class CameraController : MonoBehaviour
         //arrow keys
         Vector3 cameraMove = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0) * CameraMoveSpeed;
         GetComponent<Rigidbody>().velocity = cameraMove;
-
-       
     }
 }

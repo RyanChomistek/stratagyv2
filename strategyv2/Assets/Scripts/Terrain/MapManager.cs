@@ -79,8 +79,8 @@ public class MapManager : MonoBehaviour
         if(CurrentlyDisplayingMapType == MapDisplays.TilesWithVision)
         {
             //show the players vision range
-            RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, PlayerVision);
-            OnMapRerender?.Invoke();
+            //RenderMapWithTilesAndVision(LocalPlayerController.Instance.GeneralDivision, PlayerVision);
+            //OnMapRerender?.Invoke();
         }
     }
 
@@ -256,7 +256,7 @@ public class MapManager : MonoBehaviour
         else
         {
             MeshGen.ConstructWaterMeshes(m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
-            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.HeightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, terrainTileLookup), "mesh time");
+            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.HeightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, MapGen.improvmentMap, terrainTileLookup), "mesh time");
         }
     }
 

@@ -13,7 +13,7 @@ public class MapCameraConfiner : MonoBehaviour
         var y = MapManager.Instance.map.GetUpperBound(1);
         mapSize = new Vector2(x, y);
         transform.position = mapSize / 2;
-        confines.size = mapSize + Vector2.one * 2;
+        //confines.size = mapSize + Vector2.one * 2;
         
     }
 }

@@ -25,7 +25,7 @@ public class LocalPlayerController : PlayerController {
 
     void Start () {
         Instance = this;
-        MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
+        //MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
         ZoneDisplayManager.Instance.RegisterZoneDisplayCallback(SelectZoneDisplay);
     }
 	

@@ -67,29 +67,6 @@ public class LakeGenerator
         }
 
         Debug.Log($"num iterations {numIterations}");
-
-
-        // TODO store this value so we can use it later when doing water meshes
-        List<HashSet<Vector2Int>> components = LayerMapFunctions.FindComponents(Terrain.Water, heightMap.GetUpperBound(0), ref baseTerrainMap);
-        float averageComponentSize = 0;
-
-        // flatten each water componenet to the level of its lowest point
-        foreach (var componet in components)
-        {
-            averageComponentSize += componet.Count;
-            float maxHeight = 10;
-            foreach (var pos in componet)
-            {
-                maxHeight = Mathf.Min(heightMap[pos.x, pos.y], maxHeight);
-            }
-
-            foreach (var pos in componet)
-            {
-                //heightMap[pos.x, pos.y] = maxHeight;
-            }
-        }
-
-        averageComponentSize /= components.Count();
     }
 
     public static void FloodTile<T>(int x, int y, T currentTerrain, T[,] map, float[,] heightMap, Vector2Int[] floodFillDirections, ref int numWaterFlooded)

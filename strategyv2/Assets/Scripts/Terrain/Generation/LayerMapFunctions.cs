@@ -1084,7 +1084,7 @@ public class LayerMapFunctions : MonoBehaviour
 
     public static void Normalize(ref float[,] arr)
     {
-        float min = 100000, max = -100000;
+        float min = float.MaxValue, max = float.MinValue;
 
         for (int x = 0; x <= arr.GetUpperBound(0); x++)
         {

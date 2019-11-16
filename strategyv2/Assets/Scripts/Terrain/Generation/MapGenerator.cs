@@ -10,14 +10,14 @@ using UnityEngine.Tilemaps;
 
 public class MapGenerator : MonoBehaviour
 {
-    public int mapSize;
-
     public List<MapLayerSettings> LayerSettings = new List<MapLayerSettings>();
 
+    [SerializeField]
     private MapData m_MapData;
 
-    public Terrain[,] terrainMap { get  { return m_MapData.terrainMap; } }
-    public Improvement[,] improvmentMap { get { return m_MapData.improvmentMap; } }
+    public int mapSize { get { return m_MapData.mapSize; } set { m_MapData.mapSize = value; } }
+    public Terrain[,] terrainMap { get  { return m_MapData.TerrainMap; } }
+    public Improvement[,] improvmentMap { get { return m_MapData.ImprovmentMap; } }
     public float[,] RawHeightMap { get { return m_MapData.RawHeightMap; } }
     public float[,] HeightMap { get { return m_MapData.HeightMap; } }
     public float[,] WaterMap { get { return m_MapData.WaterMap; } }
@@ -46,8 +46,8 @@ public class MapGenerator : MonoBehaviour
             return;
         }
 
-        m_MapData.terrainMap = new Terrain[mapSize, mapSize];
-        m_MapData.improvmentMap = new Improvement[mapSize, mapSize];
+        m_MapData.TerrainMap = new Terrain[mapSize, mapSize];
+        m_MapData.ImprovmentMap = new Improvement[mapSize, mapSize];
         m_MapData.HeightMap = new float[mapSize, mapSize];
         m_MapData.WaterMap = new float[mapSize, mapSize];
 
@@ -71,7 +71,7 @@ public class MapGenerator : MonoBehaviour
             var mapSizeWithBorder = HeightmapGen.mapSizeWithBorder;
             int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
             m_MapData.HeightMap[x, y] = HeightmapGen.HeightMap[borderedMapIndex];
-            m_MapData.terrainMap[x, y] = Terrain.Grass;
+            m_MapData.TerrainMap[x, y] = Terrain.Grass;
             m_MapData.WaterMap[x, y] = HeightmapGen.LakeMap[borderedMapIndex];
         }
 
@@ -117,12 +117,12 @@ public class MapGenerator : MonoBehaviour
 
             if (layerSetting.MapTile.Layer == MapLayer.Terrain)
             {
-                RunAlgorithmGeneric(ref m_MapData.terrainMap, layerSetting.terrain, ref m_MapData.terrainMap, ref m_MapData.improvmentMap, 
+                RunAlgorithmGeneric(ref m_MapData.TerrainMap, layerSetting.terrain, ref m_MapData.TerrainMap, ref m_MapData.ImprovmentMap, 
                     ref gradientMapInUse, ref m_MapData.WaterMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
             }
             else
             {
-                RunAlgorithmGeneric(ref m_MapData.improvmentMap, layerSetting.Improvement, ref m_MapData.terrainMap, ref m_MapData.improvmentMap,
+                RunAlgorithmGeneric(ref m_MapData.ImprovmentMap, layerSetting.Improvement, ref m_MapData.TerrainMap, ref m_MapData.ImprovmentMap,
                     ref gradientMapInUse, ref m_MapData.WaterMap, ref rand, terrainTileLookup, improvementTileLookup, layerSetting);
             }
 
@@ -131,9 +131,8 @@ public class MapGenerator : MonoBehaviour
         }
         
         FixImprovmentsOnWater();
-        //SmoothHeightMap();
-        //gradientMap = CalculateGradients(heightMap);
-        SaveMap();
+        LayerMapFunctions.LogAction(() => SaveMap(), "Save time");
+        
     }
 
     public void RunAlgorithmGeneric<T>(
@@ -202,13 +201,13 @@ public class MapGenerator : MonoBehaviour
     /// </summary>
     private void FixImprovmentsOnWater()
     {
-        for (int x = 0; x <= m_MapData.improvmentMap.GetUpperBound(0); x++)
+        for (int x = 0; x <= m_MapData.ImprovmentMap.GetUpperBound(0); x++)
         {
-            for (int y = 0; y <= m_MapData.improvmentMap.GetUpperBound(1); y++)
+            for (int y = 0; y <= m_MapData.ImprovmentMap.GetUpperBound(1); y++)
             {
-                if (m_MapData.terrainMap[x, y] == Terrain.Water && m_MapData.improvmentMap[x,y] != Improvement.Empty)
+                if (m_MapData.TerrainMap[x, y] == Terrain.Water && m_MapData.ImprovmentMap[x,y] != Improvement.Empty)
                 {
-                    m_MapData.terrainMap[x, y] = Terrain.Grass;
+                    m_MapData.TerrainMap[x, y] = Terrain.Grass;
                 }
             }
         }
@@ -227,11 +226,12 @@ public class MapGenerator : MonoBehaviour
 
     private void SaveMap()
     {
+        MapData clone = m_MapData.Clone();
         ThreadPool.QueueUserWorkItem(delegate (object state)
         {
             try
             {
-                var MapDataJson = JsonConvert.SerializeObject(m_MapData);
+                var MapDataJson = JsonConvert.SerializeObject(clone);
                 var sr = File.CreateText("Assets/Saves/MapDataJson.MapData");
                 sr.WriteLine(MapDataJson);
                 sr.Close();
@@ -290,6 +290,6 @@ public class MapGenerator : MonoBehaviour
 
     public void ClearMap()
     {
-        m_MapData.terrainMap = new Terrain[mapSize, mapSize];
+        m_MapData.TerrainMap = new Terrain[mapSize, mapSize];
     }
 }

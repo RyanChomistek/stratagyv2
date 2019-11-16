@@ -17,6 +17,7 @@ public class MeshGeneratorArgs
     public int resolutionScale = 1;
     public float Scale = 20;
     public float ElevationScale = 10;
+    public float WaterScale = .1f;
 }
 
 
@@ -52,7 +53,8 @@ public class TerrainMeshGenerator : MonoBehaviour
     }
 
     //TODO Block this into chuncks 
-    public void ConstructMesh(float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs, Terrain[,] map, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
+    public void ConstructMesh(float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs, Terrain[,] map,
+        Improvement[,] improvementMap, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
         Debug.Log(m_Terrain.terrainData.alphamapWidth + " " + m_Terrain.terrainData.alphamapHeight);
 
@@ -87,12 +89,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                 }
                 else
                 {
-                    float rockyness = 0;
-                    //if(heightMap[terrainMapPos.x, terrainMapPos.y] > .3f)
-                    {
-                        //rockyness = 0f + heightMap[terrainMapPos.x, terrainMapPos.y] + gradient.magnitude * 4;
-                        rockyness = gradient.magnitude * 10;
-                    }
+                    float rockyness = gradient.magnitude * 10;
 
                     alphaData[y, x, GRASS] = 1 - rockyness;
                     alphaData[y, x, WATER] = 0;
@@ -101,9 +98,59 @@ public class TerrainMeshGenerator : MonoBehaviour
             }
         }
 
-        // Add forests
+        ConstructTrees(tData, improvementMap, heightMap, gradientMap, otherArgs);
 
         tData.SetAlphamaps(0, 0, alphaData);
+    }
+
+    public void ConstructTrees(TerrainData tData, Improvement[,] improvementMap, float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs)
+    {
+        List<TreeInstance> trees = new List<TreeInstance>();
+        Vector3 tileSize = new Vector3(1 / (float)improvementMap.GetUpperBound(0), 0, 1 / (float)improvementMap.GetUpperBound(1));
+        float nudgeRadius = .5f;
+        float scaleNudgeBase = .2f;
+        for (int x = 0; x <= improvementMap.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= improvementMap.GetUpperBound(1); y++)
+            {
+                if(improvementMap[x,y] == Improvement.Forest && UnityEngine.Random.Range(0,4) == 1)
+                {
+                    // Move the tree a little so that we dont get a grid
+                    Vector3 nudge = 
+                        new Vector3( 
+                            UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.x,
+                            0, 
+                            UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.z);
+
+                    Vector3 treePos = 
+                        new Vector3(
+                            x / (float) improvementMap.GetUpperBound(0),
+                            heightMap[x,y],
+                            y / (float)improvementMap.GetUpperBound(1)) + nudge;
+
+                    TreeInstance tree = new TreeInstance();
+                    tree.color = Color.white;
+
+                    Vector3 scaleNudge =
+                        new Vector3(
+                            UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase),
+                            0,
+                            UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase));
+
+                    tree.heightScale = .5f + scaleNudge.x;
+                    tree.widthScale = .25f + scaleNudge.z;
+
+                    tree.lightmapColor = Color.white;
+                    tree.position = treePos;
+                    tree.prototypeIndex = 0;
+                    tree.widthScale = 1;
+                    trees.Add(tree);
+                }
+            }
+        }
+
+        Debug.Log("trees placed: " + trees.Count);
+        tData.treeInstances = trees.ToArray();
     }
 
     public void ConstructWaterMeshes(MeshGeneratorArgs meshArgs, float[,] heightMap, float[,] waterMap, Terrain[,] terrainTileMap)
@@ -118,15 +165,19 @@ public class TerrainMeshGenerator : MonoBehaviour
             components = LayerMapFunctions.FindComponents(Terrain.Water, heightMap.GetUpperBound(0), ref terrainTileMap);
         }, "create components time");
 
+        float[,] waterClone = waterMap.Clone() as float[,];
+
+        LayerMapFunctions.Normalize(ref waterClone);
+
         foreach(var componet in components)
         {
-            ConstructWaterMeshFromComponent(componet, meshArgs, ref heightMap, ref terrainTileMap);
+            ConstructWaterMeshFromComponent(componet, meshArgs, ref heightMap, waterClone, ref terrainTileMap);
         }
 
         Debug.Log($"{components.Count} unique water zones");
     }
 
-    public void ConstructWaterMeshFromComponent(HashSet<Vector2Int> componet, MeshGeneratorArgs meshArgs, ref float[,] heightMap, ref Terrain[,] terrainTileMap)
+    public void ConstructWaterMeshFromComponent(HashSet<Vector2Int> componet, MeshGeneratorArgs meshArgs, ref float[,] heightMap, float[,] waterMap, ref Terrain[,] terrainTileMap)
     {
         List<Vector3> verts = new List<Vector3>();
         Dictionary<Vector2Int, int> vertToIndexMap = new Dictionary<Vector2Int, int>();
@@ -139,11 +190,15 @@ public class TerrainMeshGenerator : MonoBehaviour
             Vector2Int.down,
             Vector2Int.left,
             Vector2Int.right,
-            //Vector2Int.up + Vector2Int.left,
-            //Vector2Int.up + Vector2Int.right,
-            //Vector2Int.down + Vector2Int.left,
-            //Vector2Int.down + Vector2Int.right,
         };
+
+        // Find minimum height
+        float minHeight = 100;
+
+        foreach (var index in componet)
+        {
+            minHeight = Mathf.Min(minHeight, heightMap[index.x, index.y]);
+        }
 
         foreach (var index in componet)
         {
@@ -159,13 +214,12 @@ public class TerrainMeshGenerator : MonoBehaviour
                     Vector2Int ortho = new Vector2Int(dir.y, dir.x);
 
                     // now we split because we have to handle positive and negative cases
-
                     Vector2Int pos = otherIndex + ortho;
                     if (componet.Contains(pos))
                     {
                         List<Vector2Int> points = new List<Vector2Int> { index, otherIndex, pos};
                         points = OrderVertsInClockWise(points);
-                        AddVerts(points, meshSize, meshArgs, verts, triangles, uvs, vertToIndexMap, heightMap, ref terrainTileMap);
+                        AddVerts(points, meshSize, meshArgs, verts, triangles, uvs, vertToIndexMap, heightMap, waterMap, minHeight, ref terrainTileMap);
                     }
 
                     Vector2Int neg = otherIndex - ortho;
@@ -173,9 +227,8 @@ public class TerrainMeshGenerator : MonoBehaviour
                     {
                         List<Vector2Int> points = new List<Vector2Int> { index, otherIndex, neg };
                         points = OrderVertsInClockWise(points);
-                        AddVerts(points, meshSize, meshArgs, verts, triangles, uvs, vertToIndexMap, heightMap, ref terrainTileMap);
+                        AddVerts(points, meshSize, meshArgs, verts, triangles, uvs, vertToIndexMap, heightMap, waterMap, minHeight, ref terrainTileMap);
                     }
-                    
                 }
             }
         }
@@ -197,7 +250,7 @@ public class TerrainMeshGenerator : MonoBehaviour
     }
 
     private void AddVerts(List<Vector2Int> vertsToAdd, int meshSize, MeshGeneratorArgs meshArgs, List<Vector3> verts, List<int> triangles,
-        List<Vector2> uvs, Dictionary<Vector2Int, int> vertToIndexMap, float[,] heightMap, ref Terrain[,] terrainTileMap)
+        List<Vector2> uvs, Dictionary<Vector2Int, int> vertToIndexMap, float[,] heightMap, float[,] waterMap, float minComponentHeight, ref Terrain[,] terrainTileMap)
     {
         foreach(var vert in vertsToAdd)
         {
@@ -210,15 +263,15 @@ public class TerrainMeshGenerator : MonoBehaviour
                 Vector2 uv = new Vector2(vert.x / (meshSize - 1f), vert.y / (meshSize - 1f));
                 Vector3 worldPos = new Vector3(uv.x, 0, uv.y) * m_Terrain.terrainData.bounds.max.x;
 
-                float height = heightMap[vert.x, vert.y];
+                float height = minComponentHeight; //heightMap[vert.x, vert.y];
 
                 height += .001f;
 
                 //if this vert is actually on water go a little below the land
                 if (terrainTileMap[vert.x, vert.y] == Terrain.Water)
                 {
-                    
-                    heightMap[vert.x, vert.y] -= .1f;
+                    //heightMap[vert.x, vert.y] -= .01f;
+                    heightMap[vert.x, vert.y] -= waterMap[vert.x, vert.y] * meshArgs.WaterScale;
                 }
 
                 worldPos += Vector3.up * height * (m_Terrain.terrainData.size.y);// m_Terrain.terrainData.bounds.max.y;
@@ -286,8 +339,6 @@ public class TerrainMeshGenerator : MonoBehaviour
         return orderedVerts;
     }
 
-    
-
     public float QuadLerp(float a, float b, float c, float d, float u, float v)
     {
         v = 1 - v;
@@ -329,34 +380,11 @@ public class TerrainMeshGenerator : MonoBehaviour
 
             Vector2 uv = rawPosition - rawIndex;
             float height = QuadLerp(heights[0], heights[1], heights[2], heights[3], uv.x, uv.y);
+
             // flip x and y for the terrain
             scaledMap[y, x] = height;
         });
 
-        //LayerMapFunctions.LogAction(() => LayerMapFunctions.SmoothMT(ref scaledMap, (int) (resolutionScale * resolutionScale)), "smooth time");
-
         return scaledMap;
     }
-
-    //void AssignMeshComponents()
-    //{
-    //    Transform meshHolder = new GameObject().transform;
-    //    meshHolder.transform.parent = transform;
-    //    meshHolder.transform.localPosition = Vector3.zero;
-    //    meshHolder.transform.localRotation = Quaternion.identity;
-        
-
-    //    // Ensure mesh renderer and filter components are assigned
-    //    if (!meshHolder.gameObject.GetComponent<MeshFilter>())
-    //    {
-    //        meshHolder.gameObject.AddComponent<MeshFilter>();
-    //    }
-    //    if (!meshHolder.GetComponent<MeshRenderer>())
-    //    {
-    //        meshHolder.gameObject.AddComponent<MeshRenderer>();
-    //    }
-
-    //    m_MeshRenderer = meshHolder.GetComponent<MeshRenderer>();
-    //    m_MeshFilter = meshHolder.GetComponent<MeshFilter>();
-    //}
 }
