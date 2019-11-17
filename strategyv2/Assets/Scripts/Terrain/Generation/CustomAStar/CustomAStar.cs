@@ -4,15 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-class Location
+class Location : Priority_Queue.GenericPriorityQueueNode<float>
 {
     public int Col;
     public int Row;
-    public float CombinedCost; // F
+    public float CombinedCost { get { return Priority; } set { Priority = value; } } // F
     public float CostFromStart; // G
     public float CostToGoal; // H
     public Location Parent;
     public Vector2Int Position {get { return new Vector2Int(Row, Col); } }
+
+    public Location()
+    {
+        CombinedCost = 0;
+    }
 
     public override bool Equals(object obj)
     {
@@ -47,11 +52,13 @@ class CustomAStar
         var start = new Location { Row = startPos.x, Col = startPos.y };
         var target = new Location { Row = targetPos.x, Col = targetPos.y };
 
-        var openList = new HashSet<Location>();
+        var openListFastStorage = new HashSet<Location>();
+        var openList = new Priority_Queue.GenericPriorityQueue<Location, float>(mapData.mapSize * mapData.mapSize);
         var closedList = new HashSet<Location>();
 
         // start by adding the original position to the open list
-        openList.Add(start);
+        openListFastStorage.Add(start);
+        openList.Enqueue(start, 0);
         int cnt = 0;
 
         System.TimeSpan totalTime;
@@ -80,16 +87,13 @@ class CustomAStar
             while (openList.Count > 0 && cnt < 100000)
             {
                 cnt++;
-                float lowest = -1;
-                // get the square with the lowest CombinedCost
-                lowest = openList.Min(l => l.CombinedCost);
-                current = openList.First(l => l.CombinedCost == lowest);
-            
+
+                // Get the minimum priority item
+                current = openList.Dequeue();
+                openListFastStorage.Remove(current);
+
                 // add the current square to the closed list
                 closedList.Add(current);
-
-                // remove it from the open list
-                openList.Remove(current);
 
                 bool isDestinationFound = false;
 
@@ -113,7 +117,7 @@ class CustomAStar
                         float CostFromStart_temp = current.CostFromStart + ComputeCostFromCurrentToAdjacent(current, adjacent, mapData, adjacentCostFunction);
 
                         // if it's not in the open list...
-                        if (!openList.Contains(adjacent))
+                        if (!openListFastStorage.Contains(adjacent))
                         {
                             // compute its score, set the parent
                             adjacent.CostFromStart = CostFromStart_temp;
@@ -122,7 +126,8 @@ class CustomAStar
                             adjacent.Parent = current;
 
                             // and add it to the open list
-                            openList.Add(adjacent);
+                            openList.Enqueue(adjacent, adjacent.CombinedCost);
+                            openListFastStorage.Add(adjacent);
                         }
                         else
                         {
@@ -146,7 +151,6 @@ class CustomAStar
         while (current != null)
         {
             path.Add(current.Position);
-            //Debug.Log(current.Position);
             current = current.Parent;
         }
 
@@ -205,7 +209,6 @@ class CustomAStar
     {
         float currHeight = mapData.HeightMap[current.Row, current.Col];
         float adjHeight = mapData.HeightMap[adjacent.Row, adjacent.Col];
-        //+ 
         return 1 + adjacentCostFunction(current.Position, adjacent.Position);
     }
 
