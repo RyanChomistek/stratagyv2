@@ -32,18 +32,23 @@ class Location
 
 class CustomAStar
 {
-    public static List<Vector2Int> AStar(MapData mapData, Vector2Int startPos, Vector2Int targetPos)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mapData"></param>
+    /// <param name="startPos"></param>
+    /// <param name="targetPos"></param>
+    /// <param name="adjacentCostFunction"> calculates the cost between two nodes</param>
+    /// <returns></returns>
+    public static List<Vector2Int> AStar(MapData mapData, Vector2Int startPos, Vector2Int targetPos, Func<Vector2Int, Vector2Int, float> adjacentCostFunction)
     {
         Location current = null;
-        //var start = new Location { Col = 0, Row = 0 };
-        //var target = new Location { Col = 60, Row = 25 };
 
         var start = new Location { Row = startPos.x, Col = startPos.y };
         var target = new Location { Row = targetPos.x, Col = targetPos.y };
 
         var openList = new HashSet<Location>();
         var closedList = new HashSet<Location>();
-        //float CurrentCostFromStart = 0;
 
         // start by adding the original position to the open list
         openList.Add(start);
@@ -97,20 +102,6 @@ class CustomAStar
                 Location[] adjacentSquares = null;
                 LayerMapFunctions.LogActionAggrigate(() => { adjacentSquares = GetWalkableAdjacentSquares(current.Col, current.Row, mapData, gradientAverage, gradientMin, gradientMax); }, ref getAdjacentSquaresTime);
                 
-                //g needs to get more complicated since we need to factor in elivation change
-
-                // Increment cost to account for distance
-                //CurrentCostFromStart++;
-
-                // Increment cost in relation to elevation change
-                //if(current.Parent != null)
-                //{
-                //    float prevHeight = mapData.HeightMap[current.Parent.Row, current.Parent.Col];
-                //    float currHeight = mapData.HeightMap[current.Row, current.Col];
-
-                //    CurrentCostFromStart += Mathf.Abs(currHeight - prevHeight) * 100;
-                //}
-                
                 LayerMapFunctions.LogActionAggrigate(() =>
                 {
                     foreach (var adjacent in adjacentSquares)
@@ -119,7 +110,7 @@ class CustomAStar
                         if (adjacent == null || closedList.Contains(adjacent))
                             continue;
 
-                        float CostFromStart_temp = current.CostFromStart + ComputeCostFromCurrentToAdjacent(current, adjacent, mapData);
+                        float CostFromStart_temp = current.CostFromStart + ComputeCostFromCurrentToAdjacent(current, adjacent, mapData, adjacentCostFunction);
 
                         // if it's not in the open list...
                         if (!openList.Contains(adjacent))
@@ -210,12 +201,12 @@ class CustomAStar
         return Math.Abs(targetX - x) + Math.Abs(targetY - y);
     }
 
-    static float ComputeCostFromCurrentToAdjacent(Location current, Location adjacent, MapData mapData)
+    static float ComputeCostFromCurrentToAdjacent(Location current, Location adjacent, MapData mapData, Func<Vector2Int, Vector2Int, float> adjacentCostFunction)
     {
         float currHeight = mapData.HeightMap[current.Row, current.Col];
         float adjHeight = mapData.HeightMap[adjacent.Row, adjacent.Col];
-
-        return 1 + Mathf.Abs(currHeight - adjHeight) * 100;
+        //+ 
+        return 1 + adjacentCostFunction(current.Position, adjacent.Position);
     }
 
     static void PrintSolution(MapData mapData, List<Vector2Int> path, Location start, Location target, Location current)

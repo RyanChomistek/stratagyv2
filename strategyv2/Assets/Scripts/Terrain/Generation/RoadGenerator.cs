@@ -141,7 +141,12 @@ public class RoadGenerator
     public static List<Vector2Int> FindPath(MapData mapData, Vector2Int start, Vector2Int end)
     {
         List<Vector2Int> path = null;
-        LayerMapFunctions.LogAction(() => { path = CustomAStar.AStar(mapData, start, end); }, "road path time");
+        LayerMapFunctions.LogAction(() => { path = CustomAStar.AStar(mapData, start, end,
+            (current, adjacent) => {
+                float currHeight = mapData.HeightMap[current.x, current.y];
+                float adjHeight = mapData.HeightMap[adjacent.x, adjacent.y];
+                return Mathf.Abs(currHeight - adjHeight) * 100;
+            }); }, "road path time");
         Debug.Log($"path size {path.Count}");
 
         return path;

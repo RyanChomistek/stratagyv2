@@ -7,11 +7,14 @@ public class CustomAStarTester : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        MapData mapdata = LoadTestMapData();
+        MapData mapData = LoadTestMapData();
         Vector2Int start = new Vector2Int(0, 0);
         Vector2Int target = new Vector2Int(61, 69);
         //Vector2Int target = new Vector2Int(25, 60);
-        LayerMapFunctions.LogAction(() => CustomAStar.AStar(mapdata, start, target), "road time"); 
+        LayerMapFunctions.LogAction(() => CustomAStar.AStar(mapData, start, target, 
+            (current, adjacent) => {
+                return 0;
+            }), "road time"); 
     }
 
     MapData LoadTestMapData()
