@@ -32,6 +32,18 @@ namespace UnityStandardAssets.Water
         private int m_OldRefractionTextureSize;
         private static bool s_InsideWater;
 
+        private Material m_instancedMaterial = null;
+        private Material InstancedMaterial {
+            get
+            {
+                if(m_instancedMaterial == null)
+                {
+                    m_instancedMaterial = GetComponent<Renderer>().sharedMaterial;
+                }
+
+                return m_instancedMaterial;
+            }
+        }
 
         // This is called when it's known that the object will be rendered by some
         // camera. We render reflections / refractions and do other updates here.
@@ -39,7 +51,7 @@ namespace UnityStandardAssets.Water
         // camera will just work!
         public void OnWillRenderObject()
         {
-            if (!enabled || !GetComponent<Renderer>() || !GetComponent<Renderer>().sharedMaterial ||
+            if (!enabled || !GetComponent<Renderer>() || !InstancedMaterial ||
                 !GetComponent<Renderer>().enabled)
             {
                 return;
@@ -112,7 +124,7 @@ namespace UnityStandardAssets.Water
                 reflectionCamera.Render();
                 reflectionCamera.transform.position = oldpos;
                 GL.invertCulling = oldCulling;
-                GetComponent<Renderer>().sharedMaterial.SetTexture("_ReflectionTex", m_ReflectionTexture);
+                InstancedMaterial.SetTexture("_ReflectionTex", m_ReflectionTexture);
             }
 
             // Render refraction
@@ -133,7 +145,7 @@ namespace UnityStandardAssets.Water
                 refractionCamera.transform.position = cam.transform.position;
                 refractionCamera.transform.rotation = cam.transform.rotation;
                 refractionCamera.Render();
-                GetComponent<Renderer>().sharedMaterial.SetTexture("_RefractionTex", m_RefractionTexture);
+                InstancedMaterial.SetTexture("_RefractionTex", m_RefractionTexture);
             }
 
             // Restore pixel light count
@@ -200,7 +212,7 @@ namespace UnityStandardAssets.Water
             {
                 return;
             }
-            Material mat = GetComponent<Renderer>().sharedMaterial;
+            Material mat = InstancedMaterial;
             if (!mat)
             {
                 return;
@@ -347,7 +359,7 @@ namespace UnityStandardAssets.Water
                 return WaterMode.Simple;
             }
 
-            Material mat = GetComponent<Renderer>().sharedMaterial;
+            Material mat = InstancedMaterial;
             if (!mat)
             {
                 return WaterMode.Simple;

@@ -206,11 +206,14 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         // Find minimum height
         float minHeight = 100;
-
+        float sumHeight = 0;
         foreach (var index in componet)
         {
             minHeight = Mathf.Min(minHeight, heightMap[index.x, index.y]);
+            sumHeight += heightMap[index.x, index.y];
         }
+
+        Debug.Log($"average componenet water height {sumHeight / componet.Count}");
 
         foreach (var index in componet)
         {
@@ -258,6 +261,9 @@ public class TerrainMeshGenerator : MonoBehaviour
         GameObject waterMesh = Instantiate(m_WaterMeshPrefab);
         m_WaterMeshes.Add(waterMesh);
         waterMesh.GetComponent<MeshFilter>().sharedMesh = mesh;
+
+        // Set the clip offset to the height of the water, make sure to scale by the terrain size
+        waterMesh.GetComponent<UnityStandardAssets.Water.Water>().clipPlaneOffset = (sumHeight / componet.Count) * (m_Terrain.terrainData.size.y);
         waterMesh.transform.SetParent(transform);
     }
 
@@ -286,7 +292,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                     heightMap[vert.x, vert.y] -= waterMap[vert.x, vert.y] * meshArgs.WaterScale;
                 }
 
-                worldPos += Vector3.up * height * (m_Terrain.terrainData.size.y);// m_Terrain.terrainData.bounds.max.y;
+                worldPos += Vector3.up * height * (m_Terrain.terrainData.size.y);
 
                 verts.Add(worldPos);
                 uvs.Add(uv);
