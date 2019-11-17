@@ -77,7 +77,7 @@ class CustomAStar
         Debug.Log($"average gradient {gradientAverage}, min {gradientMin}, max {gradientMax}");
 
         LayerMapFunctions.LogActionAggrigate(() => { 
-            while (openList.Count > 0 && cnt < 50000)
+            while (openList.Count > 0 && cnt < 100000)
             {
                 cnt++;
                 float lowest = -1;
@@ -152,7 +152,7 @@ class CustomAStar
 
         path.Reverse();
 
-        //Debug.Log($"cnt {cnt}");
+        Debug.Log($"astart iterations {cnt}");
         //Debug.Log($"time total  : {totalTime}");
         //Debug.Log($"time adjacentSquares  : {getAdjacentSquaresTime} {getAdjacentSquaresTime.Ticks / (double)totalTime.Ticks}");
         //Debug.Log($"time handleAdjacentSquares  : {handleAdjacentSquaresTime} {handleAdjacentSquaresTime.Ticks / (double)totalTime.Ticks}");

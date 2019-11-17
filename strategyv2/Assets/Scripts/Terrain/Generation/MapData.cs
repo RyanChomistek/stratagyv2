@@ -24,6 +24,24 @@ public class MapData
     [SerializeField]
     public Vector2[,] LayeredGradientMap;
 
+    [NonSerialized]
+    private List<HashSet<Vector2Int>> m_LandComponents = null;
+    public List<HashSet<Vector2Int>> LandComponents {
+        get
+        {
+            if(m_LandComponents == null)
+            {
+                m_LandComponents = LayerMapFunctions.FindComponents(Terrain.Grass, mapSize, 0, ref TerrainMap);
+            }
+
+            return m_LandComponents;
+        }
+        set
+        {
+            m_LandComponents = value;
+        }
+    }
+
     public MapData Clone()
     {
         MapData other = new MapData

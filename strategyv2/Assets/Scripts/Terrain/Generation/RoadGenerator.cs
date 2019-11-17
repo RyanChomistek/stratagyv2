@@ -37,17 +37,15 @@ public class RoadGenerator
         bool CheckForBlockers,
         Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
-        FindStartAndDir(map, rand, out Vector2Int start, out Vector2 startDir, out Vector2Int end);
+        bool startFound = FindStartAndDir(map, mapData, rand, out Vector2Int start, out Vector2Int end);
 
-        Debug.Log($"start {start}, dir {startDir}, end {end}");
+        // theres the possibility that theres no land mass big enough to support, in this case abort
+        if(!startFound)
+        {
+            return map;
+        }
 
-        float startHeight = mapData.HeightMap[start.x, start.y];
-
-        Vector2Int gridPosition = start;
-        Vector2 realPosition = start;
-        Vector2 dir = startDir;
-        float maxSteps = map.GetUpperBound(0) * map.GetUpperBound(0);
-        int numSteps = 0;
+        
 
         List<Vector2Int> path = FindPath(mapData, start, end);
 
@@ -57,85 +55,7 @@ public class RoadGenerator
             SetTiles(map, mapData, path, currentTerrain, width);
         }
 
-        #region old path
-
-        //while (LayerMapFunctions.InBounds(map, gridPosition) && numSteps < maxSteps)
-        //{
-        //    numSteps++;
-        //    Vector2 tangent = Vector2.Perpendicular(dir).normalized;
-
-        //    //check if any blockers ahead of us are impassible
-        //    bool isBlocked = false;
-        //    int lookAheadTiles = 5;
-        //    for (int i = 2; i < lookAheadTiles; i++)
-        //    {
-        //        Vector2 nextMoveExtended = (realPosition + dir.normalized * i);
-        //        Vector2Int nextMoveExtendedRounded = new Vector2Int(Mathf.RoundToInt(nextMoveExtended.x), Mathf.RoundToInt(nextMoveExtended.y));
-        //        if (LayerMapFunctions.InBounds(mapData.TerrainMap, nextMoveExtendedRounded) &&
-        //        !terrainTileLookup[mapData.TerrainMap[nextMoveExtendedRounded.x, nextMoveExtendedRounded.y]].Improvable)
-        //        {
-        //            isBlocked = true;
-        //        }
-        //    }
-
-        //    if (isBlocked)
-        //    {
-        //        var tangentSign = rand.Next(2) == 0 ? -1 : 1;
-        //        //if we cant go farther take a turn
-        //        dir = Vector2.MoveTowards(dir, tangent * tangentSign, .1f);
-
-        //        continue;
-        //    }
-            
-        //    pathHistory.Add(new PathElement()
-        //    {
-        //        Position = realPosition,
-        //        Direction = dir,
-        //        Tangent = tangent
-        //    });
-
-        //    Vector2 nextMove = (realPosition + dir);
-
-        //    //add in a random amound of deveation from dir so that its more curvy
-        //    Vector2Int nextMoveRounded = new Vector2Int(Mathf.RoundToInt(nextMove.x), Mathf.RoundToInt(nextMove.y));
-        //    Vector2Int delta = nextMoveRounded - gridPosition;
-
-        //    //dont go diagonally, only keep one axis
-        //    //if (System.Math.Abs(delta.x) == System.Math.Abs(delta.y))
-        //    //{
-        //    //    var keepxOry = rand.Next(2);
-        //    //    if (keepxOry == 1)
-        //    //    {
-        //    //        delta = new Vector2Int(delta.x, 0);
-        //    //        nextMove = realPosition + new Vector2(dir.x, 0);
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        delta = new Vector2Int(0, delta.y);
-        //    //        nextMove = realPosition + new Vector2(0, dir.y);
-        //    //    }
-        //    //}
-
-        //    //dir += new Vector2((float)rand.NextDouble() - .5f, (float)rand.NextDouble() - .5f) * .01f;
-        //    //dir = dir.normalized / 8;
-
-        //    var directionSign = rand.Next(2) == 0 ? -1 : 1;
-        //    //if we cant go farther take a turn
-        //    //dir = Vector2.MoveTowards(dir, tangent * directionSign, .008f);
-
-        //    gridPosition = gridPosition + delta;
-        //    realPosition = nextMove;
-        //}
-
-        #endregion old path
-
-        
         return map;
-    }
-
-    static int ComputeHScore(Vector2Int pos, Vector2Int targetPos)
-    {
-        return Mathf.Abs(targetPos.x - pos.x) + Mathf.Abs(targetPos.y - pos.y);
     }
 
     public static List<Vector2Int> FindPath(MapData mapData, Vector2Int start, Vector2Int end)
@@ -143,6 +63,11 @@ public class RoadGenerator
         List<Vector2Int> path = null;
         LayerMapFunctions.LogAction(() => { path = CustomAStar.AStar(mapData, start, end,
             (current, adjacent) => {
+                if(mapData.ImprovmentMap[adjacent.x, adjacent.y] == Improvement.Road)
+                {
+                    return 0;
+                }
+
                 float currHeight = mapData.HeightMap[current.x, current.y];
                 float adjHeight = mapData.HeightMap[adjacent.x, adjacent.y];
                 return Mathf.Abs(currHeight - adjHeight) * 100;
@@ -152,72 +77,58 @@ public class RoadGenerator
         return path;
     }
 
-    public static void FindStartAndDir<T>(T[,] map,
+    public static bool FindStartAndDir<T>(T[,] map,
+        MapData mapData,
         System.Random rand,
         out Vector2Int start,
-        out Vector2 dir,
         out Vector2Int end)
     {
-        //start on an edge
-        var startOnXOrY = rand.Next(2);
-        var startAtBeginingOrEnd = rand.Next(2);
-        start = new Vector2Int();
-        if (startOnXOrY == 1)
+        List<HashSet<Vector2Int>> landComponents = new List<HashSet<Vector2Int>>(mapData.LandComponents);
+
+        //remove all small components
+        landComponents = landComponents.Where(x => x.Count > 200).ToList();
+
+        if(landComponents.Count == 0)
         {
-            if (startAtBeginingOrEnd == 1)
-                start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), 0);
-            else
-                start = new Vector2Int(Random.Range(0, map.GetUpperBound(0)), map.GetUpperBound(1));
-        }
-        else
-        {
-            if (startAtBeginingOrEnd == 1)
-                start = new Vector2Int(0, Random.Range(0, map.GetUpperBound(1)));
-            else
-                start = new Vector2Int(map.GetUpperBound(0), Random.Range(0, map.GetUpperBound(1)));
+            start = Vector2Int.zero;
+            end = Vector2Int.zero;
+            return false;
         }
 
-        //pick a random point in the middle to go through
-        Vector2Int mid = new Vector2Int(map.GetUpperBound(0) / 2, map.GetUpperBound(1) / 2);
+        // Pick a random component
+        HashSet<Vector2Int> component = landComponents[rand.Next(landComponents.Count)];
 
-        int midRadiusX = map.GetUpperBound(0) / 2;
-        int midRadiusY = map.GetUpperBound(1) / 2;
-        mid += new Vector2Int(rand.Next(-midRadiusX, midRadiusX),
-            rand.Next(-midRadiusY, midRadiusY));
+        // Get the edges of the component
+        HashSet<Vector2Int> edges = LayerMapFunctions.FindEdgesOfComponent(component);
 
-        dir = mid - start;
+        // pick a random node on the edge
+        start = edges.ElementAt(rand.Next(edges.Count));
 
-        //if we picked to start in the middle just pick a direction
-        if (dir == Vector2.zero)
+        // Find average distance of every other edge to our start
+        float sumDistance = 0;
+        foreach(var edge in edges)
         {
-            var directions = new List<Vector2Int>(){ new Vector2Int(1, 1), new Vector2Int(1, -1),
-                                                 new Vector2Int(-1, 1), new Vector2Int(-1, -1),
-                                                 new Vector2Int(0, 1), new Vector2Int(1, 0) ,
-                                                 new Vector2Int(0, -1) , new Vector2Int(-1, 0) };
-            var randIndex = rand.Next(directions.Count);
-            dir = directions[randIndex];
-        }
-        else
-        {
-            dir = dir.normalized;
+            sumDistance += (edge - start).magnitude;
         }
 
-        end = mid;
-        Vector2 realPos = new Vector2(end.x, end.y);
-        while(LayerMapFunctions.InBounds(map, end))
-        {
-            realPos += dir;
-            Vector2Int newEnd = LayerMapFunctions.RoundVector(realPos);
+        float averageDistance = sumDistance / edges.Count;
+        end = start;
 
-            if (LayerMapFunctions.InBounds(map, newEnd))
-            {
-                end = newEnd;
-            }
-            else
+        // Pick a random other one thats reasonably far away from the picked one
+        while (edges.Count != 0)
+        {
+            end = edges.ElementAt(rand.Next(edges.Count));
+            edges.Remove(end);
+
+            if((end - start).magnitude > averageDistance)
             {
                 break;
             }
         }
+
+        Debug.Log($"{(end - start).magnitude}, {averageDistance} | start {start} {mapData.TerrainMap[start.x, start.y]}, end {end} {mapData.TerrainMap[end.x, end.y]}");
+
+        return true;
     }
 
     public static void SetTiles<T>(T[,] map,
@@ -227,7 +138,7 @@ public class RoadGenerator
         int width)
     {
         Vector2 dir = Vector2.zero;
-        //foreach (Vector2Int pos in path)
+
         for(int index = 0; index < path.Count; index++)
         {
             Vector2Int pos = path[index];
@@ -264,7 +175,6 @@ public class RoadGenerator
 
                 realStep += dir * .1f;
                 delta = pos - realStep;
-
             }
         }
     }

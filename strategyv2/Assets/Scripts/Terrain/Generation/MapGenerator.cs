@@ -49,6 +49,7 @@ public class MapGenerator : MonoBehaviour
         m_MapData.ImprovmentMap = new Improvement[mapSize, mapSize];
         m_MapData.HeightMap = new float[mapSize, mapSize];
         m_MapData.WaterMap = new float[mapSize, mapSize];
+        m_MapData.LandComponents = null;
 
         float seed;
         seed = System.DateTime.Now.Millisecond;

@@ -174,7 +174,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         List<HashSet<Vector2Int>> components = null;
         LayerMapFunctions.LogAction(() => {
-            components = LayerMapFunctions.FindComponents(Terrain.Water, heightMap.GetUpperBound(0), ref terrainTileMap);
+            components = LayerMapFunctions.FindComponents(Terrain.Water, heightMap.GetUpperBound(0), 2, ref terrainTileMap);
         }, "create components time");
 
         float[,] waterClone = waterMap.Clone() as float[,];

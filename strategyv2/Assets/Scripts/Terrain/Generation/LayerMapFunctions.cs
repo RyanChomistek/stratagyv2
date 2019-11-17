@@ -405,7 +405,37 @@ public class LayerMapFunctions : MonoBehaviour
         return RoundVector(centroid) + min;
     }
 
-    public static List<HashSet<Vector2Int>> FindComponents(Terrain terrain, int mapSize, ref Terrain[,] terrainTileMap)
+    /// <summary>
+    /// finds the edge of a component O(N)
+    /// </summary>
+    /// <param name="component"></param>
+    /// <returns></returns>
+    public static HashSet<Vector2Int> FindEdgesOfComponent(HashSet<Vector2Int> component)
+    {
+        HashSet<Vector2Int> edges = new HashSet<Vector2Int>();
+
+        Vector2Int[] adjacentDirections = {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right,
+        };
+
+        foreach (var node in component)
+        {
+            foreach(Vector2Int dir in adjacentDirections)
+            {
+                if(!component.Contains(node + dir))
+                {
+                    edges.Add(node);
+                }
+            }
+        }
+
+        return edges;
+    }
+
+    public static List<HashSet<Vector2Int>> FindComponents(Terrain terrain, int mapSize, int bufferWidth, ref Terrain[,] terrainTileMap)
     {
         int[,] componentMap = new int[mapSize, mapSize];
 
@@ -434,7 +464,7 @@ public class LayerMapFunctions : MonoBehaviour
                         new Vector2Int(x, y),
                         componentCounter,
                         floodFillDirections,
-                        ref componentMap,
+                        bufferWidth,
                         ref terrainTileMap);
 
                     components.Add(componet);
@@ -453,7 +483,7 @@ public class LayerMapFunctions : MonoBehaviour
         Vector2Int startPos,
         int componentNumber,
         Vector2Int[] floodFillDirections,
-        ref int[,] waterComponentMap,
+        int bufferWidth,
         ref Terrain[,] terrainTileMap)
     {
         HashSet<Vector2Int> componet = new HashSet<Vector2Int>();
@@ -461,44 +491,11 @@ public class LayerMapFunctions : MonoBehaviour
         Stack<Vector2Int> cellsToBeProcessed = new Stack<Vector2Int>();
         cellsToBeProcessed.Push(startPos);
 
-        while (cellsToBeProcessed.Count > 0)
+        List<Vector2Int> adjacentDirections = new List<Vector2Int>();
+
+        if(bufferWidth > 0)
         {
-            Vector2Int currPos = cellsToBeProcessed.Pop();
-            componet.Add(currPos);
-            componentMap[currPos.x, currPos.y] = componentNumber;
-
-            foreach (var dir in floodFillDirections)
-            {
-                Vector2Int newPos = currPos + dir;
-                if (IsUnmarkedTile(terrain, newPos, ref waterComponentMap, ref terrainTileMap))
-                {
-                    cellsToBeProcessed.Push(newPos);
-                }
-            }
-        }
-
-        return componet;
-    }
-
-    private static bool IsUnmarkedTile( 
-        Terrain terrain,
-        Vector2Int Pos,
-        ref int[,] componentMap,
-        ref Terrain[,] terrainTileMap)
-    {
-        bool inBounds = LayerMapFunctions.InBounds(componentMap, Pos);
-        if (inBounds && componentMap[Pos.x, Pos.y] == 0)
-        {
-            bool isWaterTile = terrainTileMap[Pos.x, Pos.y] == Terrain.Water;
-
-            if (isWaterTile)
-            {
-                return true;
-            }
-            else
-            {
-                // check adjacent tiles
-                Vector2Int[] adjacentDirections = {
+            adjacentDirections = new List<Vector2Int>() {
                     Vector2Int.zero,
                     Vector2Int.up,
                     Vector2Int.down,
@@ -510,15 +507,73 @@ public class LayerMapFunctions : MonoBehaviour
                     Vector2Int.down + Vector2Int.right,
                 };
 
+            for (int i = 0; i < bufferWidth - 1; i++)
+            {
+                List<Vector2Int> temp_adjacentDirections = new List<Vector2Int>();
+                foreach (var dir in adjacentDirections)
+                {
+                    temp_adjacentDirections.Add(dir);
+                    foreach (var dir2 in adjacentDirections)
+                    {
+                        temp_adjacentDirections.Add(dir + dir2);
+                    }
+                }
+            }
+        }
+
+        while (cellsToBeProcessed.Count > 0)
+        {
+            Vector2Int currPos = cellsToBeProcessed.Pop();
+            componet.Add(currPos);
+            componentMap[currPos.x, currPos.y] = componentNumber;
+
+            foreach (var dir in floodFillDirections)
+            {
+                Vector2Int newPos = currPos + dir;
+                if (IsUnmarkedTile(terrain, newPos, adjacentDirections, ref componentMap, ref terrainTileMap))
+                {
+                    cellsToBeProcessed.Push(newPos);
+                }
+            }
+        }
+
+        return componet;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="terrain"></param>
+    /// <param name="Pos"></param>
+    /// <param name="bufferWidth"> if this is greater than 0 a buffer zone around the components will be included </param>
+    /// <param name="componentMap"></param>
+    /// <param name="terrainTileMap"></param>
+    /// <returns></returns>
+    private static bool IsUnmarkedTile( 
+        Terrain terrain,
+        Vector2Int Pos,
+        List<Vector2Int> adjacentDirections,
+        ref int[,] componentMap,
+        ref Terrain[,] terrainTileMap)
+    {
+        bool inBounds = LayerMapFunctions.InBounds(componentMap, Pos);
+        if (inBounds && componentMap[Pos.x, Pos.y] == 0)
+        {
+            bool isCorrectTileType = terrainTileMap[Pos.x, Pos.y] == terrain;
+
+            if (isCorrectTileType)
+            {
+                return true;
+            }
+            else
+            {
+                // check adjacent tiles
                 foreach (var adj in adjacentDirections)
                 {
-                    foreach (var adj2 in adjacentDirections)
+                    Vector2Int adjacentPos = new Vector2Int(Pos.x + adj.x, Pos.y + adj.y);
+                    if (LayerMapFunctions.InBounds(componentMap, adjacentPos) && terrainTileMap[adjacentPos.x, adjacentPos.y] == terrain)
                     {
-                        Vector2Int adjacentPos = new Vector2Int(Pos.x + adj.x + adj2.x, Pos.y + adj.y + adj2.y);
-                        if (LayerMapFunctions.InBounds(componentMap, adjacentPos) && terrainTileMap[adjacentPos.x, adjacentPos.y] == terrain)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
