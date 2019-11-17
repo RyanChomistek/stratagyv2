@@ -341,6 +341,7 @@ public class MapManager : MonoBehaviour
         graphs.ForEach(x => data.RemoveGraph(x));
         PointGraph graph = data.AddGraph(typeof(PointGraph)) as PointGraph;
         AstarPath.active.Scan(graph);
+
         // Make sure we only modify the graph when all pathfinding threads are paused
         AstarPath.active.AddWorkItem(new AstarWorkItem(ctx => {
             //create the graph

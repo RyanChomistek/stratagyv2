@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [System.Serializable]
@@ -37,5 +39,19 @@ public class MapData
         };
 
         return other;
+    }
+
+    public static MapData LoadMapData(string fileName)
+    {
+        var sr = File.ReadAllText($"Assets/Saves/{fileName}");
+        return JsonConvert.DeserializeObject<MapData>(sr);
+    }
+
+    public void SaveMapData(string fileName)
+    {
+        var MapDataJson = JsonConvert.SerializeObject(this);
+        var sr = File.CreateText($"Assets/Saves/{fileName}");
+        sr.WriteLine(MapDataJson);
+        sr.Close();
     }
 }

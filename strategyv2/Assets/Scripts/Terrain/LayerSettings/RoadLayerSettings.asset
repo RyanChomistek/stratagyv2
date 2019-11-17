@@ -20,7 +20,7 @@ MonoBehaviour:
   randomSeed: 1
   seed: 651651
   iterations: 1
-  radius: 2
+  radius: 1
   MapTile: {fileID: 11400000, guid: b9756f42f5795b54eabcc8c83f6340cb, type: 2}
   IsEnabled: 1
   PerlinNoiseScale: 2.5

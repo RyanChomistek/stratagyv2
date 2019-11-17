@@ -85,7 +85,7 @@ public class MapGenerator : MonoBehaviour
             m_MapData.LayeredGradientMap = CalculateGradients(m_MapData.HeightMap);
         }
         , "other gen times");
-        
+
         foreach (MapLayerSettings layerSetting in LayerSettings)
         {
             if (!layerSetting.IsEnabled)
@@ -155,7 +155,7 @@ public class MapGenerator : MonoBehaviour
                     currentMap = LayerMapFunctions.GenerateArray(mapSize, mapSize, currentTileValue);
                     break;
                 case LayerFillAlgorithm.RandomWalk:
-                    currentMap = RoadGenerator.GenerateRoad(ref currentMap, ref terrainMap, ref m_MapData.HeightMap, rand, currentTileValue,
+                    currentMap = RoadGenerator.GenerateRoad(ref currentMap, m_MapData, rand, currentTileValue,
                         layerSetting.radius, false, terrainTileLookup);
                     break;
                 case LayerFillAlgorithm.Square:
@@ -231,10 +231,7 @@ public class MapGenerator : MonoBehaviour
         {
             try
             {
-                var MapDataJson = JsonConvert.SerializeObject(clone);
-                var sr = File.CreateText("Assets/Saves/MapDataJson.MapData");
-                sr.WriteLine(MapDataJson);
-                sr.Close();
+                clone.SaveMapData("MapDataJson.MapData");
             }
             finally
             {
@@ -246,8 +243,7 @@ public class MapGenerator : MonoBehaviour
 
     private void LoadMap()
     {
-        var sr = File.ReadAllText("Assets/Saves/MapDataJson.MapData");
-        m_MapData = JsonConvert.DeserializeObject<MapData>(sr);
+        m_MapData = MapData.LoadMapData("MapDataJson.MapData");
     }
 
     private void LayerHeightMap(int numZLayers)
@@ -261,7 +257,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private Vector2[,] CalculateGradients(float[,] arr)
+    public static Vector2[,] CalculateGradients(float[,] arr)
     {
         var gradientMap = new Vector2[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
         //loop through every tile
