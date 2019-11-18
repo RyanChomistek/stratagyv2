@@ -45,8 +45,6 @@ public class RoadGenerator
             return map;
         }
 
-        
-
         List<Vector2Int> path = FindPath(mapData, start, end);
 
         // make sure we actually found a good path
@@ -54,6 +52,14 @@ public class RoadGenerator
         {
             SetTiles(map, mapData, path, currentTerrain, width);
         }
+
+        List<Vector3> path3D = path.Select(point => 
+        new Vector3(
+            (point.x - 0f) / (float) mapData.mapSize,
+            mapData.HeightMap[point.x, point.y],
+            (point.y - 0f) / (float)mapData.mapSize)).ToList();
+
+        mapData.RoadPaths.Add(path3D);
 
         return map;
     }
@@ -163,15 +169,15 @@ public class RoadGenerator
 
                 map[stepRounded.x, stepRounded.y] = currentTerrain;
 
-                for (int i = -width; i <= width; i++)
-                {
-                    Vector2 step = (realStep + tangent * i);
-                    var tangentStep = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
-                    if (LayerMapFunctions.InBounds(map, tangentStep))
-                    {
-                        map[tangentStep.x, tangentStep.y] = currentTerrain;
-                    }
-                }
+                //for (int i = -width; i <= width; i++)
+                //{
+                //    Vector2 step = (realStep + tangent * i);
+                //    var tangentStep = new Vector2Int(Mathf.RoundToInt(step.x), Mathf.RoundToInt(step.y));
+                //    if (LayerMapFunctions.InBounds(map, tangentStep))
+                //    {
+                //        map[tangentStep.x, tangentStep.y] = currentTerrain;
+                //    }
+                //}
 
                 realStep += dir * .1f;
                 delta = pos - realStep;

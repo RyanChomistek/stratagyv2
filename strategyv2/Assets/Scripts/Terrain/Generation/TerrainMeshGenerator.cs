@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PathCreation;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -46,6 +47,11 @@ public class TerrainMeshGenerator : MonoBehaviour
     [SerializeField]
     private List<GameObject> m_WaterMeshes = new List<GameObject>();
     #endregion Water Meshes
+
+    #region Road Mesh
+    public PathCreator m_PathCreatorPrefab;
+    private List<PathCreator> m_PathCreators = new List<PathCreator>();
+    #endregion Road Mesh
 
     void Awake()
     {
@@ -111,8 +117,46 @@ public class TerrainMeshGenerator : MonoBehaviour
         }
 
         ConstructTrees(tData, improvementMap, heightMap, gradientMap, otherArgs);
-
         tData.SetAlphamaps(0, 0, alphaData);
+    }
+
+    public void ConstructRoadMeshes(MapData mapdata)
+    {
+        TerrainData tData = m_Terrain.terrainData;
+        float alphaMapScale = tData.alphamapWidth / (float)mapdata.mapSize;
+
+        m_PathCreators.ForEach(x =>
+        {
+            var GO = x.gameObject;
+            x.GetComponent<RoadMeshCreator>().OnDestroy();
+            DestroyImmediate(x.GetComponent<RoadMeshCreator>());
+            DestroyImmediate(GO);
+            });
+
+
+        m_PathCreators.Clear();
+
+        
+        List<List<Vector3>> scaledPaths = new List<List<Vector3>>();
+
+        foreach (var path in mapdata.RoadPaths)
+        {
+            // Scale paths to that of the terrain
+            List<Vector3> scaledPath = new List<Vector3>();
+            foreach(var point in path)
+            {
+                scaledPath.Add(new Vector3(
+                            point.x * m_Terrain.terrainData.bounds.max.x,
+                            point.y * m_Terrain.terrainData.size.y,
+                            point.z * m_Terrain.terrainData.bounds.max.z));
+            }
+
+            PathCreator pathCreator = Instantiate(m_PathCreatorPrefab);
+            pathCreator.bezierPath = new BezierPath(scaledPath, false, PathSpace.xyz);
+            pathCreator.transform.SetParent(transform);
+            pathCreator.GetComponent<RoadMeshCreator>().TriggerUpdate();
+            m_PathCreators.Add(pathCreator);
+        }
     }
 
     public void ConstructTrees(TerrainData tData, Improvement[,] improvementMap, float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs)

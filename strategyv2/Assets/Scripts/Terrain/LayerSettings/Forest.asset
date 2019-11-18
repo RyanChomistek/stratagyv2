@@ -22,9 +22,9 @@ MonoBehaviour:
   iterations: 1
   radius: 4
   MapTile: {fileID: 11400000, guid: 513dd5d0f5d9bab4c8d00262796ed357, type: 2}
-  IsEnabled: 1
+  IsEnabled: 0
   PerlinNoiseScale: 2.5
-  PerlinNoiseThreshold: 0.6
+  PerlinNoiseThreshold: 0.5
   MinHeight: 0
   MaxHeight: 0
   MinStartHeight: 0

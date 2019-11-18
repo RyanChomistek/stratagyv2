@@ -24,6 +24,7 @@ public class MapData
     [SerializeField]
     public Vector2[,] LayeredGradientMap;
 
+    // Cached componets
     [NonSerialized]
     private List<HashSet<Vector2Int>> m_LandComponents = null;
     public List<HashSet<Vector2Int>> LandComponents {
@@ -42,6 +43,14 @@ public class MapData
         }
     }
 
+    public List<List<Vector3>> RoadPaths = new List<List<Vector3>>();
+
+    public void Clear()
+    {
+        m_LandComponents = null;
+        RoadPaths = new List<List<Vector3>>();
+    }
+
     public MapData Clone()
     {
         MapData other = new MapData
@@ -49,7 +58,6 @@ public class MapData
             mapSize = mapSize,
             TerrainMap = TerrainMap.Clone() as Terrain[,],
             ImprovmentMap = ImprovmentMap.Clone() as Improvement[,],
-            //RawHeightMap = RawHeightMap.Clone() as float[,],
             HeightMap = HeightMap.Clone() as float[,],
             WaterMap = WaterMap.Clone() as float[,],
             GradientMap = GradientMap.Clone() as Vector2[,],

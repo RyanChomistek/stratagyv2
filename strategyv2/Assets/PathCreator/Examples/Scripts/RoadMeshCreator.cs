@@ -22,6 +22,14 @@ namespace PathCreation.Examples {
         MeshRenderer meshRenderer;
         Mesh mesh;
 
+        protected override void OnDestroy()
+        {
+            if (meshHolder != null)
+            {
+                DestroyImmediate(meshHolder);
+            }
+        }
+
         protected override void PathUpdated () {
             if (pathCreator != null) {
                 AssignMeshComponents ();
@@ -122,6 +130,7 @@ namespace PathCreation.Examples {
 
             if (meshHolder == null) {
                 meshHolder = new GameObject ("Road Mesh Holder");
+                meshHolder.transform.SetParent(transform.parent);
             }
 
             meshHolder.transform.rotation = Quaternion.identity;

@@ -13,7 +13,7 @@ public class MapGenerator : MonoBehaviour
     public List<MapLayerSettings> LayerSettings = new List<MapLayerSettings>();
 
     [SerializeField]
-    private MapData m_MapData;
+    public MapData m_MapData;
 
     public int mapSize { get { return m_MapData.mapSize; } set { m_MapData.mapSize = value; } }
     public Terrain[,] terrainMap { get  { return m_MapData.TerrainMap; } }
@@ -44,6 +44,8 @@ public class MapGenerator : MonoBehaviour
             LayerMapFunctions.LogAction(() => LoadMap(), "Load Map Time");
             return;
         }
+
+        m_MapData.Clear();
 
         m_MapData.TerrainMap = new Terrain[mapSize, mapSize];
         m_MapData.ImprovmentMap = new Improvement[mapSize, mapSize];
