@@ -84,7 +84,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         {
             for (int x = 0; x < tData.alphamapWidth; x++)
             {
-                Vector2Int terrainMapPos = new Vector2Int((int)(x / alphaMapScale), (int)(y / alphaMapScale));
+                Vector2Int terrainMapPos = new Vector2Int(Mathf.RoundToInt(x / alphaMapScale), Mathf.RoundToInt(y / alphaMapScale));
                 Terrain terrain = map[terrainMapPos.x, terrainMapPos.y];
                 Improvement improvement = improvementMap[terrainMapPos.x, terrainMapPos.y];
                 Vector2 gradient = gradientMap[terrainMapPos.x, terrainMapPos.y];
@@ -127,10 +127,13 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         m_PathCreators.ForEach(x =>
         {
-            var GO = x.gameObject;
-            x.GetComponent<RoadMeshCreator>().OnDestroy();
-            DestroyImmediate(x.GetComponent<RoadMeshCreator>());
-            DestroyImmediate(GO);
+            if(x != null)
+            {
+                var GO = x.gameObject;
+                x.GetComponent<RoadMeshCreator>().OnDestroy();
+                DestroyImmediate(x.GetComponent<RoadMeshCreator>());
+                DestroyImmediate(GO);
+            }
             });
 
 
@@ -145,10 +148,12 @@ public class TerrainMeshGenerator : MonoBehaviour
             List<Vector3> scaledPath = new List<Vector3>();
             foreach(var point in path)
             {
+                Vector2 scaledPoint = ConvertTilePositionToWorldPosition(new Vector2(point.x, point.z), mapdata.mapSize);
+
                 scaledPath.Add(new Vector3(
-                            point.x * m_Terrain.terrainData.bounds.max.x,
+                            scaledPoint.x,
                             point.y * m_Terrain.terrainData.size.y,
-                            point.z * m_Terrain.terrainData.bounds.max.z));
+                            scaledPoint.y));
             }
 
             PathCreator pathCreator = Instantiate(m_PathCreatorPrefab);
@@ -157,6 +162,13 @@ public class TerrainMeshGenerator : MonoBehaviour
             pathCreator.GetComponent<RoadMeshCreator>().TriggerUpdate();
             m_PathCreators.Add(pathCreator);
         }
+    }
+
+    public Vector2 ConvertTilePositionToWorldPosition(Vector2 pos, int mapSize)
+    {
+        pos = pos + (Vector2.up + Vector2.right) / 2;
+        float scale = m_Terrain.terrainData.bounds.max.x / mapSize;
+        return new Vector2(pos.x * scale, pos.y * scale);
     }
 
     public void ConstructTrees(TerrainData tData, Improvement[,] improvementMap, float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs)
