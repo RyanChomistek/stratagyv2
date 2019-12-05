@@ -53,6 +53,15 @@ public class TerrainMeshGenerator : MonoBehaviour
     private List<PathCreator> m_PathCreators = new List<PathCreator>();
     #endregion Road Mesh
 
+    #region GridMesh
+    [SerializeField]
+    private GameObject m_GridMeshPrefab;
+    private List<GameObject> m_GridMeshes = new List<GameObject>();
+
+    [SerializeField]
+    private GameObject m_GridMeshContainer;
+    #endregion GridMesh
+
     void Awake()
     {
         Instance = this;
@@ -62,14 +71,12 @@ public class TerrainMeshGenerator : MonoBehaviour
     public void ConstructMesh(float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs, Terrain[,] map,
         Improvement[,] improvementMap, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
-        Debug.Log(m_Terrain.terrainData.alphamapWidth + " " + m_Terrain.terrainData.alphamapHeight);
-
         TerrainData tData = m_Terrain.terrainData;
 
-        float resolutionScale = tData.heightmapResolution / (float)heightMap.GetUpperBound(0);
-        float alphaMapScale = tData.alphamapWidth / (float)map.GetUpperBound(0);
+        float resolutionScale = tData.heightmapResolution / ((float)heightMap.GetUpperBound(0) + 1);
+        float alphaMapScale = tData.alphamapWidth / ((float)map.GetUpperBound(0) + 1);
         float[,] scaledMap = ScaleHeightMapResolution(heightMap, resolutionScale);
-        Debug.Log($"scales: resolution {resolutionScale}, alphaMap {alphaMapScale}");
+        //Debug.Log($"scales: resolution {resolutionScale}, alphaMap {alphaMapScale}");
 
         m_Terrain.terrainData.SetHeights(0, 0, scaledMap);
 
@@ -84,7 +91,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         {
             for (int x = 0; x < tData.alphamapWidth; x++)
             {
-                Vector2Int terrainMapPos = new Vector2Int(Mathf.RoundToInt(x / alphaMapScale), Mathf.RoundToInt(y / alphaMapScale));
+                Vector2Int terrainMapPos = new Vector2Int(Mathf.FloorToInt(x / alphaMapScale), Mathf.FloorToInt(y / alphaMapScale));
                 Terrain terrain = map[terrainMapPos.x, terrainMapPos.y];
                 Improvement improvement = improvementMap[terrainMapPos.x, terrainMapPos.y];
                 Vector2 gradient = gradientMap[terrainMapPos.x, terrainMapPos.y];
@@ -105,8 +112,8 @@ public class TerrainMeshGenerator : MonoBehaviour
                     alphaData[y, x, ROCK] = rockyness;
                     alphaData[y, x, ROAD] = 0;
                 }
-                
-                if(improvement == Improvement.Road)
+
+                if (improvement == Improvement.Road)
                 {
                     alphaData[y, x, GRASS] = 0;
                     alphaData[y, x, WATER] = 0;
@@ -118,6 +125,66 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         ConstructTrees(tData, improvementMap, heightMap, gradientMap, otherArgs);
         tData.SetAlphamaps(0, 0, alphaData);
+    }
+
+    public void ConstructGridMesh(MapData mapdata)
+    {
+        m_GridMeshes.ForEach(x => DestroyImmediate(x));
+        m_GridMeshes.Clear();
+
+        float gridLineThickness = .1f;
+        float gridHeight = 1;
+        for(int x = 0; x < mapdata.mapSize; x++)
+        {
+            //draw a line from (x,1,0) to (x,1,mapsize)
+            DrawGridLine(new Vector2(x, 0), new Vector2(x, mapdata.mapSize), gridHeight, gridLineThickness, mapdata);
+        }
+
+        for (int z = 0; z < mapdata.mapSize; z++)
+        {
+            //draw a line from (0,1,z) to (mapsize,1,z)
+            DrawGridLine(new Vector2(0, z), new Vector2(mapdata.mapSize, z), gridHeight, gridLineThickness, mapdata);
+        }
+    }
+
+    public void DrawGridLine(Vector2 start, Vector2 end, float height, float lineThickness, MapData mapdata)
+    {
+        GameObject meshPrefab = Instantiate(m_GridMeshPrefab);
+        m_GridMeshes.Add(meshPrefab);
+
+        //make the fill quad
+        MeshFilter mf = meshPrefab.GetComponent<MeshFilter>();
+        var mesh = new Mesh();
+        mf.mesh = mesh;
+        List<Vector3> verts = new List<Vector3>();
+
+        Vector2 dir = (end - start).normalized;
+        Vector2 tangent = new Vector2(-dir.y, dir.x);
+        Vector3 scaledTangent = new Vector3(tangent.x, 0, tangent.y) * lineThickness;
+
+        Vector3 start3 = new Vector3(start.x, height, start.y);
+        Vector3 end3 = new Vector3(end.x, height, end.y);
+
+        Vector3 startLeft = start3 - scaledTangent; // 0
+        Vector3 startRight = start3 + scaledTangent; // 1
+
+        Vector3 EndLeft = end3 - scaledTangent; // 2
+        Vector3 EndRight = end3 + scaledTangent; // 3
+
+        verts.Add(ConvertTilePositionToWorldPosition(startLeft, mapdata.mapSize)); // 0
+        verts.Add(ConvertTilePositionToWorldPosition(startRight, mapdata.mapSize)); // 1
+        verts.Add(ConvertTilePositionToWorldPosition(EndLeft, mapdata.mapSize)); // 2
+        verts.Add(ConvertTilePositionToWorldPosition(EndRight, mapdata.mapSize)); // 3
+
+        List<int> tri = new List<int>() {
+            0,1,2,
+            1,3,2
+        };
+
+        mesh.vertices = verts.ToArray();
+        mesh.triangles = tri.ToArray();
+
+        meshPrefab.transform.SetParent(m_GridMeshContainer.transform);
     }
 
     public void ConstructRoadMeshes(MapData mapdata)
@@ -134,25 +201,27 @@ public class TerrainMeshGenerator : MonoBehaviour
                 DestroyImmediate(x.GetComponent<RoadMeshCreator>());
                 DestroyImmediate(GO);
             }
-            });
-
+        });
 
         m_PathCreators.Clear();
-
         
         List<List<Vector3>> scaledPaths = new List<List<Vector3>>();
+
+        float heightOffset = 1f;
 
         foreach (var path in mapdata.RoadPaths)
         {
             // Scale paths to that of the terrain
             List<Vector3> scaledPath = new List<Vector3>();
-            foreach(var point in path)
+            foreach(Vector3 point in path)
             {
-                Vector2 scaledPoint = ConvertTilePositionToWorldPosition(new Vector2(point.x, point.z), mapdata.mapSize);
+                var point2D = new Vector2(point.x, point.z);
+                var point2DOffset = point2D + (Vector2.up + Vector2.right) / 2;
+                Vector2 scaledPoint = ConvertTilePositionToWorldPosition(point2DOffset, mapdata.mapSize);
 
                 scaledPath.Add(new Vector3(
                             scaledPoint.x,
-                            point.y * m_Terrain.terrainData.size.y,
+                            point.y * m_Terrain.terrainData.size.y + heightOffset,
                             scaledPoint.y));
             }
 
@@ -164,9 +233,14 @@ public class TerrainMeshGenerator : MonoBehaviour
         }
     }
 
+    public Vector3 ConvertTilePositionToWorldPosition(Vector3 pos, int mapSize)
+    {
+        float scale = m_Terrain.terrainData.bounds.max.x / mapSize;
+        return new Vector3(pos.x * scale, pos.y * m_Terrain.terrainData.size.y, pos.z * scale);
+    }
+
     public Vector2 ConvertTilePositionToWorldPosition(Vector2 pos, int mapSize)
     {
-        pos = pos + (Vector2.up + Vector2.right) / 2;
         float scale = m_Terrain.terrainData.bounds.max.x / mapSize;
         return new Vector2(pos.x * scale, pos.y * scale);
     }

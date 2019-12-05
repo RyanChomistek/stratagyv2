@@ -259,6 +259,7 @@ public class MapManager : MonoBehaviour
 
             LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.HeightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, MapGen.improvmentMap, terrainTileLookup), "mesh time");
             MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
+            //MeshGen.ConstructGridMesh(MapGen.m_MapData);
         }
     }
 

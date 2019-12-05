@@ -54,10 +54,10 @@ public class RoadGenerator
         }
 
         List<Vector3> path3D = path.Select(point => 
-        new Vector3(
-            point.x,
-            mapData.HeightMap[point.x, point.y],
-            point.y)).ToList();
+            new Vector3(
+                point.x,
+                mapData.HeightMap[point.x, point.y],
+                point.y)).ToList();
 
         mapData.RoadPaths.Add(path3D);
 

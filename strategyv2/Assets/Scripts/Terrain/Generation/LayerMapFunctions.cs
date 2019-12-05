@@ -1108,7 +1108,7 @@ public class LayerMapFunctions : MonoBehaviour
         if (LogTimes)
         {
             System.DateTime end = System.DateTime.Now;
-            Debug.Log($"{text} : {end - start}");
+            Debug.Log($"perf {text} : {end - start}");
         }
     }
 

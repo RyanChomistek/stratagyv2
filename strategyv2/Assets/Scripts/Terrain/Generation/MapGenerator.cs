@@ -86,8 +86,7 @@ public class MapGenerator : MonoBehaviour
             m_MapData.GradientMap = (Vector2[,]) CalculateGradients(m_MapData.HeightMap).Clone();
             LayerHeightMap(numZLayers);
             m_MapData.LayeredGradientMap = CalculateGradients(m_MapData.HeightMap);
-        }
-        , "other gen times");
+        }, "other gen times");
 
         foreach (MapLayerSettings layerSetting in LayerSettings)
         {

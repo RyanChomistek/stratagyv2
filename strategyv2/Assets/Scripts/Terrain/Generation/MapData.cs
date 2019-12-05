@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -43,6 +44,7 @@ public class MapData
         }
     }
 
+    [SerializeField]
     public List<List<Vector3>> RoadPaths = new List<List<Vector3>>();
 
     public void Clear()
@@ -61,7 +63,8 @@ public class MapData
             HeightMap = HeightMap.Clone() as float[,],
             WaterMap = WaterMap.Clone() as float[,],
             GradientMap = GradientMap.Clone() as Vector2[,],
-            LayeredGradientMap = LayeredGradientMap.Clone() as Vector2[,]
+            LayeredGradientMap = LayeredGradientMap.Clone() as Vector2[,],
+            RoadPaths = RoadPaths.Select(x => x.ToList()).ToList()
         };
 
         return other;
