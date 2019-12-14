@@ -29,8 +29,8 @@ public class AIControllerSpawner : MonoBehaviour
             newDivision.Controller = AIPlayer;
             newDivision.name = $"Division {newDivision.AttachedDivision.DivisionId}";
             newDivision.AttachedDivision.TeamId = AIPlayer.TeamId;
-            float width = MapManager.Instance.MapGen.mapSize;
-            float height = MapManager.Instance.MapGen.mapSize;
+            float width = MapManager.Instance.MapGen.MapSize;
+            float height = MapManager.Instance.MapGen.MapSize;
 
             newDivision.transform.position = new Vector3(Random.Range(0, width-1), Random.Range(0, height-1));
             //newDivision.Controller = AIPlayer;

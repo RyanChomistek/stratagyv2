@@ -255,11 +255,11 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            MeshGen.ConstructWaterMeshes(m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
+            MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
 
-            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.HeightMap, MapGen.GradientMap, m_MeshArgs, MapGen.terrainMap, MapGen.improvmentMap, terrainTileLookup), "mesh time");
+            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
             MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
-            //MeshGen.ConstructGridMesh(MapGen.m_MapData);
+            MeshGen.ConstructGridMesh(MapGen.m_MapData);
         }
     }
 

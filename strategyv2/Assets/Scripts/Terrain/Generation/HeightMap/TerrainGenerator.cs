@@ -119,4 +119,59 @@ public class TerrainGenerator : MonoBehaviour {
         brushIndexBuffer.Release ();
         brushWeightBuffer.Release ();
     }
+
+    public void ConvertMapsTo2D(MapData mapdata)
+    {
+        mapdata.MeshHeightMap = new float[mapdata.MeshHeightMapSize, mapdata.MeshHeightMapSize];
+        mapdata.RawWaterLevelMap = new float[mapdata.MeshHeightMapSize, mapdata.MeshHeightMapSize];
+
+        // Convert the height maps to be in 2d form
+        for (int i = 0; i < mapdata.MeshHeightMapSize * mapdata.MeshHeightMapSize; i++)
+        {
+            int x = i % mapdata.MeshHeightMapSize;
+            int y = i / mapdata.MeshHeightMapSize;
+            int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
+            mapdata.MeshHeightMap[x, y] = HeightMap[borderedMapIndex];
+            mapdata.RawWaterLevelMap[x, y] = LakeMap[borderedMapIndex];
+        }
+
+        LayerMapFunctions.SmoothMT(ref mapdata.MeshHeightMap, 2);
+
+        // Create the tile height map
+        // take every 4 height map points and find the middle value and use that
+        for (int x = 0; x < mapdata.MeshHeightMapSize - 1; x++)
+        {
+            for (int y = 0; y < mapdata.MeshHeightMapSize - 1; y++)
+            {
+                Vector2Int rawIndex = new Vector2Int(x,y);
+                Vector2Int[] indexes = new Vector2Int[]
+                {
+                    new Vector2Int(rawIndex.x,     rawIndex.y + 1), // topLeft
+                    new Vector2Int(rawIndex.x + 1, rawIndex.y + 1), // topRight
+                    new Vector2Int(rawIndex.x + 1, rawIndex.y),     // bottomRight
+                    new Vector2Int(rawIndex.x,     rawIndex.y),     // bottomLeft
+                };
+
+                float[] heights = new float[4];
+                for (int i = 0; i < indexes.Length; i++)
+                {
+                    heights[i] = mapdata.MeshHeightMap[indexes[i].x, indexes[i].y];
+                }
+
+                float[] waterLevels = new float[4];
+                for (int i = 0; i < indexes.Length; i++)
+                {
+                    waterLevels[i] = mapdata.RawWaterLevelMap[indexes[i].x, indexes[i].y];
+                }
+
+                Vector2 uv = new Vector2(.5f, .5f);
+
+                float waterLevel = TerrainMeshGenerator.QuadLerp(waterLevels[0], waterLevels[1], waterLevels[2], waterLevels[3], uv.x, uv.y);
+                mapdata.WaterMap[x, y] = waterLevel;
+
+                float height = TerrainMeshGenerator.QuadLerp(heights[0], heights[1], heights[2], heights[3], uv.x, uv.y);
+                mapdata.HeightMap[x, y] = height;
+            }
+        }
+    }
 }

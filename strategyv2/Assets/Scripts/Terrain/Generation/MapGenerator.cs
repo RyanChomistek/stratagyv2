@@ -15,7 +15,8 @@ public class MapGenerator : MonoBehaviour
     [SerializeField]
     public MapData m_MapData;
 
-    public int mapSize { get { return m_MapData.mapSize; } set { m_MapData.mapSize = value; } }
+    public int MapSize { get { return m_MapData.mapSize; } set { m_MapData.mapSize = value; } }
+    public int HeightMapSize { get { return m_MapData.MeshHeightMapSize; } }
     public Terrain[,] terrainMap { get  { return m_MapData.TerrainMap; } }
     public Improvement[,] improvmentMap { get { return m_MapData.ImprovmentMap; } }
     public float[,] HeightMap { get { return m_MapData.HeightMap; } }
@@ -47,10 +48,13 @@ public class MapGenerator : MonoBehaviour
 
         m_MapData.Clear();
 
-        m_MapData.TerrainMap = new Terrain[mapSize, mapSize];
-        m_MapData.ImprovmentMap = new Improvement[mapSize, mapSize];
-        m_MapData.HeightMap = new float[mapSize, mapSize];
-        m_MapData.WaterMap = new float[mapSize, mapSize];
+        m_MapData.TerrainMap = new Terrain[MapSize, MapSize];
+        m_MapData.ImprovmentMap = new Improvement[MapSize, MapSize];
+        m_MapData.HeightMap = new float[MapSize, MapSize];
+
+        // Mesh height is bigger so that we have data for the outside edge
+        m_MapData.MeshHeightMap = new float[m_MapData.MeshHeightMapSize, m_MapData.MeshHeightMapSize];
+        m_MapData.WaterMap = new float[MapSize, MapSize];
         m_MapData.LandComponents = null;
 
         float seed;
@@ -58,26 +62,21 @@ public class MapGenerator : MonoBehaviour
         System.Random rand = new System.Random((int)seed);
 
         //generate heightmap
-        LayerMapFunctions.LogAction(() => HeightmapGen.GenerateHeightMap(mapSize), "Base Height Map Time");
+        LayerMapFunctions.LogAction(() => HeightmapGen.GenerateHeightMap(m_MapData.MeshHeightMapSize), "Base Height Map Time");
         if (erosionOptions.enabled)
         {
-            LayerMapFunctions.LogAction(() => HeightmapGen.Erode(mapSize, erosionOptions), "Erosion time");
+            LayerMapFunctions.LogAction(() => HeightmapGen.Erode(m_MapData.MeshHeightMapSize, erosionOptions), "Erosion time");
         }
 
-        for (int i = 0; i < mapSize * mapSize; i++)
+        HeightmapGen.ConvertMapsTo2D(m_MapData);
+
+        for(int x = 0; x < MapSize; x++)
         {
-            int x = i % mapSize;
-            int y = i / mapSize;
-            int index = y * mapSize + x;
-            var erosionBrushRadius = HeightmapGen.erosionBrushRadius;
-            var mapSizeWithBorder = HeightmapGen.mapSizeWithBorder;
-            int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
-            m_MapData.HeightMap[x, y] = HeightmapGen.HeightMap[borderedMapIndex];
-            m_MapData.TerrainMap[x, y] = Terrain.Grass;
-            m_MapData.WaterMap[x, y] = HeightmapGen.LakeMap[borderedMapIndex];
+            for (int y = 0; y < MapSize; y++)
+            {
+                m_MapData.TerrainMap[x, y] = Terrain.Grass;
+            }
         }
-
-        LayerMapFunctions.SmoothMT(ref m_MapData.HeightMap, 2);
 
         m_MapData.GradientMap = null;
         LayerMapFunctions.LogAction(() =>
@@ -154,7 +153,7 @@ public class MapGenerator : MonoBehaviour
             switch (layerSetting.algorithm)
             {
                 case LayerFillAlgorithm.Solid:
-                    currentMap = LayerMapFunctions.GenerateArray(mapSize, mapSize, currentTileValue);
+                    currentMap = LayerMapFunctions.GenerateArray(MapSize, MapSize, currentTileValue);
                     break;
                 case LayerFillAlgorithm.RandomWalk:
                     currentMap = RoadGenerator.GenerateRoad(ref currentMap, m_MapData, rand, currentTileValue,
@@ -190,7 +189,7 @@ public class MapGenerator : MonoBehaviour
                     break;
                 case LayerFillAlgorithm.Lake:
                 case LayerFillAlgorithm.River:
-                    LakeGenerator.Lake(ref currentMap, ref m_MapData.HeightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
+                    LakeGenerator.Lake(ref currentMap, m_MapData, ref m_MapData.HeightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
                     break;
             }
 
@@ -288,6 +287,6 @@ public class MapGenerator : MonoBehaviour
 
     public void ClearMap()
     {
-        m_MapData.TerrainMap = new Terrain[mapSize, mapSize];
+        m_MapData.TerrainMap = new Terrain[MapSize, MapSize];
     }
 }

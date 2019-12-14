@@ -6,6 +6,7 @@ using UnityEngine;
 public class LakeGenerator
 {
     public static void Lake<T>(ref T[,] map,
+        MapData mapData,
         ref float[,] heightMap,
         ref float[,] lakeMap,
         ref Vector2[,] gradientMap,
@@ -33,10 +34,6 @@ public class LakeGenerator
             Vector2Int.down,
             Vector2Int.left,
             Vector2Int.right,
-            //Vector2Int.up + Vector2Int.left,
-            //Vector2Int.down + Vector2Int.left,
-            //Vector2Int.up + Vector2Int.right,
-            //Vector2Int.down + Vector2Int.left,
         };
 
         int numWaterFlooded = 10000;
@@ -46,12 +43,13 @@ public class LakeGenerator
         {
             numIterations++;
             numWaterFlooded = 0;
+
             // Make water flood lower areas, go forwards and backwards to make sure we spread evenly
             for (int x = 0; x <= lakeMap.GetUpperBound(0); x++)
             {
                 for (int y = 0; y <= lakeMap.GetUpperBound(1); y++)
                 {
-                    FloodTile(x, y, currentTerrain, map, heightMap, floodFillDirections, ref numWaterFlooded);
+                    FloodTile(x, y, currentTerrain, mapData, map, floodFillDirections, ref numWaterFlooded);
                 }
             }
 
@@ -59,7 +57,7 @@ public class LakeGenerator
             {
                 for (int y = lakeMap.GetUpperBound(1); y >= 0; y--)
                 {
-                    FloodTile(x, y, currentTerrain, map, heightMap, floodFillDirections, ref numWaterFlooded);
+                    FloodTile(x, y, currentTerrain, mapData, map, floodFillDirections, ref numWaterFlooded);
                 }
             }
 
@@ -69,7 +67,7 @@ public class LakeGenerator
         Debug.Log($"num iterations {numIterations}");
     }
 
-    public static void FloodTile<T>(int x, int y, T currentTerrain, T[,] map, float[,] heightMap, Vector2Int[] floodFillDirections, ref int numWaterFlooded)
+    public static void FloodTile<T>(int x, int y, T currentTerrain, MapData mapData, T[,] map, Vector2Int[] floodFillDirections, ref int numWaterFlooded)
     {
         bool hasAdjacentWater = false;
         float heighestAdjacentWater = -1;
@@ -82,17 +80,18 @@ public class LakeGenerator
             if (LayerMapFunctions.InBounds(map, pos) && map[pos.x, pos.y].Equals(currentTerrain))
             {
                 hasAdjacentWater = true;
-                heighestAdjacentWater = Mathf.Max(heighestAdjacentWater, heightMap[pos.x, pos.y]);
-                lowestAdjacentWater = Mathf.Min(lowestAdjacentWater, heightMap[pos.x, pos.y]);
+                heighestAdjacentWater = Mathf.Max(heighestAdjacentWater, mapData.HeightMap[pos.x, pos.y]);
+                lowestAdjacentWater = Mathf.Min(lowestAdjacentWater, mapData.HeightMap[pos.x, pos.y]);
                 dirToWater = dir;
             }
         }
 
-        if (hasAdjacentWater && heighestAdjacentWater >= heightMap[x, y])
+        if (hasAdjacentWater && heighestAdjacentWater >= mapData.HeightMap[x, y])
         {
             numWaterFlooded++;
             map[x, y] = currentTerrain;
-            heightMap[x, y] = heighestAdjacentWater;
+            //heightMap[x, y] = heighestAdjacentWater - .01f;
+            mapData.SetHeightMapData(x, y, heighestAdjacentWater);
         }
     }
 }

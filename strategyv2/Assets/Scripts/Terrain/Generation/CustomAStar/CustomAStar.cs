@@ -62,26 +62,8 @@ class CustomAStar
         int cnt = 0;
 
         System.TimeSpan totalTime;
-
         System.TimeSpan getAdjacentSquaresTime;
-        System.TimeSpan isDestinationFoundTime;
         System.TimeSpan handleAdjacentSquaresTime;
-
-        float gradientSum = 0;
-        float gradientMin = float.MaxValue;
-        float gradientMax = float.MinValue;
-        int gradientCnt = 0;
-        foreach (var elem in mapData.GradientMap)
-        {
-            gradientSum += elem.magnitude;
-            gradientMin = Mathf.Min(gradientMin, elem.magnitude);
-            gradientMax = Mathf.Max(gradientMax, elem.magnitude);
-            gradientCnt += 1;
-        }
-
-        float gradientAverage = gradientSum / gradientCnt;
-
-        Debug.Log($"average gradient {gradientAverage}, min {gradientMin}, max {gradientMax}");
 
         LayerMapFunctions.LogActionAggrigate(() => { 
             while (openList.Count > 0 && cnt < 100000)
@@ -104,7 +86,7 @@ class CustomAStar
                     break;
 
                 Location[] adjacentSquares = null;
-                LayerMapFunctions.LogActionAggrigate(() => { adjacentSquares = GetWalkableAdjacentSquares(current.Col, current.Row, mapData, gradientAverage, gradientMin, gradientMax); }, ref getAdjacentSquaresTime);
+                LayerMapFunctions.LogActionAggrigate(() => { adjacentSquares = GetWalkableAdjacentSquares(current.Col, current.Row, mapData); }, ref getAdjacentSquaresTime);
                 
                 LayerMapFunctions.LogActionAggrigate(() =>
                 {
@@ -156,10 +138,10 @@ class CustomAStar
 
         path.Reverse();
 
-        Debug.Log($"astart iterations {cnt}");
-        //Debug.Log($"time total  : {totalTime}");
-        //Debug.Log($"time adjacentSquares  : {getAdjacentSquaresTime} {getAdjacentSquaresTime.Ticks / (double)totalTime.Ticks}");
-        //Debug.Log($"time handleAdjacentSquares  : {handleAdjacentSquaresTime} {handleAdjacentSquaresTime.Ticks / (double)totalTime.Ticks}");
+        Debug.Log($"astar iterations {cnt}");
+        Debug.Log($"astar time total  : {totalTime}");
+        Debug.Log($"astar time adjacentSquares  : {getAdjacentSquaresTime} {getAdjacentSquaresTime.Ticks / (double)totalTime.Ticks}");
+        Debug.Log($"astar time handleAdjacentSquares  : {handleAdjacentSquaresTime} {handleAdjacentSquaresTime.Ticks / (double)totalTime.Ticks}");
         //Debug.Log($"time destination found: {isDestinationFoundTime} {isDestinationFoundTime.Ticks / (double)totalTime.Ticks}");
 
         //PrintSolution(mapData, path, start, target, current);
@@ -167,7 +149,7 @@ class CustomAStar
         return path;
     }
 
-    static Location[] GetWalkableAdjacentSquares(int col, int row, MapData mapData, float averageGradient, float gradientMin, float gradientMax)
+    static Location[] GetWalkableAdjacentSquares(int col, int row, MapData mapData)
     {
         float heightOriginal = mapData.HeightMap[row, col];
         var proposedLocations = new Location[]
