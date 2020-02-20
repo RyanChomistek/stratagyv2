@@ -53,7 +53,7 @@ public class MapGenerator : MonoBehaviour
         m_MapData.HeightMap = new float[MapSize, MapSize];
 
         // Mesh height is bigger so that we have data for the outside edge
-        m_MapData.MeshHeightMap = new float[m_MapData.MeshHeightMapSize, m_MapData.MeshHeightMapSize];
+        m_MapData.VertexHeightMap = new float[m_MapData.MeshHeightMapSize, m_MapData.MeshHeightMapSize];
         m_MapData.WaterMap = new float[MapSize, MapSize];
         m_MapData.LandComponents = null;
 

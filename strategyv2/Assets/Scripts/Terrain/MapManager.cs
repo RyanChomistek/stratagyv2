@@ -110,7 +110,8 @@ public class MapManager : MonoBehaviour
     private void PrintTile(Vector3 pos)
     {
         var tile = GetTileFromPosition(pos);
-        Debug.Log(tile.ToString());
+        Debug.Log(tile);
+        //Debug.Log(tile.ToString());
     }
 
     private void SetUpAjdacentTiles()
@@ -264,20 +265,22 @@ public class MapManager : MonoBehaviour
     }
 
     #region position conversion and helpers
+
+    public float getHeightAtWorldPosition(Vector3 position)
+    {
+        return MeshGen.GetHeightAtWorldPosition(position);
+    }
+
     public TerrainMapTile GetTileFromPosition(Vector3 position)
     {
-        var gridStart = TerrainTileLayers[0].transform.position;
-        var deltaFromStart = position - gridStart;
-        var rounded = LayerMapFunctions.FloorVector(deltaFromStart);
-        return map[rounded.x, rounded.y];
+        var tilePos = MeshGen.ConvertWorldPositionToTilePosition(position, MapGen.m_MapData);
+        return map[tilePos.x, tilePos.y];
     }
 
     public Vector2Int GetTilePositionFromPosition(Vector3 position)
     {
-        var gridStart = TerrainTileLayers[0].transform.position;
-        var deltaFromStart = position - gridStart;
-        var rounded = LayerMapFunctions.FloorVector(deltaFromStart);
-        return rounded;
+        var tilePos = MeshGen.ConvertWorldPositionToTilePosition(position, MapGen.m_MapData);
+        return tilePos;
     }
 
     public Vector2Int ClampTilePositionToInBounds(Vector2Int position)
@@ -290,9 +293,9 @@ public class MapManager : MonoBehaviour
     public Vector3 ClampPositionToInBounds(Vector3 position)
     {
         var gridStart = TerrainTileLayers[0].transform.position;
-        float x = Mathf.Clamp(position.x, - gridStart.x, map.GetUpperBound(0) - gridStart.x - 1);
-        float y = Mathf.Clamp(position.y, - gridStart.y, map.GetUpperBound(1) - gridStart.y - 1);
-        return new Vector3(x, y);
+        float x = Mathf.Clamp(position.x, 0, MeshGen.GetMeshMapSize());
+        float z = Mathf.Clamp(position.z, 0, MeshGen.GetMeshMapSize());
+        return new Vector3(x, 0, z);
     }
 
     public int GetLayerIndexByHeight(float height)

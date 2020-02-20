@@ -68,14 +68,12 @@ public class TerrainMeshGenerator : MonoBehaviour
     }
 
     //TODO Block this into chuncks 
-    //public void ConstructMesh(float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs, Terrain[,] map,
-    //    Improvement[,] improvementMap, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     public void ConstructMesh(MapData mapData, MeshGeneratorArgs otherArgs, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
         TerrainData tData = m_Terrain.terrainData;
 
-        float resolutionScale = tData.heightmapResolution / ((float) mapData.MeshHeightMap.GetUpperBound(0));
-        float[,] scaledMap = ScaleHeightMapResolution(mapData.MeshHeightMap, resolutionScale);
+        float resolutionScale = tData.heightmapResolution / ((float) mapData.VertexHeightMap.GetUpperBound(0));
+        float[,] scaledMap = ScaleHeightMapResolution(mapData.VertexHeightMap, resolutionScale);
 
         float alphaMapScale = tData.alphamapWidth / ((float)mapData.TerrainMap.GetUpperBound(0) + 1);
         
@@ -236,6 +234,22 @@ public class TerrainMeshGenerator : MonoBehaviour
         }
     }
 
+    public float GetMeshMapSize()
+    {
+        return m_Terrain.terrainData.bounds.max.x;
+    }
+
+    public float GetHeightAtWorldPosition(Vector3 worldPosition)
+    {
+        return m_Terrain.SampleHeight(worldPosition);
+    }
+
+    public Vector2Int ConvertWorldPositionToTilePosition(Vector3 worldPosition, MapData mapData)
+    {
+        float scale = m_Terrain.terrainData.bounds.max.x / mapData.mapSize;
+        return new Vector2Int(Mathf.FloorToInt(worldPosition.x / scale), Mathf.FloorToInt(worldPosition.z / scale));
+    }
+
     public Vector3 ConvertTilePositionToWorldPosition(Vector3 pos, int mapSize)
     {
         float scale = m_Terrain.terrainData.bounds.max.x / mapSize;
@@ -346,7 +360,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             sumHeight += heightMap[index.x, index.y];
         }
 
-        Debug.Log($"average componenet water height {sumHeight / componet.Count}");
+        //Debug.Log($"average componenet water height {sumHeight / componet.Count}");
 
         List<Vector2Int> tileVertsOffsets = new List<Vector2Int>()
         {

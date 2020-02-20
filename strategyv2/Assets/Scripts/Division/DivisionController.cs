@@ -25,6 +25,11 @@ public class DivisionController : BaseDivisionController {
 
     private void Start()
     {
+        // fix the y position relative to the height map
+        var pos = transform.position;
+        pos.y = MapManager.Instance.getHeightAtWorldPosition(pos);
+        transform.position = pos;
+
         if (AttachedDivision.Commander == -1)
         {
             //AttachedDivision.Commander = Controller.GeneralDivision.AttachedDivision.DivisionId;
@@ -32,18 +37,10 @@ public class DivisionController : BaseDivisionController {
         }
 
         DivisionControllerManager.Instance.AddDivision(this);
-        /*
-        AttachedDivision.AddRefreshDelegate(division => {
-            FindVisibleDivisions();
-            RefreshVisibleDivisions();
-            VisibleControllers.ForEach(x => x.RefreshVisibleDivisions());
-        });
-        */
         AttachedDivision.RefreshDiscoveredTiles();
         FindVisibleDivisions();
         RefreshVisibleDivisions();
         AttachedDivision.AddAutoRunBackgroundOrders();
-        
     }
 
     private void OnDestroy()

@@ -20,7 +20,7 @@ public class MapData
     [SerializeField]
     public float[,] HeightMap;
     [SerializeField]
-    public float[,] MeshHeightMap;
+    public float[,] VertexHeightMap;
     [SerializeField]
     public float[,] WaterMap;
     [SerializeField]
@@ -71,7 +71,7 @@ public class MapData
         foreach (Vector2Int vertOffset in m_TileVertsOffsets)
         {
             Vector2Int meshVert = bottomLeftMeshVert + vertOffset;
-            MeshHeightMap[meshVert.x, meshVert.y] -= deltaHeight * .5f;
+            VertexHeightMap[meshVert.x, meshVert.y] -= deltaHeight * .5f;
         }
 
         HeightMap[x, y] = newHeight;
@@ -91,7 +91,7 @@ public class MapData
             TerrainMap = TerrainMap.Clone() as Terrain[,],
             ImprovmentMap = ImprovmentMap.Clone() as Improvement[,],
             HeightMap = HeightMap.Clone() as float[,],
-            MeshHeightMap = MeshHeightMap.Clone() as float[,],
+            VertexHeightMap = VertexHeightMap.Clone() as float[,],
             WaterMap = WaterMap.Clone() as float[,],
             RawWaterLevelMap = RawWaterLevelMap.Clone() as float[,],
             GradientMap = GradientMap.Clone() as Vector2[,],

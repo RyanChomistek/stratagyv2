@@ -122,7 +122,7 @@ public class TerrainGenerator : MonoBehaviour {
 
     public void ConvertMapsTo2D(MapData mapdata)
     {
-        mapdata.MeshHeightMap = new float[mapdata.MeshHeightMapSize, mapdata.MeshHeightMapSize];
+        mapdata.VertexHeightMap = new float[mapdata.MeshHeightMapSize, mapdata.MeshHeightMapSize];
         mapdata.RawWaterLevelMap = new float[mapdata.MeshHeightMapSize, mapdata.MeshHeightMapSize];
 
         // Convert the height maps to be in 2d form
@@ -131,11 +131,11 @@ public class TerrainGenerator : MonoBehaviour {
             int x = i % mapdata.MeshHeightMapSize;
             int y = i / mapdata.MeshHeightMapSize;
             int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
-            mapdata.MeshHeightMap[x, y] = HeightMap[borderedMapIndex];
+            mapdata.VertexHeightMap[x, y] = HeightMap[borderedMapIndex];
             mapdata.RawWaterLevelMap[x, y] = LakeMap[borderedMapIndex];
         }
 
-        LayerMapFunctions.SmoothMT(ref mapdata.MeshHeightMap, 2);
+        LayerMapFunctions.SmoothMT(ref mapdata.VertexHeightMap, 2);
 
         // Create the tile height map
         // take every 4 height map points and find the middle value and use that
@@ -155,7 +155,7 @@ public class TerrainGenerator : MonoBehaviour {
                 float[] heights = new float[4];
                 for (int i = 0; i < indexes.Length; i++)
                 {
-                    heights[i] = mapdata.MeshHeightMap[indexes[i].x, indexes[i].y];
+                    heights[i] = mapdata.VertexHeightMap[indexes[i].x, indexes[i].y];
                 }
 
                 float[] waterLevels = new float[4];
