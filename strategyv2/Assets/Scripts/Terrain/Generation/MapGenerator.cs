@@ -28,19 +28,10 @@ public class MapGenerator : MonoBehaviour
 
     public bool LoadFromFile = false;
 
-    
-
-    /// <summary>
-    /// Generates  terrain and improvment maps based on provided layers
-    /// </summary>
-    /// <param name="terrainTileLookup"></param>
-    /// <param name="improvementTileLookup"></param>
-    /// <param name="numZLayers"> number of z layers to produce, height map is flattened to z layers so more z layers will make the mape more hilly, also much slower to render</param>
-    public void GenerateMap(Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
-        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, int numZLayers, ErosionOptions erosionOptions)
+    public void InitializeMaps()
     {
         ClearMap();
-        if(LoadFromFile)
+        if (LoadFromFile)
         {
             LayerMapFunctions.LogAction(() => LoadMap(), "Load Map Time");
             return;
@@ -56,21 +47,33 @@ public class MapGenerator : MonoBehaviour
         m_MapData.VertexHeightMap = new float[m_MapData.MeshHeightMapSize, m_MapData.MeshHeightMapSize];
         m_MapData.WaterMap = new float[MapSize, MapSize];
         m_MapData.LandComponents = null;
+    }
 
-        float seed;
-        seed = System.DateTime.Now.Millisecond;
-        System.Random rand = new System.Random((int)seed);
-
-        //generate heightmap
+    public void GenerateHeightMaps(ErosionOptions erosionOptions)
+    {
         LayerMapFunctions.LogAction(() => HeightmapGen.GenerateHeightMap(m_MapData.MeshHeightMapSize), "Base Height Map Time");
         if (erosionOptions.enabled)
         {
             LayerMapFunctions.LogAction(() => HeightmapGen.Erode(m_MapData.MeshHeightMapSize, erosionOptions), "Erosion time");
         }
+    }
+
+    /// <summary>
+    /// Generates  terrain and improvment maps based on provided layers
+    /// </summary>
+    /// <param name="terrainTileLookup"></param>
+    /// <param name="improvementTileLookup"></param>
+    /// <param name="numZLayers"> number of z layers to produce, height map is flattened to z layers so more z layers will make the mape more hilly, also much slower to render</param>
+    public void GenerateTerrainAndImprovements(Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, int numZLayers)
+    {
+        float seed;
+        seed = System.DateTime.Now.Millisecond;
+        System.Random rand = new System.Random((int)seed);
 
         HeightmapGen.ConvertMapsTo2D(m_MapData);
 
-        for(int x = 0; x < MapSize; x++)
+        for (int x = 0; x < MapSize; x++)
         {
             for (int y = 0; y < MapSize; y++)
             {

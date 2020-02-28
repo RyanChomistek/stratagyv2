@@ -14,6 +14,8 @@ public class HeightMapGenerator : MonoBehaviour {
     public bool useComputeShader = true;
     public ComputeShader heightMapComputeShader;
 
+    public bool GenerationEnabled = true;
+
     public float[] GenerateHeightMap (int mapSize) {
         if (useComputeShader) {
             return GenerateHeightMapGPU (mapSize);
@@ -22,6 +24,14 @@ public class HeightMapGenerator : MonoBehaviour {
     }
 
     float[] GenerateHeightMapGPU (int mapSize) {
+
+        float[] map = new float[mapSize * mapSize];
+
+        if (!GenerationEnabled)
+        {
+            return map;
+        }
+
         seed = (randomizeSeed) ? Random.Range(-10000, 10000) : seed;
         var prng = new System.Random (seed);
 
@@ -34,7 +44,6 @@ public class HeightMapGenerator : MonoBehaviour {
         heightMapComputeShader.SetBuffer (0, "offsets", offsetsBuffer);
 
         int floatToIntMultiplier = 1000;
-        float[] map = new float[mapSize * mapSize];
 
         ComputeBuffer mapBuffer = new ComputeBuffer (map.Length, sizeof (int));
         mapBuffer.SetData (map);

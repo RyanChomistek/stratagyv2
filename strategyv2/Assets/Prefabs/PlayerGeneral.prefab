@@ -218,7 +218,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   centerOffsetCompatibility: NaN
-  orientation: 1
+  orientation: 0
   enableRotation: 0
   targetCompatibility: {fileID: 0}
   maxAcceleration: 1000

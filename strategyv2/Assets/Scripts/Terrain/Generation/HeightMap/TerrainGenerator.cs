@@ -40,7 +40,7 @@ public class TerrainGenerator : MonoBehaviour {
 
     public void GenerateHeightMap (int mapSize) {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
-        HeightMap = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
+        HeightMap = FindObjectOfType<HeightMapGenerator>().GenerateHeightMap(mapSizeWithBorder);
         LakeMap = new float[mapSizeWithBorder * mapSizeWithBorder];
     }
 

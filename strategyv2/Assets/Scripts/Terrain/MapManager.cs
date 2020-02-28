@@ -245,7 +245,9 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        LayerMapFunctions.LogAction(() => MapGen.GenerateMap(terrainTileLookup, improvementTileLookup, NumZLayers, m_ErosionOptions), "map gen time");
+        MapGen.InitializeMaps();
+        MapGen.GenerateHeightMaps(m_ErosionOptions);
+        LayerMapFunctions.LogAction(() => MapGen.GenerateTerrainAndImprovements(terrainTileLookup, improvementTileLookup, NumZLayers), "map gen time");
         
         ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
         SetUpAjdacentTiles();
@@ -281,6 +283,16 @@ public class MapManager : MonoBehaviour
     {
         var tilePos = MeshGen.ConvertWorldPositionToTilePosition(position, MapGen.m_MapData);
         return tilePos;
+    }
+
+    public Vector3 GetWorldPositionFromTilePosition(Vector2 position)
+    {
+        Vector3 tilePos = new Vector3(position.x, 0, position.y);
+        Vector3 worldPos = MeshGen.ConvertTilePositionToWorldPosition(tilePos, MapGen.m_MapData.mapSize);
+        float height = MeshGen.GetHeightAtWorldPosition(worldPos);
+        worldPos.y = height;
+
+        return worldPos;
     }
 
     public Vector2Int ClampTilePositionToInBounds(Vector2Int position)
@@ -351,29 +363,53 @@ public class MapManager : MonoBehaviour
         // Make sure we only modify the graph when all pathfinding threads are paused
         AstarPath.active.AddWorkItem(new AstarWorkItem(ctx => {
             //create the graph
-            //first make node array
-            PointNode[,] nodeArray = new PointNode[map.GetUpperBound(0) + 1, map.GetUpperBound(1) + 1];
 
-            for (int y = 0; y <= map.GetUpperBound(0); y++)
+            // put 2 nave mesh cells per tile
+            int scale = 2;
+            
+            //first make node array
+            int size = (map.GetUpperBound(0) + 1) * scale + 1;
+
+            PointNode[,] nodeArray = new PointNode[size, size];
+
+            for (int y = 0; y < size; y++)
             {
-                for (int x = 0; x <= map.GetUpperBound(1); x++)
+                for (int x = 0; x < size; x++)
                 {
-                    nodeArray[x,y] = graph.AddNode((Int3)new Vector3(x, y, 0));
+                    Vector3 tilePos = GetWorldPositionFromTilePosition(new Vector2(x / (float)scale, y / (float) scale));
+                    nodeArray[x,y] = graph.AddNode((Int3) tilePos);
                 }
             }
+
             int connections = 0;
+
             //now connect nodes
-            for (int y = 0; y <= map.GetUpperBound(0); y++)
+            for (int y = 0; y < size; y++)
             {
-                for (int x = 0; x <= map.GetUpperBound(1); x++)
+                for (int x = 0; x < size; x++)
                 {
-                    for (int i = x-1; i <= x+1; i++)
+                    // loop over all adjacent nodes
+                    for (int i = x-1; i <= x + 1; i++)
                     {
-                        for (int j = y-1; j <= y+1; j++)
+                        for (int j = y - 1; j <= y + 1; j++)
                         {
                             if (InBounds(nodeArray, i, j))
                             {
-                                nodeArray[x,y].AddConnection(nodeArray[i,j], (uint) map[x,y].MoveCost);
+                                int scaledX = x / scale;
+                                int scaledY = y / scale;
+
+                                // if we are in the last edge grab
+                                if(scaledX == map.GetUpperBound(0) + 1)
+                                {
+                                    scaledX--;
+                                }
+
+                                if (scaledY == map.GetUpperBound(0) + 1)
+                                {
+                                    scaledY--;
+                                }
+
+                                nodeArray[x, y].AddConnection(nodeArray[i, j], (uint)map[scaledX, scaledY].MoveCost);
                                 connections++;
                             }
                         }
