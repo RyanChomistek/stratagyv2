@@ -442,11 +442,14 @@ public class TerrainMeshGenerator : MonoBehaviour
 
                 height += .001f;
 
-                //if this vert is actually on water go a little below the land
+                // lower the land under the water
                 if (terrainTileMap[vert.x, vert.y] == Terrain.Water)
                 {
                     //heightMap[vert.x, vert.y] -= .01f;
-                    heightMap[vert.x, vert.y] -= waterMap[vert.x, vert.y] * meshArgs.WaterScale;
+                    float waterDepth = waterMap[vert.x, vert.y] * meshArgs.WaterScale;
+                    waterDepth = waterDepth > .1f ? waterDepth : .1f;
+
+                    heightMap[vert.x, vert.y] -= .5f;
                 }
 
                 worldPos += Vector3.up * height * (m_Terrain.terrainData.size.y);

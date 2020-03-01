@@ -8,8 +8,14 @@ public class CameraController : MonoBehaviour
 {
     public float CameraMoveSpeed = 5;
 
+    // rotations
+    public float CameraRotateSensitivity = .25f;
+    public float MaxYAngle = 80f;
+    private Vector2 CurrentRotation;
+
     private Vector3 _lastMousePosition = new Vector3();
 
+    public float CameraZoomSensitivity = 10f;
     private void Start()
     {
         InputController.Instance.RegisterHandler(new DragHandler("MiddleMouse", 
@@ -21,13 +27,35 @@ public class CameraController : MonoBehaviour
             },
             (handler,point) => { handler.IgnoreUI = true; }));
 
-        var zoomHandler = new AxisHandler("Mouse ScrollWheel",
+        InputController.Instance.RegisterHandler(new DragHandler("Fire2",
+            (handler, x) => { handler.IgnoreUI = false; },
+            (handler, mousePosition, delta) =>
+            {
+                UpdateRotation(delta);
+            },
+            (handler, point) => { handler.IgnoreUI = true; },
+            useWorldCoordinates:false));
+
+        InputController.Instance.RegisterHandler(new AxisHandler("Mouse ScrollWheel",
             (handler, delta) =>
             {
-                Camera.main.transform.localPosition += Vector3.forward * delta * -10f;
-            },false);
+                delta *= 1 + Camera.main.transform.position.y;
+                Camera.main.transform.localPosition += Vector3.forward * delta * CameraZoomSensitivity;
+            }, false));
 
-        InputController.Instance.RegisterHandler(zoomHandler);
+        UpdateRotation(Vector3.forward);
+    }
+
+    private void UpdateRotation(Vector3 delta)
+    {
+        //Debug.Log(delta);
+        //transform.Rotate(new Vector3(-delta.y, delta.x), Space.Self);
+
+        CurrentRotation.x += delta.x * CameraRotateSensitivity;
+        CurrentRotation.y -= delta.y * CameraRotateSensitivity;
+        CurrentRotation.x = Mathf.Repeat(CurrentRotation.x, 360);
+        CurrentRotation.y = Mathf.Clamp(CurrentRotation.y, -MaxYAngle, MaxYAngle);
+        transform.rotation = Quaternion.Euler(CurrentRotation.y, CurrentRotation.x, 0);
     }
 
     void Update()

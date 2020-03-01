@@ -39,6 +39,7 @@ public class LakeGenerator
         int numWaterFlooded = 10000;
         int numIterations = 0;
 
+        // even out the water level
         while (numWaterFlooded > (lakeMap.GetUpperBound(0) * .01f) && numIterations < 4)
         {
             numIterations++;
@@ -65,8 +66,31 @@ public class LakeGenerator
         }
 
         Debug.Log($"num iterations {numIterations}");
+
+        // make the water go slightly down
+        for (int x = 0; x <= heightMap.GetUpperBound(0); x++)
+        {
+            for (int y = 0; y <= heightMap.GetUpperBound(1); y++)
+            {
+                if(baseTerrainMap[x,y] == Terrain.Water)
+                {
+                    mapData.SetHeightMapData(x, y, heightMap[x,y] + .01f);
+                }
+            }
+        }
     }
 
+    /// <summary>
+    /// evens out the height map between this tile and its adjacents
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="currentTerrain"></param>
+    /// <param name="mapData"></param>
+    /// <param name="map"></param>
+    /// <param name="floodFillDirections"></param>
+    /// <param name="numWaterFlooded"></param>
     public static void FloodTile<T>(int x, int y, T currentTerrain, MapData mapData, T[,] map, Vector2Int[] floodFillDirections, ref int numWaterFlooded)
     {
         bool hasAdjacentWater = false;

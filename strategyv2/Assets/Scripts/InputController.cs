@@ -13,6 +13,9 @@ public abstract class Handler
 {
     public bool IgnoreUI = true;
     public bool OnlyUI = false;
+
+    public bool UseWorldCoordinates;
+
     public HandlerType HandlerType { protected set; get;}
     /// <summary>
     /// checks to make sure that the the handler with activate with the current ui flag
@@ -35,19 +38,25 @@ public class ButtonHandler : Handler
     public const string RightClick = "Fire2";
     public const string MiddleMouse = "Fire3";
 
-    public ButtonHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<ButtonHandler, Vector3> onButtonUp, bool ignoreUI = true, bool onlyUi = false)
+    public ButtonHandler(string buttonName,
+        Action<ButtonHandler, Vector3> onButtonDown,
+        Action<ButtonHandler, Vector3> onButtonUp,
+        bool ignoreUI = true,
+        bool onlyUi = false,
+        bool useWorldCoordinates = true)
     {
         this.ButtonName = buttonName;
         this.OnButtonDownCallBack = onButtonDown;
         this.OnButtonUpCallBack = onButtonUp;
         this.IgnoreUI = ignoreUI;
         this.OnlyUI = onlyUi;
+        this.UseWorldCoordinates = useWorldCoordinates;
         HandlerType = HandlerType.Button;
     }
 
     public virtual void OnButtonDown()
     {
-        this.OnButtonDownCallBack(this, InputController.GetMousePosition2D());
+        this.OnButtonDownCallBack(this, InputController.GetMousePosition2D(this.UseWorldCoordinates));
     }
 
     public virtual void OnButton()
@@ -55,7 +64,7 @@ public class ButtonHandler : Handler
 
     public virtual void OnButtonUp()
     {
-        this.OnButtonUpCallBack(this, InputController.GetMousePosition2D());
+        this.OnButtonUpCallBack(this, InputController.GetMousePosition2D(this.UseWorldCoordinates));
     }
 }
 
@@ -104,7 +113,7 @@ public class HoverHandler : Handler
 
     public virtual bool IsTemporarilyHovering()
     {
-        Vector3 mousePos = InputController.GetMousePosition2D();
+        Vector3 mousePos = InputController.GetMousePosition2D(this.UseWorldCoordinates);
         return mousePos == LastMousePosition;
     }
 
@@ -113,7 +122,7 @@ public class HoverHandler : Handler
         //Debug.Log("warm");
         this._warmupTimestamp = Time.time;
         IsCurrentlyWarmingup = true;
-        this.OnHoverWarmupEnterCallBack(this, InputController.GetMousePosition2D());
+        this.OnHoverWarmupEnterCallBack(this, InputController.GetMousePosition2D(this.UseWorldCoordinates));
     }
 
     //only called when warmup begins but is exited before hover starts
@@ -129,20 +138,20 @@ public class HoverHandler : Handler
         //Debug.Log("start");
         IsCurrentlyWarmingup = false;
         this.IsCurrentlyHovering = true;
-        this.OnHoverStartCallBack(this, InputController.GetMousePosition2D());
+        this.OnHoverStartCallBack(this, InputController.GetMousePosition2D(this.UseWorldCoordinates));
     }
 
     public virtual void OnHover()
     {
         //Debug.Log("hover");
-        this.OnHoverCallBack(this, InputController.GetMousePosition2D());
+        this.OnHoverCallBack(this, InputController.GetMousePosition2D(this.UseWorldCoordinates));
     }
 
     public virtual void OnHoverEnd()
     {
         //Debug.Log("end");
         this.IsCurrentlyHovering = false;
-        this.OnHoverEndCallBack(this, InputController.GetMousePosition2D());
+        this.OnHoverEndCallBack(this, InputController.GetMousePosition2D(this.UseWorldCoordinates));
     }
 
     public bool IsDoneWarmingup()
@@ -182,24 +191,34 @@ public class DragHandler : ButtonHandler
     public bool IsCurrentlyDragging = false;
     public Vector3 LastMousePosition;
 
-    public DragHandler(string buttonName, Action<ButtonHandler, Vector3> onButtonDown, Action<DragHandler, Vector3, Vector3> onButtonDrag, Action<ButtonHandler, Vector3> onButtonUp, bool ignoreUI = true, bool onlyUi = false)
-        : base(buttonName, onButtonDown, onButtonUp, ignoreUI, onlyUi)
+    public DragHandler(string buttonName,
+        Action<ButtonHandler, Vector3> onButtonDown,
+        Action<DragHandler, Vector3, Vector3> onButtonDrag,
+        Action<ButtonHandler, Vector3> onButtonUp,
+        bool ignoreUI = true,
+        bool onlyUi = false,
+        bool useWorldCoordinates = true)
+        : base(buttonName, onButtonDown, onButtonUp, ignoreUI, onlyUi, useWorldCoordinates)
     {
         this.OnDragCallBack = onButtonDrag;
     }
 
     public override void OnButtonDown()
     {
-        this.LastMousePosition = InputController.GetMousePosition2D();
-        this.IsCurrentlyDragging = true;
-        base.OnButtonDown();
+        if(InputController.TryGetMousePosition2D(this.UseWorldCoordinates, out this.LastMousePosition))
+        {
+            Debug.Log(LastMousePosition);
+
+            this.IsCurrentlyDragging = true;
+            base.OnButtonDown();
+        }
     }
 
     public override void OnButton()
     {
         if (this.IsCurrentlyDragging)
         {
-            var mousePosition = InputController.GetMousePosition2D();
+            var mousePosition = InputController.GetMousePosition2D(this.UseWorldCoordinates);
             var mouseDelta = mousePosition - this.LastMousePosition;
             //Debug.Log($"last {LastMousePosition}, current {mousePosition}, delta {mouseDelta}");
 
@@ -274,8 +293,6 @@ public class InputController : MonoBehaviour {
 	void Update ()
     {
         ProcessHandlerQueue();
-
-        Vector3 mousePos = GetMousePosition2D();
         bool isOverUI = EventSystem.current.IsPointerOverGameObject();
 
         foreach(ButtonHandler handler in _buttonHandlers)
@@ -347,28 +364,53 @@ public class InputController : MonoBehaviour {
                 handler.IsCurrentlyWarmingup = false;
             }
 
-            handler.LastMousePosition = GetMousePosition2D();
+            handler.LastMousePosition = GetMousePosition2D(handler.UseWorldCoordinates);
         }
 
         ProcessHandlerQueue();
     }
 
-    public static Vector3 GetMousePosition()
+    public static bool TryGetMouseWorldPosition(out Vector3 position)
     {
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
         {
-            return hit.point;
+            position = hit.point;
+            return true;
         }
 
-        return Vector3.zero;
+        position = Vector3.zero;
+        return false;
     }
 
-    public static Vector3 GetMousePosition2D()
+    public static bool TryGetMousePosition2D(bool useWorldCoordinates, out Vector3 position)
     {
-        Vector3 mousePos = GetMousePosition();
-        return new Vector3(mousePos.x, 0, mousePos.z);
+        if (useWorldCoordinates)
+        {
+            bool foundPoint = TryGetMouseWorldPosition(out position);
+            position = new Vector3(position.x, 0, position.z);
+            return foundPoint;
+        }
+        else
+        {
+            position = Input.mousePosition;
+            return true;
+        }
+    }
+
+    public static Vector3 GetMouseWorldPosition()
+    {
+        Vector3 position;
+        TryGetMouseWorldPosition(out position);
+        return position;
+    }
+
+    public static Vector3 GetMousePosition2D(bool useWorldCoordinates)
+    {
+        Vector3 position;
+        TryGetMousePosition2D(useWorldCoordinates, out position);
+        return position;
     }
 
     public void RegisterHandler(Handler handler)

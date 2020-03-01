@@ -37,8 +37,6 @@ public class MapManager : MonoBehaviour
 
     public MapDisplays CurrentlyDisplayingMapType;
 
-    [SerializeField]
-    private bool m_Use3DRenderer = false;
     private Color FowGrey = new Color(.25f, .25f, .25f, 1);
     private Color NotDiscovered = new Color(0f, 0f, 0f, 1);
     private Color PlayerVision = new Color(1, 1, 1, 1);
@@ -50,7 +48,12 @@ public class MapManager : MonoBehaviour
     private Action OnMapRerender;
 
     private bool FinishedUpdatingTiles = false;
-    
+
+    /// <summary>
+    /// The higher this number the more fine the nave mesh compared to the terrain mesh
+    /// </summary>
+    int NavMeshScale = 2;
+
     private void Awake()
     {
         _instance = this;
@@ -251,19 +254,13 @@ public class MapManager : MonoBehaviour
         
         ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
         SetUpAjdacentTiles();
-        if(!m_Use3DRenderer)
-        {
-            CreateTileMapLayers();
-            RenderMap(MapDisplays.Tiles);
-        }
-        else
-        {
-            MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
 
-            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
-            MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
-            MeshGen.ConstructGridMesh(MapGen.m_MapData);
-        }
+        MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
+
+        LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
+        MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
+        MeshGen.ConstructGridMesh(MapGen.m_MapData);
+        
     }
 
     #region position conversion and helpers
@@ -362,13 +359,8 @@ public class MapManager : MonoBehaviour
 
         // Make sure we only modify the graph when all pathfinding threads are paused
         AstarPath.active.AddWorkItem(new AstarWorkItem(ctx => {
-            //create the graph
-
-            // put 2 nave mesh cells per tile
-            int scale = 2;
-            
             //first make node array
-            int size = (map.GetUpperBound(0) + 1) * scale + 1;
+            int size = (map.GetUpperBound(0) + 1) * NavMeshScale + 1;
 
             PointNode[,] nodeArray = new PointNode[size, size];
 
@@ -376,7 +368,7 @@ public class MapManager : MonoBehaviour
             {
                 for (int x = 0; x < size; x++)
                 {
-                    Vector3 tilePos = GetWorldPositionFromTilePosition(new Vector2(x / (float)scale, y / (float) scale));
+                    Vector3 tilePos = GetWorldPositionFromTilePosition(new Vector2(x / (float)NavMeshScale, y / (float) NavMeshScale));
                     nodeArray[x,y] = graph.AddNode((Int3) tilePos);
                 }
             }
@@ -395,8 +387,8 @@ public class MapManager : MonoBehaviour
                         {
                             if (InBounds(nodeArray, i, j))
                             {
-                                int scaledX = x / scale;
-                                int scaledY = y / scale;
+                                int scaledX = x / NavMeshScale;
+                                int scaledY = y / NavMeshScale;
 
                                 // if we are in the last edge grab
                                 if(scaledX == map.GetUpperBound(0) + 1)
