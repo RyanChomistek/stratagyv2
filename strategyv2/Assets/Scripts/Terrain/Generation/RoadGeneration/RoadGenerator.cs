@@ -74,9 +74,15 @@ public class RoadGenerator
                     return 0;
                 }
 
+                if(mapData.TerrainMap[adjacent.x, adjacent.y] != Terrain.Grass)
+                {
+                    return 100;
+                }
+
                 float currHeight = mapData.HeightMap[current.x, current.y];
                 float adjHeight = mapData.HeightMap[adjacent.x, adjacent.y];
                 return Mathf.Abs(currHeight - adjHeight) * 100;
+                //return 0;
             }); }, "road path time");
         Debug.Log($"path size {path.Count}");
 

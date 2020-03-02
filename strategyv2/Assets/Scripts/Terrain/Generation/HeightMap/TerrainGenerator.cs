@@ -135,7 +135,7 @@ public class TerrainGenerator : MonoBehaviour {
             mapdata.RawWaterLevelMap[x, y] = LakeMap[borderedMapIndex];
         }
 
-        LayerMapFunctions.SmoothMT(ref mapdata.VertexHeightMap, 2);
+        //LayerMapFunctions.SmoothMT(ref mapdata.VertexHeightMap, 2);
 
         // Create the tile height map
         // take every 4 height map points and find the middle value and use that

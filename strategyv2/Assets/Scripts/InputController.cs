@@ -207,8 +207,6 @@ public class DragHandler : ButtonHandler
     {
         if(InputController.TryGetMousePosition2D(this.UseWorldCoordinates, out this.LastMousePosition))
         {
-            Debug.Log(LastMousePosition);
-
             this.IsCurrentlyDragging = true;
             base.OnButtonDown();
         }

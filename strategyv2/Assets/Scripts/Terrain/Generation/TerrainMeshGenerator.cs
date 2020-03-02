@@ -19,6 +19,14 @@ public class MeshGeneratorArgs
     public float Scale = 20;
     public float ElevationScale = 10;
     public float WaterScale = .1f;
+
+    public bool GenerateWaterMeshes= true;
+    public bool GenerateTreeMeshes = true;
+    public bool GenerateDetailMeshes = true;
+    public bool GenerateRoadMeshes = true;
+
+    public int GrassDensity = 100;
+    public float TreeDensity = .5f;
 }
 
 
@@ -65,6 +73,7 @@ public class TerrainMeshGenerator : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        m_Terrain.detailObjectDistance = 2000;
     }
 
     //TODO Block this into chuncks 
@@ -104,6 +113,13 @@ public class TerrainMeshGenerator : MonoBehaviour
                     alphaData[y, x, ROCK] = 0;
                     alphaData[y, x, ROAD] = 0;
                 }
+                else if(terrain == Terrain.Mountain)
+                {
+                    alphaData[y, x, GRASS] = 0;
+                    alphaData[y, x, WATER] = 0;
+                    alphaData[y, x, ROCK] = 0;
+                    alphaData[y, x, ROAD] = 1;
+                }
                 else
                 {
                     float rockyness = gradient.magnitude * 10;
@@ -113,6 +129,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                     alphaData[y, x, ROCK] = rockyness;
                     alphaData[y, x, ROAD] = 0;
                 }
+
 
                 if (improvement == Improvement.Road)
                 {
@@ -125,6 +142,8 @@ public class TerrainMeshGenerator : MonoBehaviour
         }
 
         ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
+        ConstructGrass(tData, mapData, otherArgs);
+        ConstructRocks(tData, mapData, otherArgs);
         tData.SetAlphamaps(0, 0, alphaData);
     }
 
@@ -268,42 +287,43 @@ public class TerrainMeshGenerator : MonoBehaviour
         Vector3 tileSize = new Vector3(1 / (float)improvementMap.GetUpperBound(0), 0, 1 / (float)improvementMap.GetUpperBound(1));
         float nudgeRadius = .25f;
         float scaleNudgeBase = .2f;
-        for (int x = 0; x <= improvementMap.GetUpperBound(0); x++)
+
+        //TreeDensity
+        //int numTreeIterations = (int)TreeDensity < 1 ? 1 : (int)TreeDensity;
+        if (otherArgs.GenerateTreeMeshes)
         {
-            for (int y = 0; y <= improvementMap.GetUpperBound(1); y++)
+            for (int x = 0; x <= improvementMap.GetUpperBound(0); x++)
             {
-                if(improvementMap[x,y] == Improvement.Forest && UnityEngine.Random.Range(0,4) == 1)
+                for (int y = 0; y <= improvementMap.GetUpperBound(1); y++)
                 {
-                    // Move the tree a little so that we dont get a grid
-                    Vector3 nudge = 
-                        new Vector3( 
-                            UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.x,
-                            0, 
-                            UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.z);
+                    if (improvementMap[x, y] == Improvement.Forest && UnityEngine.Random.value < otherArgs.TreeDensity)
+                    {
+                        // Move the tree a little so that we dont get a grid
+                        Vector3 nudge =
+                            new Vector3(
+                                UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.x,
+                                0,
+                                UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.z);
 
-                    Vector3 treePos = 
-                        new Vector3(
-                            x / (float) improvementMap.GetUpperBound(0),
-                            heightMap[x,y],
-                            y / (float)improvementMap.GetUpperBound(1)) + nudge;
+                        Vector3 treePos =
+                            new Vector3(
+                                x / (float)improvementMap.GetUpperBound(0),
+                                heightMap[x, y],
+                                y / (float)improvementMap.GetUpperBound(1)) + nudge;
 
-                    TreeInstance tree = new TreeInstance();
-                    tree.color = Color.white;
+                        TreeInstance tree = new TreeInstance();
+                        tree.color = Color.white;
 
-                    Vector3 scaleNudge =
-                        new Vector3(
-                            UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase),
-                            0,
-                            UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase));
+                        float scaleNudge = UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase);
+                        tree.heightScale = .5f + scaleNudge;
+                        tree.widthScale = .5f + scaleNudge;
 
-                    tree.heightScale = .5f + scaleNudge.x;
-                    tree.widthScale = .25f + scaleNudge.z;
-
-                    tree.lightmapColor = Color.white;
-                    tree.position = treePos;
-                    tree.prototypeIndex = 0;
-                    tree.widthScale = 1;
-                    trees.Add(tree);
+                        tree.lightmapColor = Color.white;
+                        tree.position = treePos;
+                        tree.prototypeIndex = 0;
+                        tree.widthScale = 1;
+                        trees.Add(tree);
+                    }
                 }
             }
         }
@@ -312,8 +332,95 @@ public class TerrainMeshGenerator : MonoBehaviour
         tData.treeInstances = trees.ToArray();
     }
 
-    public void ConstructWaterMeshes(MapData mapData, MeshGeneratorArgs meshArgs, float[,] heightMap, float[,] waterMap, Terrain[,] terrainTileMap)
+    private Vector2Int ConvertDetailPositionToTilePosition(TerrainData tData, MapData mapData, Vector2Int detailPos, MeshGeneratorArgs otherArgs)
     {
+        Vector2 positionScaled = detailPos;
+        positionScaled.x /= tData.detailWidth;
+        positionScaled.y /= tData.detailHeight;
+        positionScaled *= mapData.mapSize;
+        return LayerMapFunctions.FloorVector(positionScaled);
+    }
+
+    public void ConstructGrass(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
+    {
+        ConstructDetailLayer(tData, mapData, otherArgs, 0, (tilePosition) =>
+        {
+            Improvement improvement = mapData.ImprovmentMap[tilePosition.x, tilePosition.y];
+            bool acceptableImprovement = improvement == Improvement.Empty || improvement == Improvement.Forest;
+            // make sure there are no improvements on the tile and that its grass
+            if (mapData.TerrainMap[tilePosition.x, tilePosition.y] == Terrain.Grass)
+            {
+                if(improvement == Improvement.Empty)
+                    return otherArgs.GrassDensity;
+                if (improvement == Improvement.Forest)
+                    return otherArgs.GrassDensity / 10;
+            }
+
+            return 0;
+        });
+    }
+
+    public void ConstructRocks(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
+    {
+        ConstructDetailLayer(tData, mapData, otherArgs, 1, (tilePosition) =>
+        {
+            // make sure there are no improvements on the tile and that its grass
+            if (mapData.TerrainMap[tilePosition.x, tilePosition.y] == Terrain.Mountain)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        });
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="tData"></param>
+    /// <param name="mapData"></param>
+    /// <param name="otherArgs"></param>
+    /// <param name="layer"></param>
+    /// <param name="densityFunc"> function to get the density of the detail given a tile location </param>
+    public void ConstructDetailLayer(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs, int layer, Func<Vector2Int, int> densityFunc)
+    {
+        
+
+        // Get all of layer.
+        var map = tData.GetDetailLayer(0, 0, tData.detailWidth, tData.detailHeight, layer);
+
+        // For each pixel in the detail map...
+        for (int y = 0; y < tData.detailHeight; y++)
+        {
+            for (int x = 0; x < tData.detailWidth; x++)
+            {
+                if (otherArgs.GenerateDetailMeshes)
+                {
+                    // Here we do y, x because the details coordinates are flipped from ours
+                    Vector2Int tilePosition = ConvertDetailPositionToTilePosition(tData, mapData, new Vector2Int(y, x), otherArgs);
+                    map[x, y] = densityFunc(tilePosition);
+                }
+                else
+                {
+                    map[x, y] = 0;
+                }
+                
+            }
+        }
+
+        // Assign the modified map back.
+        tData.SetDetailLayer(0, 0, layer, map);
+    }
+
+    public void ConstructWaterMeshes(MapData mapData, MeshGeneratorArgs meshArgs, float[,] heightMap, float[,] waterMap, Terrain[,] terrainTileMap, MeshGeneratorArgs otherArgs)
+    {
+        if (!otherArgs.GenerateWaterMeshes)
+        {
+            return;
+        }
+
         Debug.Log($"terrain y size {(m_Terrain.terrainData.size.y)} {m_Terrain.terrainData.bounds.max.y }");
         // Clear any old water meshes
         m_WaterMeshes.ForEach(x => DestroyImmediate(x));
@@ -380,17 +487,8 @@ public class TerrainMeshGenerator : MonoBehaviour
                 Vector2 uv = new Vector2(meshIndex.x / ((float) meshSize), meshIndex.y / ((float) meshSize));
                 Vector3 vert = new Vector3(uv.x, 0, uv.y) * m_Terrain.terrainData.bounds.max.x;
                 vert += Vector3.up * minHeight * (m_Terrain.terrainData.size.y);
-
-                //if(vertToIndexMap.TryGetValue(vert, out int existingTileVert))
-                //{
-                //    //verts.Add(existingTileVert);
-                //}
-                //else
-                //{
-                    //vertToIndexMap.Add(vert, verts.Count);
-                    verts.Add(vert);
-                    uvs.Add(uv);
-                //}
+                verts.Add(vert);
+                uvs.Add(uv);
             }
 
             // generate the tri indexes
@@ -422,99 +520,6 @@ public class TerrainMeshGenerator : MonoBehaviour
         // Set the clip offset to the height of the water, make sure to scale by the terrain size
         waterMesh.GetComponent<UnityStandardAssets.Water.Water>().clipPlaneOffset = (sumHeight / componet.Count) * (m_Terrain.terrainData.size.y);
         waterMesh.transform.SetParent(transform);
-    }
-
-    private void AddVerts(List<Vector2Int> vertsToAdd, int meshSize, MeshGeneratorArgs meshArgs, List<Vector3> verts, List<int> triangles,
-        List<Vector2> uvs, Dictionary<Vector2Int, int> vertToIndexMap, float[,] heightMap, float[,] waterMap, float minComponentHeight, ref Terrain[,] terrainTileMap)
-    {
-        foreach(Vector2Int vert in vertsToAdd)
-        {
-            int index;
-            
-            // check if we have already added the vert, if not add it
-            if (!vertToIndexMap.TryGetValue(vert, out index))
-            {
-                index = verts.Count;
-                Vector2 uv = new Vector2(vert.x / (meshSize - 1f), vert.y / (meshSize - 1f));
-                Vector3 worldPos = new Vector3(uv.x, 0, uv.y) * m_Terrain.terrainData.bounds.max.x;
-
-                float height = minComponentHeight; //heightMap[vert.x, vert.y];
-
-                height += .001f;
-
-                // lower the land under the water
-                if (terrainTileMap[vert.x, vert.y] == Terrain.Water)
-                {
-                    //heightMap[vert.x, vert.y] -= .01f;
-                    float waterDepth = waterMap[vert.x, vert.y] * meshArgs.WaterScale;
-                    waterDepth = waterDepth > .1f ? waterDepth : .1f;
-
-                    heightMap[vert.x, vert.y] -= .5f;
-                }
-
-                worldPos += Vector3.up * height * (m_Terrain.terrainData.size.y);
-
-                verts.Add(worldPos);
-                uvs.Add(uv);
-                vertToIndexMap.Add(vert, index);
-            }
-
-            triangles.Add(index);
-        }
-    }
-
-    private List<Vector2Int> OrderVertsInClockWise(List<Vector2Int> verts)
-    {
-        // Find minx, miny
-        Vector2Int min = verts[0];
-        foreach (Vector2Int v in verts)
-        {
-            min.x = Math.Min(v.x, min.x);
-            min.y = Math.Min(v.y, min.y);
-        }
-
-        List<Vector2Int> offsets = new List<Vector2Int>();
-
-        // Calculate offsets from min
-        for(int i = 0; i < verts.Count; i++)
-        {
-            offsets.Add(verts[i] - min);
-        }
-
-        // calculate center of tri
-        float x = 0;
-        float y = 0;
-        foreach (Vector2 v in offsets)
-        {
-            x += v.x;
-            y += v.y;
-        }
-        Vector2 center = new Vector2(0, 0);
-        center.x = x / offsets.Count;
-        center.y = y / offsets.Count;
-
-        // Sort with custom compare
-        List<int> ordering = new List<int> {0,1,2};
-
-        ordering.Sort((aI,bI) => {
-            Vector2Int a = offsets[aI];
-            Vector2Int b = offsets[bI];
-            // get the angle t for each of the points
-            // ^ 
-            // | t
-            // - ->
-            float a1 = ((Mathf.Rad2Deg * Mathf.Atan2(a.x - center.x, a.y - center.y)) + 360) % 360;
-            float a2 = ((Mathf.Rad2Deg * Mathf.Atan2(b.x - center.x, b.y - center.y)) + 360) % 360;
-            return (int)(a1 - a2);
-        });
-
-        List<Vector2Int> orderedVerts = new List<Vector2Int>() {
-            verts[ordering[0]],
-            verts[ordering[1]],
-            verts[ordering[2]],
-        };
-
-        return orderedVerts;
     }
 
     /// <summary>

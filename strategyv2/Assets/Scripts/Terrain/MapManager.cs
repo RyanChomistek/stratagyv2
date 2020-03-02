@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -25,12 +26,7 @@ public class MapManager : MonoBehaviour
     [SerializeField]
     private ErosionOptions m_ErosionOptions;
 
-    [Tooltip("The Tilemap to draw onto")]
-    public List<Tilemap> TerrainTileLayers;
-    public Tilemap ImprovementTilemap;
     public TerrainMapTile[,] map;
-    public TileBase BlankTile;
-    public GameObject ZLayerPrefab;
 
     private float _minHeight, _maxHeight;
     public int NumZLayers = 5;
@@ -49,32 +45,49 @@ public class MapManager : MonoBehaviour
 
     private bool FinishedUpdatingTiles = false;
 
+    public bool IsFinishedGeneratingMap { get; private set; }
+
     /// <summary>
     /// The higher this number the more fine the nave mesh compared to the terrain mesh
     /// </summary>
     int NavMeshScale = 2;
 
+    public Action OnTerrrainGenerationFinished;
+
     private void Awake()
     {
         _instance = this;
-        GenerateMap();
-
         CurrentlyDisplayingMapType = MapDisplays.TilesWithVision;
+
+        StartCoroutine(CreateTerrain());
+    }
+
+    IEnumerator CreateTerrain()
+    {
+        yield return GenerateMap();
+
+        IsFinishedGeneratingMap = true;
+
+        OnTerrrainGenerationFinished?.Invoke();
     }
 
     void Start()
     {
-        CreateGraph();
-        StartCoroutine(UpdateTileValues());
-        //InputController.Instance.RegisterOnClickCallBack(PrintTile);
-        ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
-            (handler, mousePos) => {
-                PrintTile(mousePos);
-            });
+        OnTerrrainGenerationFinished += () =>
+        {
+            CreateGraph();
+            StartCoroutine(UpdateTileValues());
+            //InputController.Instance.RegisterOnClickCallBack(PrintTile);
+            ButtonHandler Handler = new ButtonHandler(ButtonHandler.LeftClick, (x, y) => { },
+                (handler, mousePos) =>
+                {
+                    PrintTile(mousePos);
+                });
 
-        InputController.Instance.RegisterHandler(Handler);
+            InputController.Instance.RegisterHandler(Handler);
 
-        LocalPlayerController.Instance.GeneralDivision.AttachedDivision.OnDiscoveredMapChanged += x => Rerender();
+            LocalPlayerController.Instance.GeneralDivision.AttachedDivision.OnDiscoveredMapChanged += x => Rerender();
+        };
     }
 
     private void Update()
@@ -226,41 +239,57 @@ public class MapManager : MonoBehaviour
     }
     #endregion updateTileValues
 
-    public void GenerateMap()
+    public IEnumerator GenerateMap()
     {
         Dictionary<Terrain, TerrainMapTile> terrainTileLookup = new Dictionary<Terrain, TerrainMapTile>();
         Dictionary<Improvement, ImprovementMapTile> improvementTileLookup = new Dictionary<Improvement, ImprovementMapTile>();
-        foreach (MapLayerSettings layer in MapGen.LayerSettings)
+
+        LayerMapFunctions.LogAction(() =>
         {
-            if(layer.MapTile.Layer == MapLayer.Terrain)
+            foreach (MapLayerSettings layer in MapGen.LayerSettings)
             {
-                if (!terrainTileLookup.ContainsKey(layer.terrain))
+                if (layer.MapTile.Layer == MapLayer.Terrain)
                 {
-                    terrainTileLookup[layer.terrain] = layer.MapTile.TerrainMapTileSettings;
+                    if (!terrainTileLookup.ContainsKey(layer.terrain))
+                    {
+                        terrainTileLookup[layer.terrain] = layer.MapTile.TerrainMapTileSettings;
+                    }
+                }
+                else
+                {
+                    if (!improvementTileLookup.ContainsKey(layer.Improvement))
+                    {
+                        improvementTileLookup[layer.Improvement] = layer.MapTile.ImprovementMapTileSettings;
+                    }
                 }
             }
-            else
-            {
-                if (!improvementTileLookup.ContainsKey(layer.Improvement))
-                {
-                    improvementTileLookup[layer.Improvement] = layer.MapTile.ImprovementMapTileSettings;
-                }
-            }
-        }
 
-        MapGen.InitializeMaps();
-        MapGen.GenerateHeightMaps(m_ErosionOptions);
-        LayerMapFunctions.LogAction(() => MapGen.GenerateTerrainAndImprovements(terrainTileLookup, improvementTileLookup, NumZLayers), "map gen time");
-        
-        ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
-        SetUpAjdacentTiles();
+            LayerMapFunctions.LogAction(() => MapGen.InitializeMaps(), "Initialization");
+        }, "MAP GEN: finished setup");
+        yield return new WaitForEndOfFrame();
 
-        MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap);
+        LayerMapFunctions.LogAction(() =>
+        {
+            MapGen.GenerateHeightMaps(m_ErosionOptions);
+        }, "MAP GEN: finished erosion");
+        yield return new WaitForEndOfFrame();
 
-        LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
-        MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
-        MeshGen.ConstructGridMesh(MapGen.m_MapData);
-        
+        LayerMapFunctions.LogAction(() =>
+        {
+            MapGen.GenerateTerrainAndImprovements(terrainTileLookup, improvementTileLookup, NumZLayers);
+            ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
+            SetUpAjdacentTiles();
+        }, "MAP GEN: done generating map tiles");
+        yield return new WaitForEndOfFrame();
+
+        LayerMapFunctions.LogAction(() =>
+        {
+            MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
+            LayerMapFunctions.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
+            MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
+            MeshGen.ConstructGridMesh(MapGen.m_MapData);
+        }, "MAP GEN: done constructing meshes");
+        yield return new WaitForEndOfFrame();
     }
 
     #region position conversion and helpers
@@ -301,7 +330,7 @@ public class MapManager : MonoBehaviour
 
     public Vector3 ClampPositionToInBounds(Vector3 position)
     {
-        var gridStart = TerrainTileLayers[0].transform.position;
+        var gridStart = Vector3.zero;
         float x = Mathf.Clamp(position.x, 0, MeshGen.GetMeshMapSize());
         float z = Mathf.Clamp(position.z, 0, MeshGen.GetMeshMapSize());
         return new Vector3(x, 0, z);
@@ -435,21 +464,6 @@ public class MapManager : MonoBehaviour
         //Debug.Log($"min {_minHeight}, max {_maxHeight}");
     }
 
-    private void CreateTileMapLayers()
-    {
-        TerrainTileLayers.ForEach(x => DestroyImmediate(x.gameObject));
-        TerrainTileLayers.Clear();
-
-        for (int i = 0; i < NumZLayers; i++)
-        {
-            var layer = Instantiate(ZLayerPrefab);
-            Tilemap tileMap = layer.GetComponent<Tilemap>();
-            TerrainTileLayers.Add(tileMap);
-            tileMap.GetComponent<TilemapRenderer>().sortingOrder = i;
-            layer.transform.parent = transform;
-        }
-    }
-
     public void Rerender()
     {
         RenderMap(CurrentlyDisplayingMapType);
@@ -476,7 +490,7 @@ public class MapManager : MonoBehaviour
                 this.RenderMapWithKey(x => x.HeightGradient.magnitude);
                 break;
             case MapDisplays.Tiles:
-                this.RenderMapWithTiles();
+                //this.RenderMapWithTiles();
                 break;
             case MapDisplays.TilesWithVision:
                 //RenderAllTilesGray();
@@ -500,52 +514,6 @@ public class MapManager : MonoBehaviour
         OnMapRerender?.Invoke();
     }
 
-    public void RenderMapWithTiles()
-    {
-        TerrainTileLayers.ForEach(x => x.ClearAllTiles());
-        ImprovementTilemap.ClearAllTiles();
-        int min = 1000;
-        int cnt = 0;
-        for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
-        {
-            for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
-            {
-                var tile = map[x, y];
-                int highestLayer = GetLayerIndexByHeight(tile.Height);
-                min = Mathf.Min(min, highestLayer);
-                for (int z = 0; z <= highestLayer; z ++)
-                {
-                    TerrainTileLayers[z].SetTile(new Vector3Int(x, y, 0), map[x, y].DisplayTile);
-                }
-
-                ImprovementTilemap.SetTile(new Vector3Int(x, y, 0), map[x, y].Improvement.DisplayTile);
-                cnt += (int) map[x, y].Improvement.Improvement;
-            }
-        }
-    }
-
-    public void SetTileColor(Vector2Int pos, Color color)
-    {
-        int x = pos.x, y = pos.y;
-        var position = new Vector3Int(pos.x, pos.y, 0);
-        var tile = map[x, y];
-        int highestLayer = GetLayerIndexByHeight(tile.Height);
-
-        TerrainTileLayers[highestLayer].SetTileFlags(position, TileFlags.None);
-        TerrainTileLayers[highestLayer].SetColor(position, color);
-        ImprovementTilemap.SetTileFlags(position, TileFlags.None);
-        ImprovementTilemap.SetColor(position, color);
-    }
-
-    public Color GetTileColor(Vector2Int pos)
-    {
-        int x = pos.x, y = pos.y;
-        var tile = map[x, y];
-        int highestLayer = GetLayerIndexByHeight(tile.Height);
-        var position = new Vector3Int(pos.x, pos.y, 0);
-        return TerrainTileLayers[highestLayer].GetColor(position);
-    }
-
     public void RenderSimple()
     {
         for (int x = 0; x <= map.GetUpperBound(0); x++) //Loop through the width of the map
@@ -554,7 +522,7 @@ public class MapManager : MonoBehaviour
             {
                 //Tilemap.SetTile(position, BlankTile);
                 var position = new Vector2Int(x, y);
-                SetTileColor(position, map[x, y].SimpleDisplayColor);
+                //SetTileColor(position, map[x, y].SimpleDisplayColor);
             }
         }
     }
@@ -566,7 +534,7 @@ public class MapManager : MonoBehaviour
             for (int y = 0; y <= map.GetUpperBound(1); y++) //Loop through the height of the map
             {
                 var position = new Vector2Int(x, y);
-                SetTileColor(position, FowGrey);
+                //SetTileColor(position, FowGrey);
             }
         }
     }
@@ -582,11 +550,11 @@ public class MapManager : MonoBehaviour
                 if(division.discoveredMapLocations[x, y])
                 {
                     //TerrainTilemap.SetColor(position, _FowGrey);
-                    SetTileColor(position, FowGrey);
+                    //SetTileColor(position, FowGrey);
                 }
                 else
                 {
-                    SetTileColor(position, NotDiscovered);
+                    //SetTileColor(position, NotDiscovered);
                     //TerrainTilemap.SetColor(position, _notDiscovered);
                 }
             }
@@ -637,7 +605,7 @@ public class MapManager : MonoBehaviour
                 if (colors == null)
                 {
                     //TerrainTilemap.SetColor(position, _FowGrey);
-                    SetTileColor(position, FowGrey);
+                    //SetTileColor(position, FowGrey);
                 }
                 else
                 {
@@ -647,7 +615,7 @@ public class MapManager : MonoBehaviour
                         blend += color / colors.Count;
                     }
 
-                    SetTileColor(position, blend);
+                    //SetTileColor(position, blend);
                     //TerrainTilemap.SetColor(position, blend);
                 }
             }
@@ -687,7 +655,7 @@ public class MapManager : MonoBehaviour
                 //TerrainTilemap.SetTileFlags(position, TileFlags.None);
                 //TerrainTilemap.SetColor(position, color);
 
-                SetTileColor(position, color);
+                //SetTileColor(position, color);
             }
         }
     }
@@ -739,7 +707,7 @@ public class MapManager : MonoBehaviour
                 val = Mathf.Clamp(val, (float) min, (float) max);
                 float t = Mathf.InverseLerp((float) min, (float) max, val);
                 var color = Color.Lerp(Color.red, Color.green, t);
-                SetTileColor(position, color);
+                //SetTileColor(position, color);
             }
         }
     }
@@ -755,7 +723,7 @@ public class MapManager : MonoBehaviour
                 //TerrainTilemap.SetTileFlags(position, TileFlags.None);
                 //TerrainTilemap.SetColor(position, color);
 
-                SetTileColor(position, color);
+                //SetTileColor(position, color);
             }
         }
     }

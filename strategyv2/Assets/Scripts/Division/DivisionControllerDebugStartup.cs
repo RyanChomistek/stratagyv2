@@ -9,14 +9,17 @@ public class DivisionControllerDebugStartup : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for (int i = 0; i < NumSoldiers; i++)
+        MapManager.Instance.OnTerrrainGenerationFinished += () =>
         {
-            Soldier random = new Soldier();
-            int value = Mathf.RoundToInt(Random.Range(1, 3.5f));
-            random.Type = (SoldierType)value;
-            Controller.AttachedDivision.Soldiers.Add(random);
-        }
+            for (int i = 0; i < NumSoldiers; i++)
+            {
+                Soldier random = new Soldier();
+                int value = Mathf.RoundToInt(Random.Range(1, 3.5f));
+                random.Type = (SoldierType)value;
+                Controller.AttachedDivision.Soldiers.Add(random);
+            }
 
-        Controller.AttachedDivision.PromoteOfficer();
+            Controller.AttachedDivision.PromoteOfficer();
+        };
     }
 }

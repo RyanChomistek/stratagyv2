@@ -14,17 +14,14 @@ public class DivisionController : BaseDivisionController {
 
     void Awake ()
     {
-        InitAwake();
+        MapManager.Instance.OnTerrrainGenerationFinished += InitAwake;
     }
 
     protected void InitAwake()
     {
         base.AttachedDivision = new ControlledDivision(base.AttachedDivision.TeamId, this);
         AttachedDivision.Init(this);
-    }
 
-    private void Start()
-    {
         // fix the y position relative to the height map
         var pos = transform.position;
         pos.y = MapManager.Instance.getHeightAtWorldPosition(pos);

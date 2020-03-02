@@ -30,8 +30,11 @@ public class LocalPlayerController : PlayerController {
     }
 	
 	void Update () {
-        DisplayRememberedDivisions();
-        DrawZones();
+        if(MapManager.Instance.IsFinishedGeneratingMap)
+        {
+            DisplayRememberedDivisions();
+            DrawZones();
+        }
     }
 
     public void DisplayRememberedDivisions()

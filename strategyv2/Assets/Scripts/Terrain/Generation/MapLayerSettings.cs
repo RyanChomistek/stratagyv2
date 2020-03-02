@@ -6,13 +6,13 @@ using UnityEngine.Tilemaps;
 
 public enum LayerFillAlgorithm
 {
-    Solid, RandomWalk, Square, PerlinNoise, RandomWalkBlocking, HeightRange, FollowGradient, FollowAlongGradient, AdjacentTiles, Lake, River
+    Solid, RandomWalk, Square, PerlinNoise, RandomWalkBlocking, HeightRange, FollowGradient, FollowAlongGradient, AdjacentTiles, Lake, River, Mountain
 }
 
 [System.Serializable]
 public enum Terrain
 {
-    Empty, Grass, Water
+    Empty, Grass, Water, Mountain
 }
 
 public enum Improvement
@@ -34,8 +34,6 @@ public class MapLayerSettings : ScriptableObject
     public Terrain terrain;
     public Improvement Improvement;
     public LayerFillAlgorithm algorithm;
-    [Tooltip("The Tile to draw (use a RuleTile for best results)")]
-    public TileBase tile;
     public bool useLayeredGradients = true;
     public bool randomSeed;
     public float seed;
@@ -50,6 +48,9 @@ public class MapLayerSettings : ScriptableObject
     public float MinHeight;
     public float MaxHeight;
 
+    public float MinGradient;
+    public float MaxGradient;
+
     //for gradient follow
     public float MinStartHeight;
     public float MinStopHeight;
@@ -61,12 +62,11 @@ public class MapLayerSettings : ScriptableObject
     public float MinThreshold;
     public float SpawnChance;
 
-    public float MaxGradient;
-
     // Droplets
     public float WaterPercentThreshold;
     public float MaxWaterDepth;
     public float MaxWaterGradient;
+
 
 }
 
@@ -94,7 +94,6 @@ public class MapLayerSettings_Editor : Editor
         
         mapLayer.useLayeredGradients = EditorGUILayout.Toggle("useLayeredGradients", mapLayer.useLayeredGradients);
         mapLayer.randomSeed = EditorGUILayout.Toggle("Random Seed", mapLayer.randomSeed);
-        mapLayer.tile = EditorGUILayout.ObjectField("", mapLayer.tile, typeof(TileBase), false) as TileBase;
         mapLayer.MapTile = EditorGUILayout.ObjectField("", mapLayer.MapTile, typeof(MapTileSettings), false) as MapTileSettings;
         mapLayer.IsEnabled = EditorGUILayout.Toggle("Enable", mapLayer.IsEnabled);
         
@@ -148,13 +147,19 @@ public class MapLayerSettings_Editor : Editor
                 mapLayer.MaxWaterDepth = EditorGUILayout.FloatField("maxWaterDepth", mapLayer.MaxWaterDepth);
                 mapLayer.MaxWaterGradient = EditorGUILayout.FloatField("MaxWaterGradient", mapLayer.MaxWaterGradient);
                 break;
+            case LayerFillAlgorithm.Mountain:
+                mapLayer.MinHeight = EditorGUILayout.FloatField("MinHeight", mapLayer.MinHeight);
+                mapLayer.MaxHeight = EditorGUILayout.FloatField("MaxHeight", mapLayer.MaxHeight);
+                mapLayer.MinGradient = EditorGUILayout.FloatField("MinGradient", mapLayer.MinGradient);
+                mapLayer.MaxGradient = EditorGUILayout.FloatField("MaxGradient", mapLayer.MaxGradient);
+                break;
         }
 
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-        AssetDatabase.SaveAssets();
+        //AssetDatabase.SaveAssets();
 
-        if (GUI.changed)
-            EditorUtility.SetDirty(mapLayer);
+        //if (GUI.changed)
+        //    EditorUtility.SetDirty(mapLayer);
     }
 }
 

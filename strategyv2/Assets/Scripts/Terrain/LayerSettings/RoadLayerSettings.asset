@@ -16,10 +16,10 @@ MonoBehaviour:
   Improvement: 1
   algorithm: 1
   tile: {fileID: 11400000, guid: fc530990f841218469dd887a849f70ff, type: 2}
-  useLayeredGradients: 1
+  useLayeredGradients: 0
   randomSeed: 1
   seed: 651651
-  iterations: 1
+  iterations: 5
   radius: 1
   MapTile: {fileID: 11400000, guid: b9756f42f5795b54eabcc8c83f6340cb, type: 2}
   IsEnabled: 0
@@ -27,6 +27,8 @@ MonoBehaviour:
   PerlinNoiseThreshold: 0.5
   MinHeight: 0
   MaxHeight: 0
+  MinGradient: 0
+  MaxGradient: 0
   MinStartHeight: 0
   MinStopHeight: 0
   MaxWidth: 0
@@ -34,7 +36,6 @@ MonoBehaviour:
   Width: 1
   MinThreshold: 0
   SpawnChance: 0
-  MaxGradient: 0
   WaterPercentThreshold: 0
   MaxWaterDepth: 0
   MaxWaterGradient: 0

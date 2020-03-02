@@ -51,6 +51,11 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateHeightMaps(ErosionOptions erosionOptions)
     {
+        if (LoadFromFile)
+        {
+            return;
+        }
+
         LayerMapFunctions.LogAction(() => HeightmapGen.GenerateHeightMap(m_MapData.MeshHeightMapSize), "Base Height Map Time");
         if (erosionOptions.enabled)
         {
@@ -67,6 +72,11 @@ public class MapGenerator : MonoBehaviour
     public void GenerateTerrainAndImprovements(Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
         Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, int numZLayers)
     {
+        if (LoadFromFile)
+        {
+            return;
+        }
+
         float seed;
         seed = System.DateTime.Now.Millisecond;
         System.Random rand = new System.Random((int)seed);
@@ -193,6 +203,9 @@ public class MapGenerator : MonoBehaviour
                 case LayerFillAlgorithm.Lake:
                 case LayerFillAlgorithm.River:
                     LakeGenerator.Lake(ref currentMap, m_MapData, ref m_MapData.HeightMap, ref LakeMap, ref gradientMap, ref terrainMap, currentTileValue, layerSetting);
+                    break;
+                case LayerFillAlgorithm.Mountain:
+                    MountainGenerator.Generate(m_MapData, layerSetting);
                     break;
             }
 

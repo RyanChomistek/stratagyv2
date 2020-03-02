@@ -27,6 +27,8 @@ MonoBehaviour:
   PerlinNoiseThreshold: 0.5
   MinHeight: 0
   MaxHeight: 0
+  MinGradient: 0
+  MaxGradient: 0.05
   MinStartHeight: 0
   MinStopHeight: 0
   MaxWidth: 0
@@ -34,7 +36,6 @@ MonoBehaviour:
   Width: 0
   MinThreshold: 0
   SpawnChance: 0
-  MaxGradient: 0.05
   WaterPercentThreshold: 0
   MaxWaterDepth: 0
   MaxWaterGradient: 0
