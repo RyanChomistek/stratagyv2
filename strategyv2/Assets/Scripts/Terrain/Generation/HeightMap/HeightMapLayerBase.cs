@@ -4,11 +4,20 @@ using UnityEngine;
 
 public class HeightMapGenerationData
 {
-    public float[] HeightMap { get; private set; }
-    public float[] WaterMap { get; private set; }
+    public float[,] HeightMap { get; set; }
+    public float[,] WaterMap { get; set; }
+
+    public int MapSize;
+
+    public HeightMapGenerationData(int mapSize)
+    {
+        this.MapSize = mapSize;
+        HeightMap = new float[mapSize, mapSize];
+        WaterMap = new float[mapSize, mapSize];
+    }
 }
 
-public abstract class HeightMapLayerBase 
+public interface HeightMapLayerBase 
 {
-    public abstract void Apply(HeightMapGenerationData HMData);
+     void Apply(HeightMapGenerationData HMData);
 }

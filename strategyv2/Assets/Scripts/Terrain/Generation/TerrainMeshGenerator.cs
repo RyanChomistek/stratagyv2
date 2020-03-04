@@ -86,8 +86,6 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         float alphaMapScale = tData.alphamapWidth / ((float)mapData.TerrainMap.GetUpperBound(0) + 1);
         
-        //Debug.Log($"scales: resolution {resolutionScale}, alphaMap {alphaMapScale}");
-
         m_Terrain.terrainData.SetHeights(0, 0, scaledMap);
 
         float[,,] alphaData = tData.GetAlphamaps(0, 0, tData.alphamapWidth, tData.alphamapHeight);
@@ -97,54 +95,64 @@ public class TerrainMeshGenerator : MonoBehaviour
         int ROCK = 2;
         int ROAD = 3;
 
-        for (int y = 0; y < tData.alphamapHeight; y++)
+        LayerMapFunctions.LogAction(() =>
         {
-            for (int x = 0; x < tData.alphamapWidth; x++)
+            for (int y = 0; y < tData.alphamapHeight; y++)
             {
-                Vector2Int terrainMapPos = new Vector2Int(Mathf.FloorToInt(x / alphaMapScale), Mathf.FloorToInt(y / alphaMapScale));
-                Terrain terrain = mapData.TerrainMap[terrainMapPos.x, terrainMapPos.y];
-                Improvement improvement = mapData.ImprovmentMap[terrainMapPos.x, terrainMapPos.y];
-                Vector2 gradient = mapData.GradientMap[terrainMapPos.x, terrainMapPos.y];
-
-                if (terrain == Terrain.Water)
+                for (int x = 0; x < tData.alphamapWidth; x++)
                 {
-                    alphaData[y, x, GRASS] = 0;
-                    alphaData[y, x, WATER] = 1;
-                    alphaData[y, x, ROCK] = 0;
-                    alphaData[y, x, ROAD] = 0;
-                }
-                else if(terrain == Terrain.Mountain)
-                {
-                    alphaData[y, x, GRASS] = 0;
-                    alphaData[y, x, WATER] = 0;
-                    alphaData[y, x, ROCK] = 0;
-                    alphaData[y, x, ROAD] = 1;
-                }
-                else
-                {
-                    float rockyness = gradient.magnitude * 10;
+                    Vector2Int terrainMapPos = new Vector2Int(Mathf.FloorToInt(x / alphaMapScale), Mathf.FloorToInt(y / alphaMapScale));
+                    Terrain terrain = mapData.TerrainMap[terrainMapPos.x, terrainMapPos.y];
+                    Improvement improvement = mapData.ImprovmentMap[terrainMapPos.x, terrainMapPos.y];
+                    Vector2 gradient = mapData.GradientMap[terrainMapPos.x, terrainMapPos.y];
 
-                    alphaData[y, x, GRASS] = 1 - rockyness;
-                    alphaData[y, x, WATER] = 0;
-                    alphaData[y, x, ROCK] = rockyness;
-                    alphaData[y, x, ROAD] = 0;
-                }
+                    if (terrain == Terrain.Water)
+                    {
+                        alphaData[y, x, GRASS] = 0;
+                        alphaData[y, x, WATER] = 1;
+                        alphaData[y, x, ROCK] = 0;
+                        alphaData[y, x, ROAD] = 0;
+                    }
+                    else if (terrain == Terrain.Mountain)
+                    {
+                        alphaData[y, x, GRASS] = 0;
+                        alphaData[y, x, WATER] = 0;
+                        alphaData[y, x, ROCK] = 0;
+                        alphaData[y, x, ROAD] = 1;
+                    }
+                    else
+                    {
+                        float rockyness = gradient.magnitude * 10;
+
+                        alphaData[y, x, GRASS] = 1 - rockyness;
+                        alphaData[y, x, WATER] = 0;
+                        alphaData[y, x, ROCK] = rockyness;
+                        alphaData[y, x, ROAD] = 0;
+                    }
 
 
-                if (improvement == Improvement.Road)
-                {
-                    alphaData[y, x, GRASS] = 0;
-                    alphaData[y, x, WATER] = 0;
-                    alphaData[y, x, ROCK] = 0;
-                    alphaData[y, x, ROAD] = 1;
+                    if (improvement == Improvement.Road)
+                    {
+                        alphaData[y, x, GRASS] = 0;
+                        alphaData[y, x, WATER] = 0;
+                        alphaData[y, x, ROCK] = 0;
+                        alphaData[y, x, ROAD] = 1;
+                    }
                 }
             }
-        }
+        }, "Set alpha maps");
 
-        ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
-        ConstructGrass(tData, mapData, otherArgs);
-        ConstructRocks(tData, mapData, otherArgs);
-        tData.SetAlphamaps(0, 0, alphaData);
+
+        LayerMapFunctions.LogAction(() => {
+            ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
+            ConstructGrass(tData, mapData, otherArgs);
+            ConstructRocks(tData, mapData, otherArgs);
+        }, "Set Details");
+
+        LayerMapFunctions.LogAction(() =>
+        {
+            tData.SetAlphamaps(0, 0, alphaData);
+        }, "Save Alpha maps");
     }
 
     public void ConstructGridMesh(MapData mapdata)

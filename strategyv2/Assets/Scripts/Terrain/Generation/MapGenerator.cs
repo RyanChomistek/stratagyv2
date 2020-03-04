@@ -24,7 +24,7 @@ public class MapGenerator : MonoBehaviour
     public Vector2[,] GradientMap { get { return m_MapData.GradientMap; } }
     public Vector2[,] LayeredGradientMap { get { return m_MapData.LayeredGradientMap; } }
 
-    public TerrainGenerator HeightmapGen;
+    public HeightMapGeneration.TerrainGenerator HeightmapGen;
 
     public bool LoadFromFile = false;
 
@@ -49,7 +49,7 @@ public class MapGenerator : MonoBehaviour
         m_MapData.LandComponents = null;
     }
 
-    public void GenerateHeightMaps(ErosionOptions erosionOptions)
+    public void GenerateHeightMaps()
     {
         if (LoadFromFile)
         {
@@ -57,10 +57,6 @@ public class MapGenerator : MonoBehaviour
         }
 
         LayerMapFunctions.LogAction(() => HeightmapGen.GenerateHeightMap(m_MapData.MeshHeightMapSize), "Base Height Map Time");
-        if (erosionOptions.enabled)
-        {
-            LayerMapFunctions.LogAction(() => HeightmapGen.Erode(m_MapData.MeshHeightMapSize, erosionOptions), "Erosion time");
-        }
     }
 
     /// <summary>
@@ -81,7 +77,7 @@ public class MapGenerator : MonoBehaviour
         seed = System.DateTime.Now.Millisecond;
         System.Random rand = new System.Random((int)seed);
 
-        HeightmapGen.ConvertMapsTo2D(m_MapData);
+        HeightmapGen.ConvertMapsToTileMaps(m_MapData);
 
         for (int x = 0; x < MapSize; x++)
         {

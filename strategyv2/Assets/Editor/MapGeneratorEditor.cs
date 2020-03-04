@@ -23,15 +23,6 @@ public class MapGeneratorEditor : CustomEditorBase
                 }
                 
             }
-
-            if (GUILayout.Button("Generate"))
-            {
-            }
-
-            if (GUILayout.Button("Clear"))
-            {
-                levelGen.ClearMap();
-            }
         }
     }
 }

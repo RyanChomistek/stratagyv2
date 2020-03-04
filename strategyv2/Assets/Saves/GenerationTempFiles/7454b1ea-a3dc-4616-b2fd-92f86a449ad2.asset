@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: 7454b1ea-a3dc-4616-b2fd-92f86a449ad2
+  m_EditorClassIdentifier: Scripts:HeightMapGeneration:RandomNoiseLayerSettings
+  seed: 0
+  randomizeSeed: 0
+  MaxNumThreads: 65535
+  numOctaves: 7
+  persistence: 0.5
+  lacunarity: 2
+  initialScale: 2
+  heightMapComputeShader: {fileID: 0}
+  GenerationEnabled: 1

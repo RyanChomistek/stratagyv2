@@ -23,9 +23,6 @@ public class MapManager : MonoBehaviour
     public TerrainMeshGenerator MeshGen;
     [SerializeField]
     private MeshGeneratorArgs m_MeshArgs;
-    [SerializeField]
-    private ErosionOptions m_ErosionOptions;
-
     public TerrainMapTile[,] map;
 
     private float _minHeight, _maxHeight;
@@ -270,7 +267,7 @@ public class MapManager : MonoBehaviour
 
         LayerMapFunctions.LogAction(() =>
         {
-            MapGen.GenerateHeightMaps(m_ErosionOptions);
+            MapGen.GenerateHeightMaps();
         }, "MAP GEN: finished erosion");
         yield return new WaitForEndOfFrame();
 
