@@ -10,6 +10,8 @@ namespace XNodeEditor {
     [CustomNodeEditor(typeof(XNode.Node))]
     public class NodeEditor : XNodeEditor.Internal.NodeEditorBase<NodeEditor, NodeEditor.CustomNodeEditorAttribute, XNode.Node> {
 
+        protected bool IsDirty = false;
+
         /// <summary> Fires every whenever a node was modified through the editor </summary>
         public static Action<XNode.Node> onUpdateNode;
         public readonly static Dictionary<XNode.NodePort, Vector2> portPositions = new Dictionary<XNode.NodePort, Vector2>();
@@ -24,6 +26,9 @@ namespace XNodeEditor {
             // serializedObject.Update(); must go at the start of an inspector gui, and
             // serializedObject.ApplyModifiedProperties(); goes at the end.
             serializedObject.Update();
+
+            IsDirty = false;
+
             string[] excludes = { "m_Script", "graph", "position", "ports" };
 
             // Iterate through serialized properties and draw them like the Inspector (But with ports)
@@ -42,7 +47,7 @@ namespace XNodeEditor {
                 NodeEditorGUILayout.PortField(dynamicPort);
             }
 
-            serializedObject.ApplyModifiedProperties();
+            IsDirty = serializedObject.ApplyModifiedProperties();
         }
 
         public virtual int GetWidth() {

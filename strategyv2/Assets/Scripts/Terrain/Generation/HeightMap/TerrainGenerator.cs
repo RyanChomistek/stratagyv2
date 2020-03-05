@@ -28,23 +28,23 @@ namespace HeightMapGeneration
                 }
 
                 HeightMapLayerBase layer = null;
-                switch (node.Type)
-                {
-                    case Algorithm.RandomNoise:
-                        //layer = new RandomNoiseHeightMapLayer(node.GetSettings() as RandomNoiseLayerSettings);
-                        break;
-                    case Algorithm.Erosion:
-                        layer = new ErosionHeightMapLayer(node.GetSettings() as ErosionLayerSettings, MapPadding);
-                        break;
-                    case Algorithm.Terrace:
-                        layer = new TerraceHeightMapLayer(node.GetSettings() as TerraceLayerSettings);
-                        break;
-                    default:
-                        Debug.LogError("missing algorithm please add");
-                        continue;
-                }
+                //switch (node.Type)
+                //{
+                //    case Algorithm.RandomNoise:
+                //        //layer = new RandomNoiseHeightMapLayer(node.GetSettings() as RandomNoiseLayerSettings);
+                //        break;
+                //    case Algorithm.Erosion:
+                //        layer = new ErosionHeightMapLayer(node.GetSettings() as ErosionSettings, MapPadding);
+                //        break;
+                //    case Algorithm.Terrace:
+                //        layer = new TerraceHeightMapLayer(node.GetSettings() as TerraceLayerSettings);
+                //        break;
+                //    default:
+                //        Debug.LogError("missing algorithm please add");
+                //        continue;
+                //}
 
-                layer.Apply(HMData);
+                //layer.Apply(HMData);
             }
         }
 

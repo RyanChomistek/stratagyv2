@@ -1,52 +1,68 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace HeightMapGeneration
 {
-    public class ErosionHeightMapLayer : HeightMapLayerBase
+    public class ErosionSettings
     {
-        ErosionLayerSettings Settings;
-
-        // these are 1d arrays for use in the shader
-        private float[] HeightMap;
-        private float[] WaterMap;
-
+        [Header("Erosion Settings")]
+        public bool enabled = true;
+        public ComputeShader erosion;
+        public int MaxNumThreads = 65535;
+        public int numDropletsPerCell = 8;
+        public int maxLifetime = 30;
+        public float sedimentCapacityFactor = 3;
+        public float minSedimentCapacity = .01f;
+        public float depositSpeed = 0.3f;
+        public float erodeSpeed = 0.3f;
+        public float evaporateSpeed = .01f;
+        public float gravity = 4;
+        public float startSpeed = 1;
+        public float startWater = 1;
+        [Range(0, 1)]
+        public float inertia = 0.3f;
         public int ErosionBrushRadius = 3;
+    }
 
-        public ErosionHeightMapLayer(ErosionLayerSettings settings, int erosionBrushRadius)
+    public class ErosionOutput
+    {
+        public float[] HeightMap;
+        public float[] WaterMap;
+    }
+
+    public class ErosionHeightMapLayer
+    {
+        public static ErosionOutput Run(ErosionSettings settings, float[] InputHeightMap, float[] InputWaterMap)
         {
-            this.Settings = settings;
-            this.ErosionBrushRadius = erosionBrushRadius;
+            float[] HeightMap = (float[])InputHeightMap.Clone();
+            float[] WaterMap = (float[])InputWaterMap.Clone();
+            
+            Erode(settings, (int)Mathf.Sqrt(HeightMap.Length), HeightMap, WaterMap);
+
+            return new ErosionOutput() {
+                HeightMap = HeightMap,
+                WaterMap = WaterMap
+            };
         }
 
-        public void Apply(HeightMapGenerationData HMData)
-        {
-            HeightMap = TerrainGenerator.Convert2DMapTo1D(HMData.MapSize, HMData.HeightMap);
-            WaterMap = TerrainGenerator.Convert2DMapTo1D(HMData.MapSize, HMData.WaterMap);
-
-            Erode(HMData);
-
-            HMData.HeightMap = TerrainGenerator.Convert1DMapTo2D(HMData.MapSize, HeightMap);
-            HMData.WaterMap = TerrainGenerator.Convert1DMapTo2D(HMData.MapSize, WaterMap);
-        }
-
-        public void Erode(HeightMapGenerationData HMData)
+        private static void Erode(ErosionSettings Settings, int mapSize, float[] HeightMap, float[] WaterMap)
         {
             // Create brush
             List<int> brushIndexOffsets = new List<int>();
             List<float> brushWeights = new List<float>();
 
             float weightSum = 0;
-            for (int brushY = -ErosionBrushRadius; brushY <= ErosionBrushRadius; brushY++)
+            for (int brushY = -Settings.ErosionBrushRadius; brushY <= Settings.ErosionBrushRadius; brushY++)
             {
-                for (int brushX = -ErosionBrushRadius; brushX <= ErosionBrushRadius; brushX++)
+                for (int brushX = -Settings.ErosionBrushRadius; brushX <= Settings.ErosionBrushRadius; brushX++)
                 {
                     float sqrDst = brushX * brushX + brushY * brushY;
-                    if (sqrDst < ErosionBrushRadius * ErosionBrushRadius)
+                    if (sqrDst < Settings.ErosionBrushRadius * Settings.ErosionBrushRadius)
                     {
-                        brushIndexOffsets.Add(brushY * HMData.MapSize + brushX);
-                        float brushWeight = 1 - Mathf.Sqrt(sqrDst) / ErosionBrushRadius;
+                        brushIndexOffsets.Add(brushY * mapSize + brushX);
+                        float brushWeight = 1 - Mathf.Sqrt(sqrDst) / Settings.ErosionBrushRadius;
                         weightSum += brushWeight;
                         brushWeights.Add(brushWeight);
                     }
@@ -62,52 +78,52 @@ namespace HeightMapGeneration
             ComputeBuffer brushWeightBuffer = new ComputeBuffer(brushWeights.Count, sizeof(int));
             brushIndexBuffer.SetData(brushIndexOffsets);
             brushWeightBuffer.SetData(brushWeights);
-            this.Settings.erosion.SetBuffer(0, "brushIndices", brushIndexBuffer);
-            this.Settings.erosion.SetBuffer(0, "brushWeights", brushWeightBuffer);
+            Settings.erosion.SetBuffer(0, "brushIndices", brushIndexBuffer);
+            Settings.erosion.SetBuffer(0, "brushWeights", brushWeightBuffer);
 
-            int numThreads = System.Math.Min(HeightMap.Length, this.Settings.MaxNumThreads);
+            int numThreads = System.Math.Min(HeightMap.Length, Settings.MaxNumThreads);
             int numElementsToProcess = Mathf.CeilToInt(HeightMap.Length / (float)numThreads);
-            Debug.Log($"Erosion: num elements = {HeightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
+            //Debug.Log($"Erosion: num elements = {HeightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
 
-            // Heightmap buffer
+            // HeightMap buffer
             ComputeBuffer mapBuffer = new ComputeBuffer(HeightMap.Length, sizeof(float));
             mapBuffer.SetData(HeightMap);
-            this.Settings.erosion.SetBuffer(0, "map", mapBuffer);
+            Settings.erosion.SetBuffer(0, "map", mapBuffer);
 
             // WaterMap buffer
             ComputeBuffer waterMapBuffer = new ComputeBuffer(WaterMap.Length, sizeof(float));
             waterMapBuffer.SetData(WaterMap);
-            this.Settings.erosion.SetBuffer(0, "waterMap", waterMapBuffer);
+            Settings.erosion.SetBuffer(0, "waterMap", waterMapBuffer);
 
             // Settings
-            this.Settings.erosion.SetInt("borderSize", ErosionBrushRadius);
-            this.Settings.erosion.SetInt("mapSize", HMData.MapSize);
+            Settings.erosion.SetInt("borderSize", Settings.ErosionBrushRadius);
+            Settings.erosion.SetInt("mapSize", mapSize);
 
-            this.Settings.erosion.SetInt("numThreads", numThreads);
-            this.Settings.erosion.SetInt("numElementsToProcess", numElementsToProcess);
+            Settings.erosion.SetInt("numThreads", numThreads);
+            Settings.erosion.SetInt("numElementsToProcess", numElementsToProcess);
 
-            this.Settings.erosion.SetInt("numDropletsPerCell", Settings.numDropletsPerCell);
+            Settings.erosion.SetInt("numDropletsPerCell", Settings.numDropletsPerCell);
 
-            this.Settings.erosion.SetInt("brushLength", brushIndexOffsets.Count);
-            this.Settings.erosion.SetInt("maxLifetime", this.Settings.maxLifetime);
-            this.Settings.erosion.SetFloat("inertia", this.Settings.inertia);
-            this.Settings.erosion.SetFloat("sedimentCapacityFactor", this.Settings.sedimentCapacityFactor);
-            this.Settings.erosion.SetFloat("minSedimentCapacity", this.Settings.minSedimentCapacity);
-            this.Settings.erosion.SetFloat("depositSpeed", this.Settings.depositSpeed);
-            this.Settings.erosion.SetFloat("erodeSpeed", this.Settings.erodeSpeed);
-            this.Settings.erosion.SetFloat("evaporateSpeed", this.Settings.evaporateSpeed);
-            this.Settings.erosion.SetFloat("gravity", this.Settings.gravity);
-            this.Settings.erosion.SetFloat("startSpeed", this.Settings.startSpeed);
-            this.Settings.erosion.SetFloat("startWater", this.Settings.startWater);
+            Settings.erosion.SetInt("brushLength", brushIndexOffsets.Count);
+            Settings.erosion.SetInt("maxLifetime", Settings.maxLifetime);
+            Settings.erosion.SetFloat("inertia", Settings.inertia);
+            Settings.erosion.SetFloat("sedimentCapacityFactor", Settings.sedimentCapacityFactor);
+            Settings.erosion.SetFloat("minSedimentCapacity", Settings.minSedimentCapacity);
+            Settings.erosion.SetFloat("depositSpeed", Settings.depositSpeed);
+            Settings.erosion.SetFloat("erodeSpeed", Settings.erodeSpeed);
+            Settings.erosion.SetFloat("evaporateSpeed", Settings.evaporateSpeed);
+            Settings.erosion.SetFloat("gravity", Settings.gravity);
+            Settings.erosion.SetFloat("startSpeed", Settings.startSpeed);
+            Settings.erosion.SetFloat("startWater", Settings.startWater);
 
             // Run compute shader
-            this.Settings.erosion.Dispatch(0, numThreads, 1, 1);
+            Settings.erosion.Dispatch(0, numThreads, 1, 1);
             mapBuffer.GetData(HeightMap);
             waterMapBuffer.GetData(WaterMap);
 
             // Release buffers
             mapBuffer.Release();
-            //randomIndexBuffer.Release ();
+            waterMapBuffer.Release();
             brushIndexBuffer.Release();
             brushWeightBuffer.Release();
         }

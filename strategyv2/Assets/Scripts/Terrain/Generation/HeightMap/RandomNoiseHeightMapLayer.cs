@@ -19,31 +19,16 @@ namespace HeightMapGeneration
         public int MapSize = 128;
     }
 
-    public class RandomNoiseHeightMapLayer : HeightMapLayerBase
+    public class RandomNoiseHeightMapLayer
     {
-        private RandomNoiseSettings Settings;
-
-        public RandomNoiseHeightMapLayer(RandomNoiseSettings settings)
-        {
-            this.Settings = settings;
-        }
-
-        public void Apply(HeightMapGenerationData HMData)
-        {
-            float[] heightMap = TerrainGenerator.Convert2DMapTo1D(HMData.MapSize, HMData.HeightMap);
-            GenerateHeightMapGPU(HMData.MapSize, heightMap);
-
-            HMData.HeightMap = TerrainGenerator.Convert1DMapTo2D(HMData.MapSize, heightMap);
-        }
-
-        public float[] Run(float[] BaseHeightMap)
+        public static float[] Run(RandomNoiseSettings Settings, float[] BaseHeightMap)
         {
             float[] HeightMap = (float[]) BaseHeightMap.Clone();
-            GenerateHeightMapGPU((int) Mathf.Sqrt(BaseHeightMap.Length), HeightMap);
+            GenerateHeightMapGPU(Settings, (int) Mathf.Sqrt(BaseHeightMap.Length), HeightMap);
             return HeightMap;
         }
 
-        void GenerateHeightMapGPU(int mapSize, float[] heightMap)
+        private static void GenerateHeightMapGPU(RandomNoiseSettings Settings, int mapSize, float[] heightMap)
         {
             if (!Settings.GenerationEnabled)
             {
@@ -75,7 +60,7 @@ namespace HeightMapGeneration
 
             int numThreads = System.Math.Min(heightMap.Length, Settings.MaxNumThreads);
             int numElementsToProcess = Mathf.CeilToInt(heightMap.Length / (float)numThreads);
-            Debug.Log($"HeightMapGen: num elements = {heightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
+            //Debug.Log($"HeightMapGen: num elements = {heightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
 
             Settings.heightMapComputeShader.SetInt("mapSize", mapSize);
             Settings.heightMapComputeShader.SetInt("numThreads", numThreads);
@@ -90,6 +75,7 @@ namespace HeightMapGeneration
 
             mapBuffer.GetData(heightMap);
             minMaxBuffer.GetData(minMaxHeight);
+
             mapBuffer.Release();
             minMaxBuffer.Release();
             offsetsBuffer.Release();

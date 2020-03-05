@@ -1,0 +1,139 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using XNode;
+
+[CreateNodeMenu("")]
+public class SelfPropagatingNode : XNode.Node
+{
+    [Input] public bool PauseRecalculation = false;
+
+    // Starts a recalculation using this node as the source
+    public void Propogate()
+    {
+        this.Recalculate();
+
+        // Need to topologically sort nodes so we dont trigger recalcs on a single node more than once/before its dependancies have been recalced
+
+        // find all the ports on this node that are output
+        List<NodePort> outputPorts = new List<NodePort>();
+        foreach (var port in this.Ports)
+        {
+            if (port.IsOutput)
+            {
+                outputPorts.Add(port);
+            }
+        }
+
+        // Find all of the dependancies on the nodes we ahve outputs to
+        Dictionary<Node, HashSet<Node>> NodeDependancies = new Dictionary<Node, HashSet<Node>>();
+        for (int i = 0; i < outputPorts.Count; i++)
+        {
+            NodePort port = outputPorts[i];
+            foreach (NodePort otherInputPort in port.GetConnections())
+            {
+                HashSet<Node> ReachableNodes = new HashSet<Node>();
+                // Find all reachable nodes of from this one
+                if (GetAllReachableNodes(otherInputPort.node, ReachableNodes))
+                {
+                    NodeDependancies[otherInputPort.node] = ReachableNodes;
+                }
+                else
+                {
+                    // we hit a cycle abort
+                    return;
+                }
+            }
+        }
+
+        // Find nodes that are not in any of the dependancies of other nodes and recalculate them
+        foreach (var nodeListPair in NodeDependancies)
+        {
+            Node node = nodeListPair.Key;
+            HashSet<Node> reachableNodes = nodeListPair.Value;
+
+            bool notInAnyOtherNodesDependancies = true;
+
+            foreach (var otherNodeListPair in NodeDependancies)
+            {
+                Node otherNode = otherNodeListPair.Key;
+                HashSet<Node> otherReachableNodes = otherNodeListPair.Value;
+                if (otherReachableNodes.Contains(node))
+                {
+                    notInAnyOtherNodesDependancies = false;
+                    break;
+                }
+            }
+
+            if (notInAnyOtherNodesDependancies)
+            {
+                SelfPropagatingNode propogatingNode;
+                if (propogatingNode = node as SelfPropagatingNode)
+                {
+                    RecalculateNextNode(propogatingNode);
+                }
+            }
+        }
+    }
+
+    private static bool GetAllReachableNodes(Node currentNode, HashSet<Node> reachableNodes)
+    {
+        foreach (NodePort outputPort in currentNode.Ports)
+        {
+            if (outputPort.IsOutput)
+            {
+                foreach (NodePort otherInputPort in outputPort.GetConnections())
+                {
+                    if (reachableNodes.Contains(otherInputPort.node))
+                    {
+                        Debug.LogError($"CYCLE DETECTED IN GRAPH | root node: {otherInputPort.node.name}");
+                        return false;
+                    }
+
+                    reachableNodes.Add(otherInputPort.node);
+
+                    // Find all reachable nodes of from this one
+                    return GetAllReachableNodes(otherInputPort.node, reachableNodes);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public virtual void Recalculate()
+    {
+        Debug.Log($"Recaculate: {this.name}");
+
+        // If recalculation is paused dont recalc
+        //if(PauseRecalculation)
+        //{
+        //    return;
+        //}
+    }
+
+    /// <summary>
+    /// this function is used to recalc the next node in the calc chain, you might want to pass some information to that next node
+    /// so do it here
+    /// </summary>
+    /// <param name="propogatingNode"> the next node in the calc chain </param>
+    public virtual void RecalculateNextNode(SelfPropagatingNode propogatingNode)
+    {
+        propogatingNode.Propogate();
+    }
+
+    public override void OnCreateConnection(NodePort from, NodePort to)
+    {
+        Propogate();
+    }
+
+    public override void OnRemoveConnection(NodePort port)
+    {
+        Propogate();
+    }
+
+    public void OnValidate()
+    {
+        //Propogate();
+    }
+}

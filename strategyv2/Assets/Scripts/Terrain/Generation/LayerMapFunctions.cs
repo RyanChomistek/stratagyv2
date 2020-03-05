@@ -1070,6 +1070,52 @@ public class LayerMapFunctions : MonoBehaviour
         }
     }
 
+    public static void ParallelForFast(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        int size = map.SideLength / numThreads;
+        int remainder = map.SideLength - (size * numThreads);
+
+        // Use the thread pool to parrellize update
+        using (CountdownEvent e = new CountdownEvent(1))
+        {
+            // TODO make these blocks instead of rows so that we get better lock perf
+            for (int i = 0; i < numThreads; i++)
+            {
+                Vector2Int start = new Vector2Int(0, i * size);
+                Vector2Int end = new Vector2Int(map.SideLength, ((i + 1) * size));
+
+                // on the last thread we need to deal with the remainder
+                if(i == numThreads - 1)
+                {
+                    end.y += remainder;
+                }
+
+                e.AddCount();
+                ThreadPool.QueueUserWorkItem(delegate (object state)
+                {
+                    try
+                    {
+                        for (int y = start.y; y < end.y; y++)
+                        {
+                            for (int x = start.x; x < end.x; x++)
+                            {
+                                action(x, y);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        e.Signal();
+                    }
+                },
+                null);
+            }
+
+            e.Signal();
+            e.Wait();
+        }
+    }
+
     public static float[,] Convolution2DMT(float[,] map, List<List<float>> kernel, int numThreads = DefaultNumThreadsForJob)
     {
         var convolutedArr = new float[map.GetUpperBound(0) + 1, map.GetUpperBound(1) + 1];
