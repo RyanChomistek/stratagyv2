@@ -107,7 +107,7 @@ public class ControlledDivision : Division
     {
         int sightDistance = Mathf.RoundToInt(MaxSightDistance);
         Vector2 controllerPosition = Controller.transform.position;
-        Vector3Int controllerPositionRounded = new Vector3Int(MapManager.RoundVector(Controller.transform.position).x, MapManager.RoundVector(Controller.transform.position).y, 0);
+        Vector3Int controllerPositionRounded = new Vector3Int(VectorUtilityFunctions.RoundVector(Controller.transform.position).x, VectorUtilityFunctions.RoundVector(Controller.transform.position).y, 0);
 
         for (int x = -sightDistance - 1; x <= sightDistance + 1; x++)
         {
@@ -116,7 +116,7 @@ public class ControlledDivision : Division
                 var position = new Vector3Int(x, y, 0) + controllerPositionRounded;
                 var inVision = (new Vector2(position.x, position.y) - controllerPosition).magnitude < Controller.AttachedDivision.MaxSightDistance;
 
-                if (inVision && MapManager.InBounds(discoveredMapLocations, position.x, position.y))
+                if (inVision && discoveredMapLocations.InBounds(position.x, position.y))
                 {
                     discoveredMapLocations[position.x, position.y] = true;
                 }
@@ -126,9 +126,9 @@ public class ControlledDivision : Division
 
     public void ShareMapInformation(ControlledDivision other)
     {
-        for (int x = 0; x <= discoveredMapLocations.GetUpperBound(0); x++)
+        for (int x = 0; x < discoveredMapLocations.SideLength; x++)
         {
-            for (int y = 0; y <= discoveredMapLocations.GetUpperBound(1); y++)
+            for (int y = 0; y < discoveredMapLocations.SideLength; y++)
             {
                 bool info = discoveredMapLocations[x, y] | other.discoveredMapLocations[x, y];
                 discoveredMapLocations[x, y] = info;

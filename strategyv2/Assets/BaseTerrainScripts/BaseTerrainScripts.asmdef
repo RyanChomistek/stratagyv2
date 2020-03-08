@@ -1,0 +1,14 @@
+{
+    "name": "BaseTerrainScripts",
+    "references": [
+        "GUID:e99243796bec2be4a82d312109ee5a23"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

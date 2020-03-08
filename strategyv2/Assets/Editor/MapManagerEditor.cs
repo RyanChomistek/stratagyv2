@@ -20,12 +20,14 @@ public class MapManagerEditor : CustomEditorBase
             mapManager.GenerateMap();
         }
 
-        if (GUILayout.Button("rerender"))
+
+
+        /*
+         * if (GUILayout.Button("rerender"))
         {
             mapManager.RenderMap(mapManager.CurrentlyDisplayingMapType);
         }
 
-        /*
         if (GUILayout.Button("Show Tiles"))
         {
             mapManager.RenderMap(MapDisplays.Tiles);

@@ -36,7 +36,7 @@ public class Division : IEquatable<Division>
 
     public virtual Vector3 Position { get; set; }
 
-    public bool[,] discoveredMapLocations;
+    public SquareArray<bool> discoveredMapLocations;
 
     //calculated values
     public float Speed = 10;
@@ -625,7 +625,7 @@ public class Division : IEquatable<Division>
 
     private bool MatchPred(Func<TerrainMapTile, bool> pred, int x, int y, out Vector3 foundPosition)
     {
-        if (MapManager.InBounds(MapManager.Instance.map, x, y))
+        if (MapManager.Instance.map.InBounds(x, y))
         {
             //Debug.Log($"{x},{y} in bounds | {discoveredMapLocations[x, y]}");
             TerrainMapTile left = MapManager.Instance.map[x, y];
@@ -644,7 +644,7 @@ public class Division : IEquatable<Division>
     {
         HashSet<Vector3> checkedPositions = new HashSet<Vector3>();
         Vector2Int tilePos = MapManager.Instance.GetTilePositionFromPosition(Position);
-        //MapManager.Instance.map.GetUpperBound(0)
+        //MapManager.Instance.map.SideLength + 1
         for (int boxSize = 1; boxSize <= 10; boxSize++)
         {
             List<int> xPositions = new List<int>();

@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class HeightMapGenerationData
 {
-    public float[,] HeightMap { get; set; }
-    public float[,] WaterMap { get; set; }
+    public SquareArray<float> HeightMap { get; set; }
+    public SquareArray<float> WaterMap { get; set; }
 
     public int MapSize;
 
     public HeightMapGenerationData(int mapSize)
     {
         this.MapSize = mapSize;
-        HeightMap = new float[mapSize, mapSize];
-        WaterMap = new float[mapSize, mapSize];
+        HeightMap = new SquareArray<float>(mapSize);
+        WaterMap = new SquareArray<float>(mapSize);
     }
 }
 

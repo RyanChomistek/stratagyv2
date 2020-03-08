@@ -8,15 +8,6 @@ using UnityEngine;
 [System.Serializable]
 public class MeshGeneratorArgs
 {
-    /// <summary>
-    /// size of the outside border of the 
-    /// </summary>
-    public int BorderSize = 3;
-    /// <summary>
-    /// scales the number of verts per index in the height map
-    /// </summary>
-    public int resolutionScale = 1;
-    public float Scale = 20;
     public float ElevationScale = 10;
     public float WaterScale = .1f;
 
@@ -37,16 +28,6 @@ public class TerrainMeshGenerator : MonoBehaviour
     #region Terrain Mesh
     [SerializeField]
     private UnityEngine.Terrain m_Terrain;
-
-    private Mesh m_Mesh;
-    [SerializeField]
-    private MeshRenderer m_MeshRenderer;
-    [SerializeField]
-    private MeshFilter m_MeshFilter;
-    [SerializeField]
-    private Material m_Material;
-    [SerializeField]
-    private Texture2D texture;
     #endregion Terrain Mesh
 
     #region Water Meshes
@@ -70,6 +51,9 @@ public class TerrainMeshGenerator : MonoBehaviour
     private GameObject m_GridMeshContainer;
     #endregion GridMesh
 
+    // Graph
+    //figure out how to import graph stuff might need to isolate utils for the graph to use
+
     void Awake()
     {
         Instance = this;
@@ -81,12 +65,12 @@ public class TerrainMeshGenerator : MonoBehaviour
     {
         TerrainData tData = m_Terrain.terrainData;
 
-        float resolutionScale = tData.heightmapResolution / ((float) mapData.VertexHeightMap.GetUpperBound(0));
-        float[,] scaledMap = ScaleHeightMapResolution(mapData.VertexHeightMap, resolutionScale);
+        float resolutionScale = tData.heightmapResolution / ((float) mapData.VertexHeightMap.SideLength - 1);
+        SquareArray<float> scaledMap = ScaleHeightMapResolution(mapData.VertexHeightMap, resolutionScale);
 
-        float alphaMapScale = tData.alphamapWidth / ((float)mapData.TerrainMap.GetUpperBound(0) + 1);
+        float alphaMapScale = tData.alphamapWidth / ((float)mapData.TerrainMap.SideLength);
         
-        m_Terrain.terrainData.SetHeights(0, 0, scaledMap);
+        m_Terrain.terrainData.SetHeights(0, 0, scaledMap.To2D());
 
         float[,,] alphaData = tData.GetAlphamaps(0, 0, tData.alphamapWidth, tData.alphamapHeight);
 
@@ -95,7 +79,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         int ROCK = 2;
         int ROAD = 3;
 
-        LayerMapFunctions.LogAction(() =>
+        ProfilingUtilities.LogAction(() =>
         {
             for (int y = 0; y < tData.alphamapHeight; y++)
             {
@@ -143,13 +127,13 @@ public class TerrainMeshGenerator : MonoBehaviour
         }, "Set alpha maps");
 
 
-        LayerMapFunctions.LogAction(() => {
+        ProfilingUtilities.LogAction(() => {
             ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
             ConstructGrass(tData, mapData, otherArgs);
             ConstructRocks(tData, mapData, otherArgs);
         }, "Set Details");
 
-        LayerMapFunctions.LogAction(() =>
+        ProfilingUtilities.LogAction(() =>
         {
             tData.SetAlphamaps(0, 0, alphaData);
         }, "Save Alpha maps");
@@ -162,16 +146,16 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         float gridLineThickness = .1f;
         float gridHeight = 1;
-        for(int x = 0; x < mapdata.mapSize; x++)
+        for(int x = 0; x < mapdata.TileMapSize; x++)
         {
             //draw a line from (x,1,0) to (x,1,mapsize)
-            DrawGridLine(new Vector2(x, 0), new Vector2(x, mapdata.mapSize), gridHeight, gridLineThickness, mapdata);
+            DrawGridLine(new Vector2(x, 0), new Vector2(x, mapdata.TileMapSize), gridHeight, gridLineThickness, mapdata);
         }
 
-        for (int z = 0; z < mapdata.mapSize; z++)
+        for (int z = 0; z < mapdata.TileMapSize; z++)
         {
             //draw a line from (0,1,z) to (mapsize,1,z)
-            DrawGridLine(new Vector2(0, z), new Vector2(mapdata.mapSize, z), gridHeight, gridLineThickness, mapdata);
+            DrawGridLine(new Vector2(0, z), new Vector2(mapdata.TileMapSize, z), gridHeight, gridLineThickness, mapdata);
         }
     }
 
@@ -199,10 +183,10 @@ public class TerrainMeshGenerator : MonoBehaviour
         Vector3 EndLeft = end3 - scaledTangent; // 2
         Vector3 EndRight = end3 + scaledTangent; // 3
 
-        verts.Add(ConvertTilePositionToWorldPosition(startLeft, mapdata.mapSize)); // 0
-        verts.Add(ConvertTilePositionToWorldPosition(startRight, mapdata.mapSize)); // 1
-        verts.Add(ConvertTilePositionToWorldPosition(EndLeft, mapdata.mapSize)); // 2
-        verts.Add(ConvertTilePositionToWorldPosition(EndRight, mapdata.mapSize)); // 3
+        verts.Add(ConvertTilePositionToWorldPosition(startLeft, mapdata.TileMapSize)); // 0
+        verts.Add(ConvertTilePositionToWorldPosition(startRight, mapdata.TileMapSize)); // 1
+        verts.Add(ConvertTilePositionToWorldPosition(EndLeft, mapdata.TileMapSize)); // 2
+        verts.Add(ConvertTilePositionToWorldPosition(EndRight, mapdata.TileMapSize)); // 3
 
         List<int> tri = new List<int>() {
             0,1,2,
@@ -215,10 +199,10 @@ public class TerrainMeshGenerator : MonoBehaviour
         meshPrefab.transform.SetParent(m_GridMeshContainer.transform);
     }
 
-    public void ConstructRoadMeshes(MapData mapdata)
+    public void ConstructRoadMeshes(MapData mapdata, MeshGeneratorArgs otherArgs)
     {
         TerrainData tData = m_Terrain.terrainData;
-        float alphaMapScale = tData.alphamapWidth / (float)mapdata.mapSize;
+        float alphaMapScale = tData.alphamapWidth / (float)mapdata.TileMapSize;
 
         m_PathCreators.ForEach(x =>
         {
@@ -232,7 +216,12 @@ public class TerrainMeshGenerator : MonoBehaviour
         });
 
         m_PathCreators.Clear();
-        
+
+        if(!otherArgs.GenerateRoadMeshes)
+        {
+            return;
+        }
+
         List<List<Vector3>> scaledPaths = new List<List<Vector3>>();
 
         float heightOffset = 1f;
@@ -245,7 +234,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             {
                 var point2D = new Vector2(point.x, point.z);
                 var point2DOffset = point2D + (Vector2.up + Vector2.right) / 2;
-                Vector2 scaledPoint = ConvertTilePositionToWorldPosition(point2DOffset, mapdata.mapSize);
+                Vector2 scaledPoint = ConvertTilePositionToWorldPosition(point2DOffset, mapdata.TileMapSize);
 
                 scaledPath.Add(new Vector3(
                             scaledPoint.x,
@@ -273,7 +262,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
     public Vector2Int ConvertWorldPositionToTilePosition(Vector3 worldPosition, MapData mapData)
     {
-        float scale = m_Terrain.terrainData.bounds.max.x / mapData.mapSize;
+        float scale = m_Terrain.terrainData.bounds.max.x / mapData.TileMapSize;
         return new Vector2Int(Mathf.FloorToInt(worldPosition.x / scale), Mathf.FloorToInt(worldPosition.z / scale));
     }
 
@@ -289,10 +278,10 @@ public class TerrainMeshGenerator : MonoBehaviour
         return new Vector2(pos.x * scale, pos.y * scale);
     }
 
-    public void ConstructTrees(TerrainData tData, Improvement[,] improvementMap, float[,] heightMap, Vector2[,] gradientMap, MeshGeneratorArgs otherArgs)
+    public void ConstructTrees(TerrainData tData, SquareArray<Improvement> improvementMap, SquareArray<float> heightMap, SquareArray<Vector2> gradientMap, MeshGeneratorArgs otherArgs)
     {
         List<TreeInstance> trees = new List<TreeInstance>();
-        Vector3 tileSize = new Vector3(1 / (float)improvementMap.GetUpperBound(0), 0, 1 / (float)improvementMap.GetUpperBound(1));
+        Vector3 tileSize = new Vector3(1 / (float)improvementMap.SideLength, 0, 1 / (float)improvementMap.SideLength);
         float nudgeRadius = .25f;
         float scaleNudgeBase = .2f;
 
@@ -300,9 +289,9 @@ public class TerrainMeshGenerator : MonoBehaviour
         //int numTreeIterations = (int)TreeDensity < 1 ? 1 : (int)TreeDensity;
         if (otherArgs.GenerateTreeMeshes)
         {
-            for (int x = 0; x <= improvementMap.GetUpperBound(0); x++)
+            for (int x = 0; x < improvementMap.SideLength; x++)
             {
-                for (int y = 0; y <= improvementMap.GetUpperBound(1); y++)
+                for (int y = 0; y < improvementMap.SideLength; y++)
                 {
                     if (improvementMap[x, y] == Improvement.Forest && UnityEngine.Random.value < otherArgs.TreeDensity)
                     {
@@ -315,9 +304,9 @@ public class TerrainMeshGenerator : MonoBehaviour
 
                         Vector3 treePos =
                             new Vector3(
-                                x / (float)improvementMap.GetUpperBound(0),
+                                x / (float)improvementMap.SideLength + 1,
                                 heightMap[x, y],
-                                y / (float)improvementMap.GetUpperBound(1)) + nudge;
+                                y / (float)improvementMap.SideLength) + nudge;
 
                         TreeInstance tree = new TreeInstance();
                         tree.color = Color.white;
@@ -345,8 +334,8 @@ public class TerrainMeshGenerator : MonoBehaviour
         Vector2 positionScaled = detailPos;
         positionScaled.x /= tData.detailWidth;
         positionScaled.y /= tData.detailHeight;
-        positionScaled *= mapData.mapSize;
-        return LayerMapFunctions.FloorVector(positionScaled);
+        positionScaled *= mapData.TileMapSize;
+        return VectorUtilityFunctions.FloorVector(positionScaled);
     }
 
     public void ConstructGrass(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
@@ -422,7 +411,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         tData.SetDetailLayer(0, 0, layer, map);
     }
 
-    public void ConstructWaterMeshes(MapData mapData, MeshGeneratorArgs meshArgs, float[,] heightMap, float[,] waterMap, Terrain[,] terrainTileMap, MeshGeneratorArgs otherArgs)
+    public void ConstructWaterMeshes(MapData mapData, MeshGeneratorArgs meshArgs, SquareArray<float> heightMap, SquareArray<float> waterMap, SquareArray<Terrain> terrainTileMap, MeshGeneratorArgs otherArgs)
     {
         if (!otherArgs.GenerateWaterMeshes)
         {
@@ -435,13 +424,13 @@ public class TerrainMeshGenerator : MonoBehaviour
         m_WaterMeshes.Clear();
 
         List<HashSet<Vector2Int>> components = null;
-        LayerMapFunctions.LogAction(() => {
-            components = LayerMapFunctions.FindComponents(Terrain.Water, heightMap.GetUpperBound(0), 2, ref terrainTileMap);
+        ProfilingUtilities.LogAction(() => {
+            components = ArrayUtilityFunctions.FindComponents(Terrain.Water, heightMap.SideLength, 2, ref terrainTileMap);
         }, "create components time");
 
-        float[,] waterClone = waterMap.Clone() as float[,];
+        SquareArray<float> waterClone = waterMap.Clone() as SquareArray<float>;
 
-        LayerMapFunctions.Normalize(ref waterClone);
+        ArrayUtilityFunctions.Normalize(waterClone);
 
         foreach(var componet in components)
         {
@@ -451,13 +440,13 @@ public class TerrainMeshGenerator : MonoBehaviour
         Debug.Log($"{components.Count} unique water zones");
     }
 
-    public void ConstructWaterMeshFromComponent(MapData mapData, HashSet<Vector2Int> componet, MeshGeneratorArgs meshArgs, ref float[,] heightMap, float[,] waterMap, ref Terrain[,] terrainTileMap)
+    public void ConstructWaterMeshFromComponent(MapData mapData, HashSet<Vector2Int> componet, MeshGeneratorArgs meshArgs, ref SquareArray<float> heightMap, SquareArray<float> waterMap, ref SquareArray<Terrain> terrainTileMap)
     {
         List<Vector3> verts = new List<Vector3>();
         Dictionary<Vector2, int> vertToIndexMap = new Dictionary<Vector2, int>();
         List<int> triangles = new List<int>();
         List<Vector2> uvs = new List<Vector2>();
-        int meshSize = heightMap.GetUpperBound(0);
+        int meshSize = heightMap.SideLength;
 
         Vector2Int[] adjacentDirections = {
             Vector2Int.up,
@@ -474,6 +463,8 @@ public class TerrainMeshGenerator : MonoBehaviour
             minHeight = Mathf.Min(minHeight, heightMap[index.x, index.y]);
             sumHeight += heightMap[index.x, index.y];
         }
+
+        minHeight += .05f;
 
         //Debug.Log($"average componenet water height {sumHeight / componet.Count}");
 
@@ -530,30 +521,11 @@ public class TerrainMeshGenerator : MonoBehaviour
         waterMesh.transform.SetParent(transform);
     }
 
-    /// <summary>
-    /// calculates the bilinear interpolation from the 4 points given u,v
-    /// </summary>
-    /// <param name="a"> top left </param>
-    /// <param name="b"> top right </param>
-    /// <param name="c"> bottom right </param>
-    /// <param name="d"> bottom left </param>
-    /// <param name="u"> horz position </param>
-    /// <param name="v"> vert position </param>
-    /// <returns></returns>
-    public static float QuadLerp(float a, float b, float c, float d, float u, float v)
-    {
-        v = 1 - v;
-        float abu = Mathf.Lerp(a, b, u);
-        float dcu = Mathf.Lerp(d, c, u);
-        return Mathf.Lerp(abu, dcu, v);
-    }
-
-    private float[,] ScaleHeightMapResolution(float[,] rawMap, float resolutionScale)
+    private SquareArray<float> ScaleHeightMapResolution(SquareArray<float> rawMap, float resolutionScale)
     {
         // This is intentionaly left as (count - 1), because in the calculation we dont look a the last element
-        int rawMapSize = rawMap.GetUpperBound(0);
-        int scaledMapSize = (int) (rawMapSize * resolutionScale);
-        float[,] scaledMap = new float[scaledMapSize, scaledMapSize];
+        int scaledMapSize = (int)((rawMap.SideLength - 1) * resolutionScale);
+        SquareArray<float> scaledMap = new SquareArray<float>(scaledMapSize);
         float maxDistance = resolutionScale * Mathf.Sqrt(2);
 
         List<Vector2> interpolationDirections = new List<Vector2>()
@@ -561,7 +533,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             Vector2.left, Vector2.right, Vector2.up, Vector2.down
         };
 
-        LayerMapFunctions.ParallelForFast(scaledMap, (x, y) => {
+        ArrayUtilityFunctions.ParallelForFast(scaledMap, (x, y) => {
             Vector2 rawPosition = new Vector2(x, y) / resolutionScale;
             Vector2Int rawIndex = new Vector2Int((int)(x / resolutionScale), (int)(y / resolutionScale));
 
@@ -581,7 +553,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             }
 
             Vector2 uv = rawPosition - rawIndex;
-            float height = QuadLerp(heights[0], heights[1], heights[2], heights[3], uv.x, uv.y);
+            float height = ArrayUtilityFunctions.QuadLerp(heights[0], heights[1], heights[2], heights[3], uv.x, uv.y);
 
             // flip x and y for the terrain
             scaledMap[y, x] = height;

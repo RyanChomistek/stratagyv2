@@ -1,19 +1,25 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
 [CreateNodeMenu("")]
-public class SelfPropagatingNode : XNode.Node
+public abstract class SelfPropagatingNode : XNode.Node
 {
-    [Input] public bool PauseRecalculation = false;
+    // should be called on the first node to set of a recalc chain
+    public void StartPropogation()
+    {
+        //EnterRecalculate();
+        //Propogate();
+        (graph as TerrainGeneratorGraph).RecalculateFullGraph();
+    }
 
     // Starts a recalculation using this node as the source
     public void Propogate()
     {
-        this.Recalculate();
-
         // Need to topologically sort nodes so we dont trigger recalcs on a single node more than once/before its dependancies have been recalced
+        System.DateTime FindingDependenciesStart = System.DateTime.Now;
 
         // find all the ports on this node that are output
         List<NodePort> outputPorts = new List<NodePort>();
@@ -25,7 +31,7 @@ public class SelfPropagatingNode : XNode.Node
             }
         }
 
-        // Find all of the dependancies on the nodes we ahve outputs to
+        // Find all of the dependancies on the nodes we have outputs to
         Dictionary<Node, HashSet<Node>> NodeDependancies = new Dictionary<Node, HashSet<Node>>();
         for (int i = 0; i < outputPorts.Count; i++)
         {
@@ -46,7 +52,11 @@ public class SelfPropagatingNode : XNode.Node
             }
         }
 
+        System.DateTime FindingDependenciesEnd = System.DateTime.Now;
+        System.DateTime RunningChildrenStart = System.DateTime.Now;
+
         // Find nodes that are not in any of the dependancies of other nodes and recalculate them
+        List<SelfPropagatingNode> nodesWithNoConflictingDependencies = new List<SelfPropagatingNode>();
         foreach (var nodeListPair in NodeDependancies)
         {
             Node node = nodeListPair.Key;
@@ -67,13 +77,28 @@ public class SelfPropagatingNode : XNode.Node
 
             if (notInAnyOtherNodesDependancies)
             {
+                // need to make only calculate the next node not keep going down the chain!
                 SelfPropagatingNode propogatingNode;
                 if (propogatingNode = node as SelfPropagatingNode)
                 {
-                    RecalculateNextNode(propogatingNode);
+                    propogatingNode.EnterRecalculate();
+                    nodesWithNoConflictingDependencies.Add(propogatingNode);
                 }
             }
         }
+
+        foreach (var node in nodesWithNoConflictingDependencies)
+        {
+            RecalculateNextNode(node);
+        }
+
+        System.DateTime RunningChildrenEnd = System.DateTime.Now;
+
+        TimeSpan FindingDependenciesTime = FindingDependenciesEnd - FindingDependenciesStart;
+        TimeSpan RunningChildrenTime = RunningChildrenEnd - RunningChildrenStart;
+
+        
+        Debug.Log($"{this.name} time spent finding dependencies: {FindingDependenciesTime}, Time Spent Recalculating Children {RunningChildrenTime}");
     }
 
     private static bool GetAllReachableNodes(Node currentNode, HashSet<Node> reachableNodes)
@@ -101,16 +126,22 @@ public class SelfPropagatingNode : XNode.Node
         return true;
     }
 
-    public virtual void Recalculate()
+    public void EnterRecalculate()
     {
-        Debug.Log($"Recaculate: {this.name}");
-
-        // If recalculation is paused dont recalc
-        //if(PauseRecalculation)
-        //{
-        //    return;
-        //}
+        TimeSpan recalcTime = TimeSpan.Zero;
+        System.DateTime startRecalc = System.DateTime.Now;
+        if (!(this.graph as TerrainGeneratorGraph).PauseRecalculation)
+        {
+            this.Recalculate();
+            System.DateTime endRecalc = System.DateTime.Now;
+            recalcTime = endRecalc - startRecalc;
+            Debug.Log($"{this.name} time spent in recalc: {recalcTime}");
+        }
     }
+
+    public abstract void Recalculate();
+
+    public abstract void Flush();
 
     /// <summary>
     /// this function is used to recalc the next node in the calc chain, you might want to pass some information to that next node
@@ -124,16 +155,16 @@ public class SelfPropagatingNode : XNode.Node
 
     public override void OnCreateConnection(NodePort from, NodePort to)
     {
-        Propogate();
+        StartPropogation();
     }
 
     public override void OnRemoveConnection(NodePort port)
     {
-        Propogate();
+        StartPropogation();
     }
 
-    public void OnValidate()
+    public bool IsInputArrayValid<T>(T[] arr)
     {
-        //Propogate();
+        return arr != null && arr.Length > 0;
     }
 }

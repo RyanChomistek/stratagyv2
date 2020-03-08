@@ -2,10 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateNodeMenu("TerrainNodes/GradientNode")]
 public class GradientNode : TerrainNode
 {
-    [Input] public float[] InputHeightMap = new float[128 * 128];
-    [Output] public Vector2[] GradientMap;
+    [Input] public float[] InputHeightMap = null;
+    [Output] public Vector2[] GradientMap = null;
+
+    public override void Flush()
+    {
+        InputHeightMap = null;
+        GradientMap = null;
+    }
 
     public override object GetValue(XNode.NodePort port)
     {
@@ -23,7 +30,7 @@ public class GradientNode : TerrainNode
             GradientMap = new Vector2[InputHeightMap.Length];
             SquareArray<Vector2> gradientMapSquare = new SquareArray<Vector2>(GradientMap);
 
-            LayerMapFunctions.ParallelForFast(heightMapSquare, (x, y) => {
+            ArrayUtilityFunctions.ParallelForFast(heightMapSquare, (x, y) => {
                 //loop through every tiles neighbors
                 for (int i = x - 1; i <= x + 1; i++)
                 {
@@ -41,15 +48,6 @@ public class GradientNode : TerrainNode
                     }
                 }
             }, 16);
-
-            //GenerateVisualization(GradientMap, (val) => {
-            //        return Color.Lerp(Color.green, Color.red, val.magnitude);
-            //    });
-            GenerateVisualization(GradientMap, (val) => {
-                    return val.magnitude;
-                });
-
-            base.Recalculate();
         }
     }
 }

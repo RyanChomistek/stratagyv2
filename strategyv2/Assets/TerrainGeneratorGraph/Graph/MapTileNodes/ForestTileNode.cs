@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[CreateNodeMenu("TileNodes/ForestTileNode")]
 public class ForestTileNode : TerrainNode
 {
-    [Input] public Improvement[] InputImprovements;
-    [Input] public Vector2[] InputGradientMap;
+    [Input] public Improvement[] InputImprovements = null;
+    [Input] public Vector2[] InputGradientMap = null;
     [Input] public float Scale = 2.5f;
     [Input] public float Threshold = .5f;
 
-    [Output] public Improvement[] OutputImprovements;
+    [Output] public Improvement[] OutputImprovements = null;
+
+    public override void Flush()
+    {
+        InputImprovements = null;
+        InputGradientMap = null;
+        OutputImprovements = null;
+    }
+
     public override object GetValue(XNode.NodePort port)
     {
         return OutputImprovements;
@@ -30,15 +39,7 @@ public class ForestTileNode : TerrainNode
             OutputImprovements = (Improvement[]) InputImprovements.Clone();
             SquareArray<Improvement> improvmentMapSquare = new SquareArray<Improvement>(OutputImprovements);
             SquareArray<Vector2> gradientMapSquare = new SquareArray<Vector2>(InputGradientMap);
-            System.Random rand;
-
-            rand = new System.Random((int)seed);
-
-            if (randomizeSeed)
-            {
-                seed = System.DateTime.Now.Millisecond + seed;
-                rand = new System.Random((int)seed);
-            }
+            System.Random rand = (graph as TerrainGeneratorGraph).Rand;
 
             Vector2 shift = new Vector2((float)rand.NextDouble() * 1000, (float)rand.NextDouble() * 1000);
 
@@ -65,11 +66,6 @@ public class ForestTileNode : TerrainNode
                     }
                 }
             }
-
-            GenerateVisualization(OutputImprovements, (val) => { return val == Improvement.Forest ? Color.green : Color.red; });
         }
-
-        base.Recalculate();
     }
-
 }

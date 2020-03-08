@@ -25,8 +25,6 @@ public class MapTile
     public float PopulationGrowthRate = .1f;
     [SerializeField]
     public float PopulationSpreadRate = .1f;
-
-    public TileBase DisplayTile;
     public Color SimpleDisplayColor;
 
     [Tooltip("can this tile be improved")]
@@ -52,8 +50,6 @@ public class MapTile
         this.PopulationSpreadRate = other.PopulationSpreadRate;
 
         this.Improvable = other.Improvable;
-
-        this.DisplayTile = other.DisplayTile;
         this.SimpleDisplayColor = other.SimpleDisplayColor;
     }
 }

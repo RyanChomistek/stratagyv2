@@ -25,7 +25,6 @@ MonoBehaviour:
     InitialPopulation: 0
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
-    DisplayTile: {fileID: 0}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
     Improvable: 0
     TerrainType: 0
@@ -43,7 +42,6 @@ MonoBehaviour:
     InitialPopulation: 1
     PopulationGrowthRate: 0.001
     PopulationSpreadRate: 0.001
-    DisplayTile: {fileID: 11400000, guid: 539899b2fe6fb7144bfc493e07f1bf04, type: 2}
     SimpleDisplayColor: {r: 0, g: 1, b: 0.04815674, a: 0}
     Improvable: 0
     Improvement: 2

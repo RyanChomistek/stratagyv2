@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateNodeMenu("TerrainNodes/TerraceNode")]
 public class TerraceNode : TerrainNode
 {
     [Input] public int NumSteps = 5;
-    [Input] public float[] InputHeightMap = new float[128 * 128];
-    [Output] public float[] OutputHeightMap;
+    [Input] public float[] InputHeightMap = null;
+    [Output] public float[] OutputHeightMap = null;
 
     public override object GetValue(XNode.NodePort port)
     {
@@ -41,11 +42,12 @@ public class TerraceNode : TerrainNode
                     heightMapSquare[x, y] = GetLayerIndexByHeight(heightMapSquare[x, y], numSteps) / (float) numSteps;
                 }
             }
-
-            GenerateVisualization(OutputHeightMap, (val) => {
-                return Color.Lerp(Color.green, Color.red, val);
-            });
         }
-        
+    }
+
+    public override void Flush()
+    {
+        InputHeightMap = null;
+        OutputHeightMap = null;
     }
 }
