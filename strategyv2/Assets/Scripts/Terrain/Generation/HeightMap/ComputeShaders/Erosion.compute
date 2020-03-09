@@ -26,10 +26,39 @@ float gravity;
 float startSpeed;
 float startWater;
 
+bool InBounds(int i, int mapSize)
+{
+	return i > 0 && i < mapSize;
+}
+
+static bool CheckIfInboundsForGradient(float posX, float posY, int mapSize)
+{
+	int coordX = (int)posX;
+	int coordY = (int)posY;
+
+	// Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
+	float x = posX - coordX;
+	float y = posY - coordY;
+
+	int nodeIndexNW = coordY * mapSize + coordX;
+	int nodeIndexNE = nodeIndexNW + 1;
+	int nodeIndexSW = nodeIndexNW + mapSize;
+	int nodeIndexSE = nodeIndexNW + mapSize + 1;
+
+	int arrayLen = mapSize * mapSize;
+
+	return InBounds(nodeIndexNW, arrayLen) && InBounds(nodeIndexNE, arrayLen) && InBounds(nodeIndexSW, arrayLen) && InBounds(nodeIndexSE, arrayLen);
+}
+
 // Returns float3(gradientX, gradientY, height)
 float3 CalculateHeightAndGradient(float posX, float posY) {
 	int coordX = (int)posX;
 	int coordY = (int)posY;
+	
+	if (!CheckIfInboundsForGradient(posX, posY, mapSize))
+	{
+		return float3(0,0, map[coordY * mapSize + coordX]);
+	}
 
 	// Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
 	float x = posX - coordX;
@@ -131,11 +160,13 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 					for (int i = 0; i < brushLength; i++) {
 						int erodeIndex = dropletIndex + brushIndices[i];
-
-						float weightedErodeAmount = amountToErode * brushWeights[i];
-						float deltaSediment = (map[erodeIndex] < weightedErodeAmount) ? map[erodeIndex] : weightedErodeAmount;
-						map[erodeIndex] -= deltaSediment;
-						sediment += deltaSediment;
+						if (erodeIndex <= (mapSize * mapSize))
+						{
+							float weightedErodeAmount = amountToErode * brushWeights[i];
+							float deltaSediment = (map[erodeIndex] < weightedErodeAmount) ? map[erodeIndex] : weightedErodeAmount;
+							map[erodeIndex] -= deltaSediment;
+							sediment += deltaSediment;
+						}
 					}
 				}
 

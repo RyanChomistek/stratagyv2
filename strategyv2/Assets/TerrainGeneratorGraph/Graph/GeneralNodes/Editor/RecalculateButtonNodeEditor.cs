@@ -8,6 +8,7 @@ public class RecalculateButtonNodeEditor : NodeEditor
 {
     public override void OnBodyGUI()
     {
+        serializedObject.Update();
         base.OnBodyGUI();
 
         if (GUILayout.Button("Recalculate"))
@@ -17,5 +18,7 @@ public class RecalculateButtonNodeEditor : NodeEditor
             //mapManager.GenerateMap();
             (target.graph as TerrainGeneratorGraph).ForceRecalculateFullGraph();
         }
+
+        serializedObject.ApplyModifiedProperties();
     }
 }

@@ -239,15 +239,15 @@ public class MapManager : MonoBehaviour
         ProfilingUtilities.LogAction(() =>
         {
             MapGen.GenerateMaps();
-            //ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
-            //SetUpAjdacentTiles();
+            ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
+            SetUpAjdacentTiles();
         }, "MAP GEN: done generating map tiles");
         //yield return new WaitForEndOfFrame();
 
         ProfilingUtilities.LogAction(() =>
         {
-            //MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
-            //ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
+            MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
+            ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
             //MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
             //MeshGen.ConstructGridMesh(MapGen.m_MapData);
         }, "MAP GEN: done constructing meshes");
