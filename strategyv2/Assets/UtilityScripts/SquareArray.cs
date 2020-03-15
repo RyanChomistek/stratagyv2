@@ -30,7 +30,8 @@ public class SquareArray<T> : System.ICloneable
     public SquareArray(T[] array)
     {
         this.Array = array;
-        SideLength = (int)Mathf.Sqrt(Array.Length);
+        if(array != null)
+            SideLength = (int)Mathf.Sqrt(Array.Length);
     }
 
     public SquareArray(int sideLength)
@@ -48,6 +49,16 @@ public class SquareArray<T> : System.ICloneable
         {
             Array[i] = defaultValue;
         }
+    }
+
+    public int Convert2DCoordinateTo1D(Vector2Int loc)
+    {
+        return (loc.y * SideLength) + loc.x;
+    }
+
+    public int Convert2DCoordinateTo1D(int x, int y)
+    {
+        return (y * SideLength) + x;
     }
 
     public bool InBounds(int x, int y)

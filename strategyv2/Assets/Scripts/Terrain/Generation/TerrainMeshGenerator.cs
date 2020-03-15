@@ -130,7 +130,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         ProfilingUtilities.LogAction(() => {
             ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
             ConstructGrass(tData, mapData, otherArgs);
-            ConstructRocks(tData, mapData, otherArgs);
+            //ConstructRocks(tData, mapData, otherArgs);
         }, "Set Details");
 
         ProfilingUtilities.LogAction(() =>
@@ -304,7 +304,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
                         Vector3 treePos =
                             new Vector3(
-                                x / (float)improvementMap.SideLength + 1,
+                                x / (float)improvementMap.SideLength,
                                 heightMap[x, y],
                                 y / (float)improvementMap.SideLength) + nudge;
 
@@ -348,7 +348,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             if (mapData.TerrainMap[tilePosition.x, tilePosition.y] == Terrain.Grass)
             {
                 if(improvement == Improvement.Empty)
-                    return otherArgs.GrassDensity;
+                    return Mathf.CeilToInt(otherArgs.GrassDensity * (1 - mapData.GradientMap[tilePosition.x, tilePosition.y].magnitude));
                 if (improvement == Improvement.Forest)
                     return otherArgs.GrassDensity / 10;
             }
@@ -533,7 +533,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             Vector2.left, Vector2.right, Vector2.up, Vector2.down
         };
 
-        ArrayUtilityFunctions.ParallelForFast(scaledMap, (x, y) => {
+        ArrayUtilityFunctions.ForMT(scaledMap, (x, y) => {
             Vector2 rawPosition = new Vector2(x, y) / resolutionScale;
             Vector2Int rawIndex = new Vector2Int((int)(x / resolutionScale), (int)(y / resolutionScale));
 

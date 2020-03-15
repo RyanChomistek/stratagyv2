@@ -43,7 +43,9 @@ public class VisualizeIntArrayNode : VisualizeArrayNode
                     return randomColor;
                 });
             }
-           
+
+            base.SideLength = new SquareArray<int>(Array).SideLength;
+
             base.Recalculate();
         }
     }

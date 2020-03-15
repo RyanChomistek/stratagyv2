@@ -30,7 +30,7 @@ public class GradientNode : TerrainNode
             GradientMap = new Vector2[InputHeightMap.Length];
             SquareArray<Vector2> gradientMapSquare = new SquareArray<Vector2>(GradientMap);
 
-            ArrayUtilityFunctions.ParallelForFast(heightMapSquare, (x, y) => {
+            ArrayUtilityFunctions.ForMT(heightMapSquare, (x, y) => {
                 //loop through every tiles neighbors
                 for (int i = x - 1; i <= x + 1; i++)
                 {

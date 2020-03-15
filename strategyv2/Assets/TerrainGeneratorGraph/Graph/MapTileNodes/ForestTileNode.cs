@@ -6,6 +6,7 @@ using UnityEngine;
 [CreateNodeMenu("TileNodes/ForestTileNode")]
 public class ForestTileNode : TerrainNode
 {
+    [Input] public Terrain[] InputTerrain = null;
     [Input] public Improvement[] InputImprovements = null;
     [Input] public Vector2[] InputGradientMap = null;
     [Input] public float Scale = 2.5f;
@@ -28,6 +29,7 @@ public class ForestTileNode : TerrainNode
     public override void Recalculate()
     {
         //visualization = new Texture2D(128, 128);
+        Terrain[] InputTerrain = GetInputValue("InputTerrain", this.InputTerrain);
         Improvement[] InputImprovements = GetInputValue("InputImprovements", this.InputImprovements);
         Vector2[] InputGradientMap = GetInputValue("InputGradientMap", this.InputGradientMap);
         
@@ -38,6 +40,7 @@ public class ForestTileNode : TerrainNode
 
             OutputImprovements = (Improvement[]) InputImprovements.Clone();
             SquareArray<Improvement> improvmentMapSquare = new SquareArray<Improvement>(OutputImprovements);
+            SquareArray<Terrain> terrainMapSquare = new SquareArray<Terrain>(InputTerrain);
             SquareArray<Vector2> gradientMapSquare = new SquareArray<Vector2>(InputGradientMap);
             System.Random rand = (graph as TerrainGeneratorGraph).Rand;
 
@@ -59,8 +62,7 @@ public class ForestTileNode : TerrainNode
                     float yCoord = shift.y + y / (float) (improvmentMapSquare.SideLength + 1) * Scale;
                     float sample = Mathf.PerlinNoise(xCoord, yCoord);
 
-                    if (sample > Threshold && gradientMapSquare[x, y].magnitude < .075f)
-                    //if (sample > Threshold)
+                    if (sample > Threshold && gradientMapSquare[x, y].magnitude < .075f && terrainMapSquare[x,y] == Terrain.Grass)
                     {
                         improvmentMapSquare[x, y] = Improvement.Forest;
                     }

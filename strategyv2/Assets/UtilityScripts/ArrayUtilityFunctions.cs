@@ -28,7 +28,7 @@ public class ArrayUtilityFunctions
     /// <summary>
     /// remove jagged edges, mutithreaded dont use for small maps
     /// </summary>
-    public static void SmoothMT(SquareArray<float> map, int kernalSize, int numThreads = DefaultNumThreadsForJob)
+    public static SquareArray<float> SmoothMT(SquareArray<float> map, int kernalSize, int numThreads = DefaultNumThreadsForJob)
     {
         float sigma = 1;
         float r, s = 2.0f * sigma * sigma;
@@ -61,10 +61,10 @@ public class ArrayUtilityFunctions
             }
         }
 
-        map = Convolution2DMT(map, kernel, numThreads);
+        return Convolution2DMT(map, kernel, numThreads);
     }
 
-    public static void ParallelForFast(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    public static void ForMT(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
     {
         int size = map.SideLength / numThreads;
         int remainder = map.SideLength - (size * numThreads);
@@ -110,6 +110,33 @@ public class ArrayUtilityFunctions
         }
     }
 
+    public static void For(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        int size = map.SideLength / numThreads;
+        int remainder = map.SideLength - (size * numThreads);
+
+        // TODO make these blocks instead of rows so that we get better lock perf
+        for (int i = 0; i < numThreads; i++)
+        {
+            Vector2Int start = new Vector2Int(0, i * size);
+            Vector2Int end = new Vector2Int(map.SideLength, ((i + 1) * size));
+
+            // on the last thread we need to deal with the remainder
+            if (i == numThreads - 1)
+            {
+                end.y += remainder;
+            }
+
+            for (int y = start.y; y < end.y; y++)
+            {
+                for (int x = start.x; x < end.x; x++)
+                {
+                    action(x, y);
+                }
+            }
+        }
+    }
+
     public static SquareArray<float> Convolution2D(SquareArray<float> arr, List<List<float>> kernel)
     {
         //var convolutedArr = new float[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
@@ -151,7 +178,7 @@ public class ArrayUtilityFunctions
         //int size = (map.GetUpperBound(1) + 1) / numThreads;
         int mapSize = map.SideLength;
 
-        ParallelForFast(map, (x, y) => {
+        ForMT(map, (x, y) => {
             for (int k_x = 0; k_x < k_w; k_x++)
             {
                 for (int k_y = 0; k_y < k_h; k_y++)
@@ -340,4 +367,25 @@ public class ArrayUtilityFunctions
         return false;
     }
 
+    public static SquareArray<float> Add(SquareArray<float> left, SquareArray<float> right)
+    {
+        SquareArray<float> res = new SquareArray<float>(left.SideLength);
+        for (int i = 0; i < left.Length; i++)
+        {
+            res[i] = left[i] + right[i];
+        }
+
+        return res;
+    }
+
+    public static SquareArray<float> Subtract(SquareArray<float> left, SquareArray<float> right)
+    {
+        SquareArray<float> res = new SquareArray<float>(left.SideLength);
+        for (int i = 0; i < left.Length; i++)
+        {
+            res[i] = left[i] - right[i];
+        }
+
+        return res;
+    }
 }

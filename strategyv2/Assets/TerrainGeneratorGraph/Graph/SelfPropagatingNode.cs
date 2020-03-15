@@ -155,12 +155,12 @@ public abstract class SelfPropagatingNode : XNode.Node
 
     public override void OnCreateConnection(NodePort from, NodePort to)
     {
-        StartPropogation();
+       // StartPropogation();
     }
 
     public override void OnRemoveConnection(NodePort port)
     {
-        StartPropogation();
+        //StartPropogation();
     }
 
     public bool IsInputArrayValid<T>(T[] arr)

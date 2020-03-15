@@ -40,16 +40,22 @@ public class MeshGenerationNode : TerrainNode
 
         mapData.TerrainMap = new SquareArray<Terrain>(TerrainMap);
         mapData.ImprovmentMap = new SquareArray<Improvement>(ImprovementMap);
-        mapData.HeightMap = new SquareArray<float>(TileHeightMap);
+        if(TileHeightMap != null)
+            mapData.HeightMap = new SquareArray<float>(TileHeightMap);
         mapData.VertexHeightMap = new SquareArray<float>(VertexHeightMap);
         mapData.WaterMap = new SquareArray<float>(TileWaterMap);
         mapData.VertexWaterLevelMap = new SquareArray<float>(VertexWaterMap);
         mapData.GradientMap = new SquareArray<Vector2>(GradientTileMap);
-        mapData.LayeredGradientMap = new SquareArray<Vector2>(LayeredGradientMap);
+        if(LayeredGradientMap != null)
+            mapData.LayeredGradientMap = new SquareArray<Vector2>(LayeredGradientMap);
 
-        List<List<Vector3>> outputRoadPaths = new List<List<Vector3>>();
-        RoadPaths.ForEach(x => outputRoadPaths.Add(x.Path));
-        mapData.RoadPaths = outputRoadPaths;
+        if(RoadPaths != null)
+        {
+            List<List<Vector3>> outputRoadPaths = new List<List<Vector3>>();
+            RoadPaths.ForEach(x => outputRoadPaths.Add(x.Path));
+            mapData.RoadPaths = outputRoadPaths;
+        }
+        
 
         return mapData;
     }
