@@ -14,7 +14,7 @@ public class VisualizeFloatArrayNode : VisualizeArrayNode
         if(IsInputArrayValid(Array))
         {
             GenerateVisualization(Array, (val) => {
-                return Color.Lerp(Color.green, Color.red, val);
+                return val;
             });
 
             Length = Array.Length;

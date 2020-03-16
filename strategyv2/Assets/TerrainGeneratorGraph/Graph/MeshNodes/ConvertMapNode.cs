@@ -97,35 +97,6 @@ public class ConvertMapNode : TerrainNode
                 }
             }
 
-
-            // Create the tile height map
-            // take every 4 height map points and find the middle value and use that
-            //for (int x = 0; x < OutputVertexMapSquare.SideLength - 1; x++)
-            //{
-            //    for (int y = 0; y < OutputVertexMapSquare.SideLength - 1; y++)
-            //    {
-            //        Vector2Int rawIndex = new Vector2Int(x, y);
-            //        Vector2Int[] indexes = new Vector2Int[]
-            //        {
-            //            new Vector2Int(rawIndex.x,     rawIndex.y + 1), // topLeft
-            //            new Vector2Int(rawIndex.x + 1, rawIndex.y + 1), // topRight
-            //            new Vector2Int(rawIndex.x + 1, rawIndex.y),     // bottomRight
-            //            new Vector2Int(rawIndex.x,     rawIndex.y),     // bottomLeft
-            //        };
-
-            //        float[] heights = new float[4];
-            //        for (int i = 0; i < indexes.Length; i++)
-            //        {
-            //            heights[i] = OutputVertexMapSquare[indexes[i].x, indexes[i].y];
-            //        }
-
-            //        Vector2 uv = new Vector2(.5f, .5f);
-
-            //        float height = ArrayUtilityFunctions.QuadLerp(heights[0], heights[1], heights[2], heights[3], uv.x, uv.y);
-            //        OutputTileMapSquare[x, y] = height;
-            //    }
-            //}
-
             OutputVertexMapSize = OutputVertexMapSquare.SideLength;
             OutputTileMapSize = OutputTileMapSquare.SideLength;
         }

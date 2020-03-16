@@ -99,7 +99,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathCreator: {fileID: 4326080476763513552}
   autoUpdate: 1
-  roadWidth: 2.5
+  roadWidth: 1
   thickness: 0.15
   flattenSurface: 1
   roadMaterial: {fileID: 2100000, guid: b5df4735192845740bd11076dc9cdc99, type: 2}

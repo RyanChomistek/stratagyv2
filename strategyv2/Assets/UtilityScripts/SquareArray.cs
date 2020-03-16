@@ -92,12 +92,20 @@ public class SquareArray<T> : System.ICloneable
     {
         T[,] twoDMap = new T[SideLength, SideLength];
 
-        for (int i = 0; i < Array.Length; i++)
+        //for (int i = 0; i < Array.Length; i++)
+        //{
+        //    int x = i % SideLength;
+        //    int y = i / SideLength;
+        //    twoDMap[x, y] = Array[i];
+        //}
+        for (int x = 0; x < SideLength; x++)
         {
-            int x = i % SideLength;
-            int y = i / SideLength;
-            twoDMap[x, y] = Array[i];
+            for (int y = 0; y < SideLength; y++)
+            {
+                twoDMap[x, y] = this[x, y];
+            }
         }
+
 
         return twoDMap;
     }

@@ -110,16 +110,68 @@ public class ArrayUtilityFunctions
         }
     }
 
-    public static void For(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    public static void ForMT(int sideLength, System.Action<int, int, int> action, int numThreads = DefaultNumThreadsForJob)
     {
-        int size = map.SideLength / numThreads;
-        int remainder = map.SideLength - (size * numThreads);
+        int size = sideLength / numThreads;
+        int remainder = sideLength - (size * numThreads);
+
+        // Use the thread pool to parrellize update
+        using (CountdownEvent e = new CountdownEvent(1))
+        {
+            // TODO make these blocks instead of rows so that we get better lock perf
+            for (int i = 0; i < numThreads; i++)
+            {
+                int threadId = i;
+
+                e.AddCount();
+                ThreadPool.QueueUserWorkItem(delegate (object state)
+                {
+                    try
+                    {
+                        Vector2Int start = new Vector2Int(0, threadId * size);
+                        Vector2Int end = new Vector2Int(sideLength, ((threadId + 1) * size));
+
+                        // on the last thread we need to deal with the remainder
+                        if (threadId == numThreads - 1)
+                        {
+                            end.y += remainder;
+                        }
+
+                        //ProfilingUtilities.LogAction(() =>
+                        //{
+                            for (int y = start.y; y < end.y; y++)
+                            {
+                                for (int x = start.x; x < end.x; x++)
+                                {
+                                    action(threadId, x, y);
+                                }
+                            }
+                        //}, $"thread {threadId} time");
+                    }
+                    finally
+                    {
+                        e.Signal();
+                    }
+                    
+                },
+                null);
+            }
+
+            e.Signal();
+            e.Wait();
+        }
+    }
+
+    public static void For(int sideLength, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        int size = sideLength / numThreads;
+        int remainder = sideLength - (size * numThreads);
 
         // TODO make these blocks instead of rows so that we get better lock perf
         for (int i = 0; i < numThreads; i++)
         {
             Vector2Int start = new Vector2Int(0, i * size);
-            Vector2Int end = new Vector2Int(map.SideLength, ((i + 1) * size));
+            Vector2Int end = new Vector2Int(sideLength, ((i + 1) * size));
 
             // on the last thread we need to deal with the remainder
             if (i == numThreads - 1)
@@ -135,6 +187,11 @@ public class ArrayUtilityFunctions
                 }
             }
         }
+    }
+
+    public static void For(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        For(map.SideLength, action, numThreads);
     }
 
     public static SquareArray<float> Convolution2D(SquareArray<float> arr, List<List<float>> kernel)

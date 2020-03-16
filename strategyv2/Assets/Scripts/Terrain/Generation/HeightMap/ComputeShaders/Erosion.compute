@@ -1,7 +1,6 @@
 ﻿#pragma kernel CSMain
 
 RWStructuredBuffer<float> map;
-RWStructuredBuffer<float> waterMap;
 StructuredBuffer<int> brushIndices;
 StructuredBuffer<float> brushWeights;
 
@@ -147,11 +146,6 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 					map[dropletIndex + 1] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
 					map[dropletIndex + mapSize] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
 					map[dropletIndex + mapSize + 1] += amountToDeposit * cellOffsetX * cellOffsetY;
-					
-					//waterMap[dropletIndex] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
-					//waterMap[dropletIndex + 1] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
-					//waterMap[dropletIndex + mapSize] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
-					//waterMap[dropletIndex + mapSize + 1] += amountToDeposit * cellOffsetX * cellOffsetY;
 				}
 				else {
 					// Erode a fraction of the droplet's current carry capacity.
@@ -173,7 +167,6 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 				// Update droplet's speed and water content
 				speed = sqrt(max(0, speed * speed + deltaHeight * gravity));
 				water *= (1 - evaporateSpeed);
-				waterMap[dropletIndex] += water;
 			}
 		}
 	}

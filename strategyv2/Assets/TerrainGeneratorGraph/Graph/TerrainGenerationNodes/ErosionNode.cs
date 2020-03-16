@@ -28,7 +28,6 @@ public class ErosionSettings
 public class ErosionOutput
 {
     public float[] HeightMap;
-    public float[] WaterMap;
 }
 
 [CreateNodeMenu("TerrainNodes/ErosionNode")]
@@ -51,19 +50,14 @@ public class ErosionNode : TerrainNode
     [Input] public int ErosionBrushRadius = 3;
 
     [Input] public float[] InputHeightMap = null;
-    [Input] public float[] InputWaterMap = null;
 
     [Output] public float[] HeightMap = null;
-    [Output] public float[] WaterMap = null;
     public int HeightMapSize = 128 * 128;
 
     public override object GetValue(XNode.NodePort port)
     {
         if(port.fieldName == "HeightMap")
             return HeightMap;
-
-        if (port.fieldName == "WaterMap")
-            return WaterMap;
 
         return null;
     }
@@ -85,9 +79,8 @@ public class ErosionNode : TerrainNode
         float inertia = GetInputValue("inertia", this.inertia);
 
         float[] InputHeightMap = GetInputValue("InputHeightMap", this.InputHeightMap);
-        float[] InputWaterMap = GetInputValue("InputWaterMap", this.InputWaterMap);
 
-        if (InputHeightMap != null && InputWaterMap != null && InputHeightMap.Length > 0 && InputWaterMap.Length > 0)
+        if (InputHeightMap != null && InputHeightMap.Length > 0)
         {
             ErosionSettings ES = new ErosionSettings()
             {
@@ -107,35 +100,26 @@ public class ErosionNode : TerrainNode
                 ErosionBrushRadius = ErosionBrushRadius,
             };
 
-            ErosionOutput EO = Run(ES, InputHeightMap, InputWaterMap);
+            ErosionOutput EO = Run(ES, InputHeightMap);
             HeightMap = EO.HeightMap;
-            WaterMap = EO.WaterMap;
-
-            //Thread.Sleep(10000);
-
-            //HeightMap = InputHeightMap;
-            //WaterMap = InputWaterMap;
-
 
             HeightMapSize = InputHeightMap.Length;
         }
     }
 
-    public static ErosionOutput Run(ErosionSettings settings, float[] InputHeightMap, float[] InputWaterMap)
+    public static ErosionOutput Run(ErosionSettings settings, float[] InputHeightMap)
     {
         float[] HeightMap = (float[])InputHeightMap.Clone();
-        float[] WaterMap = (float[])InputWaterMap.Clone();
 
-        ErodeGPU(settings, (int)Mathf.Sqrt(HeightMap.Length), HeightMap, WaterMap);
+        ErodeGPU(settings, (int)Mathf.Sqrt(HeightMap.Length), HeightMap);
 
         return new ErosionOutput()
         {
-            HeightMap = HeightMap,
-            WaterMap = WaterMap
+            HeightMap = HeightMap
         };
     }
 
-    private static void ErodeGPU(ErosionSettings Settings, int mapSize, float[] HeightMap, float[] WaterMap)
+    private static void ErodeGPU(ErosionSettings Settings, int mapSize, float[] HeightMap)
     {
         // Create brush
         List<int> brushIndexOffsets = new List<int>();
@@ -181,11 +165,6 @@ public class ErosionNode : TerrainNode
         mapBuffer.SetData(HeightMap);
         Settings.erosion.SetBuffer(0, "map", mapBuffer);
 
-        // WaterMap buffer
-        ComputeBuffer waterMapBuffer = new ComputeBuffer(WaterMap.Length, sizeof(float));
-        waterMapBuffer.SetData(WaterMap);
-        Settings.erosion.SetBuffer(0, "waterMap", waterMapBuffer);
-
         // Settings
         Settings.erosion.SetInt("borderSize", Settings.ErosionBrushRadius);
         Settings.erosion.SetInt("mapSize", mapSize);
@@ -205,13 +184,14 @@ public class ErosionNode : TerrainNode
         Settings.erosion.SetFloat("startWater", Settings.startWater);
 
         // Run compute shader
-        Settings.erosion.Dispatch(0, numThreads, 1, 1);
-        mapBuffer.GetData(HeightMap);
-        waterMapBuffer.GetData(WaterMap);
+        ProfilingUtilities.LogAction(() =>
+        {
+            Settings.erosion.Dispatch(0, numThreads, 1, 1);
+            mapBuffer.GetData(HeightMap);
+        }, "run erosion");
 
         // Release buffers
         mapBuffer.Release();
-        waterMapBuffer.Release();
         brushIndexBuffer.Release();
         brushWeightBuffer.Release();
     }
@@ -219,9 +199,7 @@ public class ErosionNode : TerrainNode
     public override void Flush()
     {
         InputHeightMap = null;
-        InputWaterMap = null;
 
         HeightMap = null;
-        WaterMap = null;
     }
 }

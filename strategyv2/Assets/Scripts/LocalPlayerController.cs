@@ -39,6 +39,11 @@ public class LocalPlayerController : PlayerController {
 
     public void DisplayRememberedDivisions()
     {
+        if(GeneralDivision != null)
+        {
+            return;
+        }
+
         foreach(var kvp in GeneralDivision.AttachedDivision.RememberedDivisions)
         {
             if(kvp.Value.HasBeenDestroyed)

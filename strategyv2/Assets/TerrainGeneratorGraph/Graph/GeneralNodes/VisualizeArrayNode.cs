@@ -55,6 +55,10 @@ public class VisualizeArrayNode : SelfPropagatingNode
         }
 
         float delta = max - min;
+        if(delta == 0)
+        {
+            return;
+        }
 
         int texSize = 1024;
         float scale = texSize / (float)TSquare.SideLength;

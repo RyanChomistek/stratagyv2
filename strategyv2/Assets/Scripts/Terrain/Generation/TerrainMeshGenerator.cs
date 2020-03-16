@@ -20,6 +20,119 @@ public class MeshGeneratorArgs
     public float TreeDensity = .5f;
 }
 
+public class AlphaMapChannels
+{
+    public float[] channels = { 0, 0, 0, 0, 0 };
+
+    const int GrassIndex = 0;
+    const int WaterIndex = 1;
+    const int RockIndex = 2;
+    const int RoadIndex = 3;
+    const int SnowIndex = 4;
+    const int MaxIndex = 5;
+    public void SetAlphaMapPos(float[,,] alphaData, int x, int y)
+    {
+        alphaData[y, x, GrassIndex] = channels[GrassIndex];
+        alphaData[y, x, WaterIndex] = channels[WaterIndex];
+        alphaData[y, x, RockIndex] = channels[RockIndex];
+        alphaData[y, x, RoadIndex] = channels[RoadIndex];
+        alphaData[y, x, SnowIndex] = channels[SnowIndex];
+    }
+
+    public AlphaMapChannels()
+    { }
+
+    public AlphaMapChannels(float[] arr)
+    {
+        for (int i = 0; i < arr.Length; i++)
+        {
+            channels[i] = arr[i];
+        }
+    }
+
+    public AlphaMapChannels(Terrain terrain, Improvement improvement, Vector2 gradient)
+    {
+        Set(terrain, improvement, gradient);
+    }
+
+    public void Set(Terrain terrain, Improvement improvement, Vector2 gradient)
+    {
+        if(channels == null)
+        {
+            channels = new float[MaxIndex];
+        }
+
+        if (terrain == Terrain.Water)
+        {
+            channels[GrassIndex] = 0;
+            channels[WaterIndex] = 1;
+            channels[RockIndex] = 0;
+            channels[RoadIndex] = 0;
+            channels[SnowIndex] = 0;
+        }
+        else if (terrain == Terrain.Mountain)
+        {
+            float rockyness = gradient.magnitude * 10;
+
+            channels[GrassIndex] = 0;
+            channels[WaterIndex] = 0;
+            channels[RockIndex] = rockyness;
+            channels[RoadIndex] = 0;
+            channels[SnowIndex] = 1 - rockyness;
+        }
+        else
+        {
+            float rockyness = gradient.magnitude * 10;
+
+            channels[GrassIndex] = 1 - rockyness;
+            channels[WaterIndex] = 0;
+            channels[RockIndex] = rockyness;
+            channels[RoadIndex] = 0;
+            channels[SnowIndex] = 0;
+        }
+
+        if (improvement == Improvement.Road)
+        {
+            channels[GrassIndex] = 0;
+            channels[WaterIndex] = 0;
+            channels[RockIndex] = 0;
+            channels[RoadIndex] = 1;
+            channels[SnowIndex] = 0;
+        }
+    }
+
+    public void Scale(float weight)
+    {
+        for (int i = 0; i < channels.Length; i++)
+        {
+            channels[i] *= weight;
+        }
+    }
+
+    public void Add(AlphaMapChannels Other)
+    {
+        for (int i = 0; i < channels.Length; i++)
+        {
+            channels[i] += Other.channels[i];
+        }
+    }
+
+    public void Normalize()
+    {
+        float totalLen = 0;
+        for (int i = 0; i < channels.Length; i++)
+        {
+            totalLen += channels[i] * channels[i];
+        }
+
+        totalLen = Mathf.Sqrt(totalLen);
+
+        for (int i = 0; i < channels.Length; i++)
+        {
+            channels[i] /= totalLen;
+        }
+    }
+}
 
 public class TerrainMeshGenerator : MonoBehaviour
 {
@@ -65,19 +178,16 @@ public class TerrainMeshGenerator : MonoBehaviour
     {
         TerrainData tData = m_Terrain.terrainData;
 
-        float resolutionScale = tData.heightmapResolution / ((float) mapData.VertexHeightMap.SideLength - 1);
-        SquareArray<float> scaledMap = ScaleHeightMapResolution(mapData.VertexHeightMap, resolutionScale);
-
-        float alphaMapScale = tData.alphamapWidth / ((float)mapData.TerrainMap.SideLength);
-        
+        SquareArray<float> scaledMap = ScaleHeightMapResolution(mapData.VertexHeightMap, tData);
         m_Terrain.terrainData.SetHeights(0, 0, scaledMap.To2D());
 
+        float alphaMapScale = tData.alphamapWidth / ((float)mapData.TerrainMap.SideLength);
         float[,,] alphaData = tData.GetAlphamaps(0, 0, tData.alphamapWidth, tData.alphamapHeight);
 
-        int GRASS = 0;
-        int WATER = 1;
-        int ROCK = 2;
-        int ROAD = 3;
+        int numThreads = 16;
+
+        SquareArray<AlphaMapChannels> channelsMap = new SquareArray<AlphaMapChannels>(tData.alphamapWidth);
+        AlphaMapChannels[] neighborChannels = new AlphaMapChannels[numThreads];
 
         ProfilingUtilities.LogAction(() =>
         {
@@ -85,45 +195,54 @@ public class TerrainMeshGenerator : MonoBehaviour
             {
                 for (int x = 0; x < tData.alphamapWidth; x++)
                 {
-                    Vector2Int terrainMapPos = new Vector2Int(Mathf.FloorToInt(x / alphaMapScale), Mathf.FloorToInt(y / alphaMapScale));
-                    Terrain terrain = mapData.TerrainMap[terrainMapPos.x, terrainMapPos.y];
-                    Improvement improvement = mapData.ImprovmentMap[terrainMapPos.x, terrainMapPos.y];
-                    Vector2 gradient = mapData.GradientMap[terrainMapPos.x, terrainMapPos.y];
-
-                    if (terrain == Terrain.Water)
-                    {
-                        alphaData[y, x, GRASS] = 0;
-                        alphaData[y, x, WATER] = 1;
-                        alphaData[y, x, ROCK] = 0;
-                        alphaData[y, x, ROAD] = 0;
-                    }
-                    else if (terrain == Terrain.Mountain)
-                    {
-                        alphaData[y, x, GRASS] = 0;
-                        alphaData[y, x, WATER] = 0;
-                        alphaData[y, x, ROCK] = 0;
-                        alphaData[y, x, ROAD] = 1;
-                    }
-                    else
-                    {
-                        float rockyness = gradient.magnitude * 10;
-
-                        alphaData[y, x, GRASS] = 1 - rockyness;
-                        alphaData[y, x, WATER] = 0;
-                        alphaData[y, x, ROCK] = rockyness;
-                        alphaData[y, x, ROAD] = 0;
-                    }
-
-
-                    if (improvement == Improvement.Road)
-                    {
-                        alphaData[y, x, GRASS] = 0;
-                        alphaData[y, x, WATER] = 0;
-                        alphaData[y, x, ROCK] = 0;
-                        alphaData[y, x, ROAD] = 1;
-                    }
+                    channelsMap[x,y] = new AlphaMapChannels();
                 }
             }
+
+            for (int i = 0; i < numThreads; i++)
+            {
+                neighborChannels[i] = new AlphaMapChannels();
+            }
+        }, "Setup channels maps");
+
+        ProfilingUtilities.LogAction(() =>
+        {
+            int tileLookDistance = 2;
+            float maxDistance = alphaMapScale * tileLookDistance;
+
+            ArrayUtilityFunctions.ForMT(tData.alphamapHeight, (threadId, x, y) =>
+            {
+                Vector2Int terrainMapPos = new Vector2Int(Mathf.FloorToInt(x / alphaMapScale), Mathf.FloorToInt(y / alphaMapScale));
+                Vector2Int alphaMapPos = new Vector2Int(x, y);
+                AlphaMapChannels ac = channelsMap[x, y];
+                AlphaMapChannels neighborAc = neighborChannels[threadId];
+                Vector2 alphaMapPositionReal = VectorUtilityFunctions.Vector2IntToVector2(alphaMapPos);
+
+                // loop through all of the neightbor tiles
+                for (int dx = -tileLookDistance; dx <= tileLookDistance; dx++)
+                {
+                    for (int dy = -tileLookDistance; dy <= tileLookDistance; dy++)
+                    {
+                        Vector2Int neighborTerrainMapPos = terrainMapPos + new Vector2Int(dx, dy);
+                        if (mapData.TerrainMap.InBounds(neighborTerrainMapPos))
+                        {
+                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale);
+                            float distance = (neighborTileAphaMapPosCenter - alphaMapPositionReal).magnitude;
+                            float weight = 1 - (distance / maxDistance);
+                            if (weight > 0)
+                            {
+                                neighborAc.Set(mapData.TerrainMap[neighborTerrainMapPos], mapData.ImprovmentMap[neighborTerrainMapPos], mapData.GradientMap[neighborTerrainMapPos]);
+                                neighborAc.Scale(weight);
+                                ac.Add(neighborAc);
+                            }
+                        }
+                    }
+                }
+
+                ac.Normalize();
+                ac.SetAlphaMapPos(alphaData, x, y);
+            }, numThreads);
+
         }, "Set alpha maps");
 
 
@@ -131,12 +250,45 @@ public class TerrainMeshGenerator : MonoBehaviour
             ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
             ConstructGrass(tData, mapData, otherArgs);
             //ConstructRocks(tData, mapData, otherArgs);
+            ConstructRoadMeshes(mapData, otherArgs);
         }, "Set Details");
 
         ProfilingUtilities.LogAction(() =>
         {
             tData.SetAlphamaps(0, 0, alphaData);
         }, "Save Alpha maps");
+    }
+
+    public static AlphaMapChannels GetInterpolateAphaChannels(Vector2Int alphaMapPos, Vector2Int terrainMapPos, MapData mapData, float alphaMapScale)
+    {
+        AlphaMapChannels ac = new AlphaMapChannels();
+        Vector2 alphaMapPositionReal = VectorUtilityFunctions.Vector2IntToVector2(alphaMapPos);
+        int tileLookDistance = 1;
+        float maxDistance = alphaMapScale * tileLookDistance;
+
+        // loop through all of the neightbor tiles
+        for (int dx = -tileLookDistance; dx <= tileLookDistance; dx++)
+        {
+            for (int dy = -tileLookDistance; dy <= tileLookDistance; dy++)
+            {
+                Vector2Int neighborTerrainMapPos = terrainMapPos + new Vector2Int(dx, dy);
+                if (mapData.TerrainMap.InBounds(neighborTerrainMapPos))
+                {
+                    Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale);
+                    float distance = (neighborTileAphaMapPosCenter - alphaMapPositionReal).magnitude;
+                    float weight = 1 - (distance / maxDistance);
+                    if (weight > 0)
+                    {
+                        AlphaMapChannels neighborAc = new AlphaMapChannels(mapData.TerrainMap[neighborTerrainMapPos], mapData.ImprovmentMap[neighborTerrainMapPos], mapData.GradientMap[neighborTerrainMapPos]);
+                        neighborAc.Scale(weight);
+                        ac.Add(neighborAc);
+                    }
+                }
+            }
+        }
+
+        ac.Normalize();
+        return ac;
     }
 
     public void ConstructGridMesh(MapData mapdata)
@@ -419,6 +571,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         }
 
         Debug.Log($"terrain y size {(m_Terrain.terrainData.size.y)} {m_Terrain.terrainData.bounds.max.y }");
+
         // Clear any old water meshes
         m_WaterMeshes.ForEach(x => DestroyImmediate(x));
         m_WaterMeshes.Clear();
@@ -521,10 +674,12 @@ public class TerrainMeshGenerator : MonoBehaviour
         waterMesh.transform.SetParent(transform);
     }
 
-    private SquareArray<float> ScaleHeightMapResolution(SquareArray<float> rawMap, float resolutionScale)
+    private SquareArray<float> ScaleHeightMapResolution(SquareArray<float> rawMap, TerrainData tData)
     {
+        float resolutionScale = tData.heightmapResolution / ((float)rawMap.SideLength - 1);
+
         // This is intentionaly left as (count - 1), because in the calculation we dont look a the last element
-        int scaledMapSize = (int)((rawMap.SideLength - 1) * resolutionScale);
+        int scaledMapSize = tData.heightmapResolution;
         SquareArray<float> scaledMap = new SquareArray<float>(scaledMapSize);
         float maxDistance = resolutionScale * Mathf.Sqrt(2);
 
@@ -533,7 +688,8 @@ public class TerrainMeshGenerator : MonoBehaviour
             Vector2.left, Vector2.right, Vector2.up, Vector2.down
         };
 
-        ArrayUtilityFunctions.ForMT(scaledMap, (x, y) => {
+        ArrayUtilityFunctions.ForMT(scaledMap, (x, y) =>
+        {
             Vector2 rawPosition = new Vector2(x, y) / resolutionScale;
             Vector2Int rawIndex = new Vector2Int((int)(x / resolutionScale), (int)(y / resolutionScale));
 
@@ -549,7 +705,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
             for (int i = 0; i < rawIndexes.Length; i++)
             {
-                heights[i] = rawMap[rawIndexes[i].x, rawIndexes[i].y];
+                heights[i] = rawMap[rawIndexes[i]];
             }
 
             Vector2 uv = rawPosition - rawIndex;

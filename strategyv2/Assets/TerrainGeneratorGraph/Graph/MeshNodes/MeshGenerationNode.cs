@@ -8,7 +8,6 @@ public class MeshGenerationNode : TerrainNode
     [Input] public float[] TileHeightMap = null;
     [Input] public float[] VertexHeightMap = null;
     [Input] public float[] TileWaterMap = null;
-    [Input] public float[] VertexWaterMap = null;
     [Input] public Terrain[] TerrainMap = null;
     [Input] public Improvement[] ImprovementMap = null;
     [Input] public Vector2[] GradientTileMap = null;
@@ -25,7 +24,6 @@ public class MeshGenerationNode : TerrainNode
         TileHeightMap = GetInputValue("TileHeightMap", this.TileHeightMap);
         VertexHeightMap = GetInputValue("VertexHeightMap", this.VertexHeightMap);
         TileWaterMap = GetInputValue("TileWaterMap", this.TileWaterMap);
-        VertexWaterMap = GetInputValue("VertexWaterMap", this.VertexWaterMap);
         TerrainMap = GetInputValue("TerrainMap", this.TerrainMap);
         ImprovementMap = GetInputValue("ImprovementMap", this.ImprovementMap);
         GradientTileMap = GetInputValue("GradientTileMap", this.GradientTileMap);
@@ -44,7 +42,6 @@ public class MeshGenerationNode : TerrainNode
             mapData.HeightMap = new SquareArray<float>(TileHeightMap);
         mapData.VertexHeightMap = new SquareArray<float>(VertexHeightMap);
         mapData.WaterMap = new SquareArray<float>(TileWaterMap);
-        mapData.VertexWaterLevelMap = new SquareArray<float>(VertexWaterMap);
         mapData.GradientMap = new SquareArray<Vector2>(GradientTileMap);
         if(LayeredGradientMap != null)
             mapData.LayeredGradientMap = new SquareArray<Vector2>(LayeredGradientMap);
@@ -65,7 +62,6 @@ public class MeshGenerationNode : TerrainNode
         TileHeightMap = null;
         VertexHeightMap = null;
         TileWaterMap = null;
-        VertexWaterMap = null;
         TerrainMap = null;
         ImprovementMap = null;
         GradientTileMap = null;

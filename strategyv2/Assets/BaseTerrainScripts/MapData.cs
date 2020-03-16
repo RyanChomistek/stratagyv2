@@ -22,8 +22,6 @@ public class MapData
     [SerializeField]
     public SquareArray<float> WaterMap;
     [SerializeField]
-    public SquareArray<float> VertexWaterLevelMap;
-    [SerializeField]
     public SquareArray<Vector2> GradientMap;
     [SerializeField]
     public SquareArray<Vector2> LayeredGradientMap;
@@ -73,7 +71,6 @@ public class MapData
             HeightMap = HeightMap.Clone() as SquareArray<float>,
             VertexHeightMap = VertexHeightMap.Clone() as SquareArray<float>,
             WaterMap = WaterMap.Clone() as SquareArray<float>,
-            VertexWaterLevelMap = VertexWaterLevelMap.Clone() as SquareArray<float>,
             GradientMap = GradientMap.Clone() as SquareArray<Vector2>,
             LayeredGradientMap = LayeredGradientMap.Clone() as SquareArray<Vector2>,
             RoadPaths = RoadPaths.Select(x => x.ToList()).ToList()

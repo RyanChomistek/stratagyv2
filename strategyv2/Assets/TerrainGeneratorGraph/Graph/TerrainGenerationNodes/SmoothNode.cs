@@ -6,6 +6,7 @@ public class SmoothNode : TerrainNode
 {
     [Input] public float[] InputArray = null;
     [Input] public int iterations = 1;
+    [Input] public int kernelSize = 3;
     [Output] public float[] OutputArray = null;
 
     public override object GetValue(XNode.NodePort port)
@@ -20,13 +21,14 @@ public class SmoothNode : TerrainNode
     {
         float[] InputArray = GetInputValue("InputArray", this.InputArray);
         int iterations = GetInputValue("iterations", this.iterations);
+        int kernelSize = GetInputValue("kernelSize", this.kernelSize);
         if (IsInputArrayValid(InputArray))
         {
             SquareArray<float> squareArray = new SquareArray<float>((float[])InputArray.Clone());
 
             for (int i = 0; i < iterations; i++)
             {
-                squareArray = ArrayUtilityFunctions.SmoothMT(squareArray, 25, 16);
+                squareArray = ArrayUtilityFunctions.SmoothMT(squareArray, kernelSize, 16);
             }
             
             OutputArray = squareArray.Array;
