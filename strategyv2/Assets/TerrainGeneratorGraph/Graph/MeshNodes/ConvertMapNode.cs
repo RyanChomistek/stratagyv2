@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateNodeMenu("Operators/Array/Resize")]
 public class ConvertMapNode : TerrainNode
 {
     [Input] public float[] InputMap = null;
     [Input] public int Padding;
 
     //this is the scale going from tile to vertex so if this is 2, the vertex coordinates will act like each tile is actually 4
-    [Input] public int TileToVertexScale = 1;
+    //[Input] public int TileToVertexScale = 1;
+    [Input] public int TargetTileSize = 128;
 
     [Output] public float[] OutputVertexMap = null;
     [Output] public float[] OutputTileMap = null;
@@ -43,13 +45,15 @@ public class ConvertMapNode : TerrainNode
     {
         float[] InputMap = GetInputValue("InputMap", this.InputMap);
         int padding = GetInputValue("Padding", this.Padding);
-        int TileToVertexScale = GetInputValue("TileToVertexScale", this.TileToVertexScale);
+        int TargetTileSize = GetInputValue("TargetTileSize", this.TargetTileSize);
         if (IsInputArrayValid(InputMap))
         {
             SquareArray<float> InputMapSquare = new SquareArray<float>(InputMap);
 
             
             int vertexMapSideLength = InputMapSquare.SideLength - (2*padding);
+
+            int TileToVertexScale = vertexMapSideLength / TargetTileSize;
 
             // we need this to line up with the scale
             // eventually we need tileLength * 2 == vertexMapSideLength - 1 for mesh gen

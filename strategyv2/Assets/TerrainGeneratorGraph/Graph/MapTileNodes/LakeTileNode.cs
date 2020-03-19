@@ -79,7 +79,14 @@ public class LakeTileNode : TerrainNode
         float TerrainGradientThreshold)
     {
         ArrayUtilityFunctions.SmoothMT(WaterMapSquare, 5, 4);
-        ArrayUtilityFunctions.Normalize(WaterMapSquare);
+
+        ArrayUtilityFunctions.StandardDeviation(WaterMapSquare, out float mean, out float std);
+
+        float delta = std * 2;
+        float min = Mathf.Max(mean - delta, 0);
+        float max = mean + delta;
+
+        ArrayUtilityFunctions.Normalize(WaterMapSquare, min, max);
 
         for (int x = 0; x < WaterMapSquare.SideLength; x++)
         {

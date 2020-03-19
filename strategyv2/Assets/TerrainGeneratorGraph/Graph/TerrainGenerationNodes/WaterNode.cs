@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateNodeMenu("TileNodes/Lakes")]
 public class WaterNode : TerrainNode
 {
     [Input] public ComputeShader Droplets;

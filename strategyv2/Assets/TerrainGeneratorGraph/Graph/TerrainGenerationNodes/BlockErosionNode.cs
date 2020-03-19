@@ -15,6 +15,7 @@ public class MapBlock
     public SquareArray<float> WaterMapChunk;
 }
 
+[CreateNodeMenu("")]
 public class BlockErosionNode : TerrainNode
 {
     [Input] public ComputeShader erosion;

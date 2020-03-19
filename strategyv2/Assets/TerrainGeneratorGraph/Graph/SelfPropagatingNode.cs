@@ -7,12 +7,14 @@ using XNode;
 [CreateNodeMenu("")]
 public abstract class SelfPropagatingNode : XNode.Node
 {
+    protected TerrainGeneratorGraph Graph { get { return base.graph as TerrainGeneratorGraph; } }
+
     // should be called on the first node to set of a recalc chain
     public void StartPropogation()
     {
         //EnterRecalculate();
         //Propogate();
-        (graph as TerrainGeneratorGraph).RecalculateFullGraph();
+        (Graph as TerrainGeneratorGraph).RecalculateFullGraph();
     }
 
     // Starts a recalculation using this node as the source
@@ -130,7 +132,7 @@ public abstract class SelfPropagatingNode : XNode.Node
     {
         TimeSpan recalcTime = TimeSpan.Zero;
         System.DateTime startRecalc = System.DateTime.Now;
-        if (!(this.graph as TerrainGeneratorGraph).PauseRecalculation)
+        if (!(this.Graph as TerrainGeneratorGraph).PauseRecalculation)
         {
             this.Recalculate();
             System.DateTime endRecalc = System.DateTime.Now;

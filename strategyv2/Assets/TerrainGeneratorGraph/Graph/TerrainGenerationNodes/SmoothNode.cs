@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateNodeMenu("Operators/Array/Smooth")]
 public class SmoothNode : TerrainNode
 {
     [Input] public float[] InputArray = null;

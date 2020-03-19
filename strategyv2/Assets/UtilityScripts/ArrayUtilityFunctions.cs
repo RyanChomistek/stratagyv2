@@ -268,6 +268,11 @@ public class ArrayUtilityFunctions
             }
         }
 
+        Normalize(arr, min, max);
+    }
+
+    public static void Normalize(SquareArray<float> arr, float min, float max)
+    {
         for (int x = 0; x < arr.SideLength; x++)
         {
             for (int y = 0; y < arr.SideLength; y++)
@@ -275,6 +280,27 @@ public class ArrayUtilityFunctions
                 arr[x, y] = Mathf.InverseLerp(min, max, arr[x, y]);
             }
         }
+    }
+
+    public static float StandardDeviation(SquareArray<float> arr, out float mean, out float std)
+    {
+        mean = 0;
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            mean += arr[i];
+        }
+
+        mean /= arr.Length;
+        std = 0;
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            std += Mathf.Pow(mean - arr[i], 2);
+        }
+
+        std /= arr.Length;
+        return Mathf.Sqrt(std);
     }
 
     public static List<HashSet<Vector2Int>> FindComponents<T>(T target, int mapSize, int bufferWidth, ref SquareArray<T> terrainTileMap)

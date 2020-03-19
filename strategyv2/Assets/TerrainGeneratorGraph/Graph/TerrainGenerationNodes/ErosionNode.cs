@@ -30,7 +30,7 @@ public class ErosionOutput
     public float[] HeightMap;
 }
 
-[CreateNodeMenu("TerrainNodes/ErosionNode")]
+[CreateNodeMenu("Operators/Array/Erosion")]
 public class ErosionNode : TerrainNode
 {
     [Input] public ComputeShader erosion;
@@ -168,7 +168,6 @@ public class ErosionNode : TerrainNode
         // Settings
         Settings.erosion.SetInt("borderSize", Settings.ErosionBrushRadius);
         Settings.erosion.SetInt("mapSize", mapSize);
-        Settings.erosion.SetInt("numThreads", numThreads);
         Settings.erosion.SetInt("numElementsToProcess", numElementsToProcess);
         Settings.erosion.SetInt("numDropletsPerCell", Settings.numDropletsPerCell);
         Settings.erosion.SetInt("brushLength", brushIndexOffsets.Count);

@@ -5,7 +5,6 @@ StructuredBuffer<int> brushIndices;
 StructuredBuffer<float> brushWeights;
 
 int mapSize;
-int numThreads;
 int numElementsToProcess;
 
 int numDropletsPerCell;
