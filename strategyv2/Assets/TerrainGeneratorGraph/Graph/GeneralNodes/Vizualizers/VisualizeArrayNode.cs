@@ -11,6 +11,9 @@ public class VisualizeArrayNode : SelfPropagatingNode
     public int Length = -1;
     public int SideLength = -1;
 
+    public float Min;
+    public float Max;
+
     public override void Flush()
     {
         
@@ -42,19 +45,19 @@ public class VisualizeArrayNode : SelfPropagatingNode
     protected void GenerateVisualization<T>(T[] arr, Func<T, float> valueGetter)
     {
         SquareArray<T> TSquare = new SquareArray<T>(arr);
-        float min = float.PositiveInfinity;
-        float max = float.NegativeInfinity;
+        Min = float.PositiveInfinity;
+        Max = float.NegativeInfinity;
         for (int x = 0; x < TSquare.SideLength; x++)
         {
             for (int y = 0; y < TSquare.SideLength; y++)
             {
                 float val = valueGetter(TSquare[x, y]);
-                min = Mathf.Min(min, val);
-                max = Mathf.Max(max, val);
+                Min = Mathf.Min(Min, val);
+                Max = Mathf.Max(Max, val);
             }
         }
 
-        float delta = max - min;
+        float delta = Max - Min;
         if(delta == 0)
         {
             return;
@@ -68,7 +71,7 @@ public class VisualizeArrayNode : SelfPropagatingNode
             for (int y = 0; y < texSize; y++)
             {
                 float val = valueGetter(TSquare[(int)(x / scale), (int)(y / scale)]);
-                Color color = Color.Lerp(Color.red, Color.green, (val - min) / delta);
+                Color color = Color.Lerp(Color.red, Color.green, (val - Min) / delta);
                 visualization.SetPixel(x, y, color);
             }
         }

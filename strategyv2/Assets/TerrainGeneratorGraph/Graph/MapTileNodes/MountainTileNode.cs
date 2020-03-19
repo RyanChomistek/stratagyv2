@@ -50,7 +50,8 @@ public class MountainTileNode : TerrainNode
             {
                 for (int y = 0; y < terrainMapSquare.SideLength; y++)
                 {
-                    if (heightMapSquare[x,y] > Threshold || gradientMapSquare[x, y].magnitude > ThresholdGradient)
+                    // || gradientMapSquare[x, y].magnitude > ThresholdGradient
+                    if (heightMapSquare[x,y] > Threshold)
                     {
                         terrainMapSquare[x, y] = Terrain.Mountain;
                     }

@@ -35,7 +35,10 @@ public class TerrainGeneratorGraph : NodeGraph
         bool oldPauseRecalculationState = PauseRecalculation;
         PauseRecalculation = false;
 
-        int randomSeed = (RandomizeSeed) ? Random.Range(-10000, 10000) : seed;
+        int randomSeed = (RandomizeSeed) ? new System.Random((int) System.DateTime.Now.Ticks).Next(-10000, 10000): seed;
+
+        Debug.Log($"SEED {randomSeed}, {seed}, {RandomizeSeed}");
+
         Rand = new System.Random(randomSeed);
 
         List<SelfPropagatingNode> roots = FindRoots();

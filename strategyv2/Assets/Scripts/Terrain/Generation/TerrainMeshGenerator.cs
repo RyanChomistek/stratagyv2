@@ -72,7 +72,7 @@ public class AlphaMapChannels
         }
         else if (terrain == Terrain.Mountain)
         {
-            float rockyness = gradient.magnitude * 10;
+            float rockyness = gradient.magnitude * 3;
 
             channels[GrassIndex] = 0;
             channels[WaterIndex] = 0;

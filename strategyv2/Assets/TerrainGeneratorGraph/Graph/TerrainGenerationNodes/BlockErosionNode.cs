@@ -48,9 +48,6 @@ public class BlockErosionNode : TerrainNode
     [Output] public int[] HitMap = null;
     public int HeightMapSize = 128 * 128;
 
-    // This is the max side length, if we go above this we'll need to block it and do chunks
-    private int MaxMapSideLength = 1024;
-
 
     public override object GetValue(XNode.NodePort port)
     {

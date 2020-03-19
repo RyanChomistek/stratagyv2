@@ -32,8 +32,8 @@ public class MapGenerator : MonoBehaviour
 
         m_MapData.Clear();
 
-        
 
+        TerrainGraph.RandomizeSeed = true;
         m_MapData = TerrainGraph.RecalculateFullGraphAndGetMapData();
 
         //SaveMap();

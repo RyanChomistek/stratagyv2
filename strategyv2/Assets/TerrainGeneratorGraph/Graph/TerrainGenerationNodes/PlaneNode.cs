@@ -58,8 +58,11 @@ public class PlaneNode : TerrainNode
 
                         if (OutputArraySquare.InBounds(x, y))
                         {
-                            float oldValue = OutputArraySquare[x, y];
-                            OutputArraySquare[x, y] = Mathf.Lerp(oldValue, Value, delta);
+                            if(delta > 0)
+                            {
+                                float oldValue = OutputArraySquare[x, y];
+                                OutputArraySquare[x, y] = Mathf.Lerp(oldValue, Value, delta);
+                            }
                         }
                     }
                 }

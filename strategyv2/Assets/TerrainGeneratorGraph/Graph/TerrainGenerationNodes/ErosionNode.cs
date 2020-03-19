@@ -107,7 +107,7 @@ public class ErosionNode : TerrainNode
         }
     }
 
-    public static ErosionOutput Run(ErosionSettings settings, float[] InputHeightMap)
+    public ErosionOutput Run(ErosionSettings settings, float[] InputHeightMap)
     {
         float[] HeightMap = (float[])InputHeightMap.Clone();
 
@@ -119,7 +119,7 @@ public class ErosionNode : TerrainNode
         };
     }
 
-    private static void ErodeGPU(ErosionSettings Settings, int mapSize, float[] HeightMap)
+    private void ErodeGPU(ErosionSettings Settings, int mapSize, float[] HeightMap)
     {
         // Create brush
         List<int> brushIndexOffsets = new List<int>();
@@ -158,6 +158,7 @@ public class ErosionNode : TerrainNode
         Debug.Log(numThreads);
 
         int numElementsToProcess = Mathf.CeilToInt(HeightMap.Length / (float)numThreads);
+        int numDropletsPerThread = Settings.numDropletsPerCell * numElementsToProcess;
         //Debug.Log($"Erosion: num elements = {HeightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
 
         // HeightMap buffer
@@ -165,11 +166,19 @@ public class ErosionNode : TerrainNode
         mapBuffer.SetData(HeightMap);
         Settings.erosion.SetBuffer(0, "map", mapBuffer);
 
+        // Random Seeds
+        int[] seeds = new int[] 
+        { 
+            Graph.Rand.Next(0, 42949672), 
+            Graph.Rand.Next(0, 4008679), 
+            Graph.Rand.Next(0, 64035029), 
+            Graph.Rand.Next(0, 24038167) 
+        };
+
         // Settings
         Settings.erosion.SetInt("borderSize", Settings.ErosionBrushRadius);
         Settings.erosion.SetInt("mapSize", mapSize);
-        Settings.erosion.SetInt("numElementsToProcess", numElementsToProcess);
-        Settings.erosion.SetInt("numDropletsPerCell", Settings.numDropletsPerCell);
+        Settings.erosion.SetInt("numDropletsPerThread", numDropletsPerThread);
         Settings.erosion.SetInt("brushLength", brushIndexOffsets.Count);
         Settings.erosion.SetInt("maxLifetime", Settings.maxLifetime);
         Settings.erosion.SetFloat("inertia", Settings.inertia);
@@ -181,6 +190,7 @@ public class ErosionNode : TerrainNode
         Settings.erosion.SetFloat("gravity", Settings.gravity);
         Settings.erosion.SetFloat("startSpeed", Settings.startSpeed);
         Settings.erosion.SetFloat("startWater", Settings.startWater);
+        Settings.erosion.SetInts("seed", seeds);
 
         // Run compute shader
         ProfilingUtilities.LogAction(() =>
