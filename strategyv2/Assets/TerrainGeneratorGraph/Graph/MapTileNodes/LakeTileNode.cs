@@ -16,6 +16,7 @@ public class LakeTileNode : TerrainNode
 
     [Input] public float WaterPercentThreshold = .1f;
     [Input] public float TerrainGradientThreshold = .1f;
+    [Input] public float MaxHeightForWater = .5f;
 
     [Output] public Terrain[] OutputTerrain = null;
     [Output] public float[] OutputTileHeightMap = null;
@@ -46,6 +47,7 @@ public class LakeTileNode : TerrainNode
 
         float WaterPercentThreshold = GetInputValue("WaterPercentThreshold", this.WaterPercentThreshold);
         float TerrainGradientThreshold = GetInputValue("TerrainGradientThreshold", this.TerrainGradientThreshold);
+        float MaxHeightForWater = GetInputValue("MaxHeightForWater", this.MaxHeightForWater);
 
         if (IsInputArrayValid(InputVertexHeightMap) &&
             IsInputArrayValid(InputTileHeightMap) &&
@@ -65,7 +67,7 @@ public class LakeTileNode : TerrainNode
             SquareArray<float> WaterMapSquare = new SquareArray<float>(InputWaterMap);
             SquareArray<Vector2> GradientMapSquare = new SquareArray<Vector2>(InputGradientMap);
 
-            GenerateWater(terrainMapSquare, outputTileHeightMapSquare, outputVertexHeightMapSquare, WaterMapSquare, GradientMapSquare, WaterPercentThreshold, TerrainGradientThreshold);
+            GenerateWater(terrainMapSquare, outputTileHeightMapSquare, outputVertexHeightMapSquare, WaterMapSquare, GradientMapSquare, WaterPercentThreshold, TerrainGradientThreshold, MaxHeightForWater);
         }
     }
 
@@ -76,26 +78,34 @@ public class LakeTileNode : TerrainNode
         SquareArray<float> WaterMapSquare,
         SquareArray<Vector2> GradientMapSquare,
         float WaterPercentThreshold,
-        float TerrainGradientThreshold)
+        float TerrainGradientThreshold,
+        float MaxHeightForWater)
     {
         ArrayUtilityFunctions.SmoothMT(WaterMapSquare, 5, 4);
 
-        ArrayUtilityFunctions.StandardDeviation(WaterMapSquare, out float mean, out float std);
+        ArrayUtilityFunctions.StandardDeviation(WaterMapSquare, out float mean, out float std, true);
 
-        float delta = std * 2;
+        float delta = std;
         float min = Mathf.Max(mean - delta, 0);
         float max = mean + delta;
 
         ArrayUtilityFunctions.Normalize(WaterMapSquare, min, max);
 
+        ArrayUtilityFunctions.StandardDeviation(WaterMapSquare, out mean, out std, true);
+
+        float threshhold = (mean + (std * WaterPercentThreshold));
+
+        int cnt = 0;
+
         for (int x = 0; x < WaterMapSquare.SideLength; x++)
         {
             for (int y = 0; y < WaterMapSquare.SideLength; y++)
             {
-                if (WaterMapSquare[x, y] > WaterPercentThreshold &&
-                   GradientMapSquare[x, y].magnitude < TerrainGradientThreshold)
+                //&& GradientMapSquare[x, y].magnitude < TerrainGradientThreshold
+                if (WaterMapSquare[x, y] > threshhold && tileHeightMapSquare[x,y] < MaxHeightForWater)
                 {
                     terrainMapSquare[x, y] = Terrain.Water;
+                    cnt++;
                 }
             }
         }
@@ -169,36 +179,7 @@ public class LakeTileNode : TerrainNode
                     continue;
                 }
 
-                vertexHeightMapSquare[x,y] = tileHeightMapSquare[tileCoord];
-
-                //Vector2Int[] indexes = new Vector2Int[]
-                //{
-                //    new Vector2Int(tileCoord.x - 1, tileCoord.y + 1),   // topLeft
-                //    new Vector2Int(tileCoord.x,     tileCoord.y + 1),   // topmiddle
-                //    new Vector2Int(tileCoord.x + 1, tileCoord.y + 1),   // topRight
-
-                //    new Vector2Int(tileCoord.x - 1, tileCoord.y),       // middle left
-                //    new Vector2Int(tileCoord.x,     tileCoord.y),       // middle
-                //    new Vector2Int(tileCoord.x + 1, tileCoord.y),       // middleRight
-
-                //    new Vector2Int(tileCoord.x - 1, tileCoord.y - 1),   // bottomleft
-                //    new Vector2Int(tileCoord.x,     tileCoord.y - 1),   // bottomMiddle
-                //    new Vector2Int(tileCoord.x + 1, tileCoord.y - 1),   // bottomRight
-                //};
-
-                //float[] heights = new float[4];
-                //for (int i = 0; i < indexes.Length; i++)
-                //{
-                //    Vector2Int pos = indexes[i];
-                //    try
-                //    {
-                //        heights[i] = tileHeightMapSquare[pos];
-                //    }
-                //    catch(Exception e)
-                //    {
-                //        Debug.Log("asd");
-                //    }
-                //}
+                vertexHeightMapSquare[x, y] = tileHeightMapSquare[tileCoord];
 
             }
         }
@@ -212,51 +193,6 @@ public class LakeTileNode : TerrainNode
         new Vector2Int(1,0), // Bottom Right
     };
 
-
-    //// TODO need to fix this so that it can deal with the vertex map being different from the tile map dimensions
-    //private static void SetHeightMapData(int tileX, int tileY, float newHeight,
-    //            SquareArray<float> tileHeightMapSquare, SquareArray<float> vertexHeightMapSquare)
-    //{
-    //    float currentHeight = tileHeightMapSquare[tileX, tileY];
-    //    float deltaHeight = newHeight - currentHeight;
-
-    //    float scale = vertexHeightMapSquare.SideLength / (float) tileHeightMapSquare.SideLength;
-
-    //    // find the middle point of the tile in vertex coords
-    //    // find all vertices that are scale distance away
-
-    //    Vector2Int bottomLeftMeshVert = VectorUtilityFunctions.FloorVector(new Vector2(tileX,tileY) * scale);
-    //    Vector2Int delta = VectorUtilityFunctions.FloorVector(new Vector2(scale, scale));
-    //    //Vector2Int delta = VectorUtilityFunctions.CeilVector(new Vector2(1, 1));
-
-    //    //Vector2Int topRightMeshVert = bottomLeftMeshVert + delta;
-
-    //    //int numTiles = delta.x * delta.y;
-    //    //float weight = (1 / (float)numTiles) * 2;
-    //    //make this drop off the farther away we are?
-
-    //    // distribute the change in height over all
-    //    for (int dx = 0; dx <= delta.x; dx++)
-    //    {
-    //        for (int dy = 0; dy <= delta.y; dy++)
-    //        {
-    //            Vector2Int meshVert = bottomLeftMeshVert + new Vector2Int(dx, dy);
-
-    //            // This has a .25 multiplyer because if we are hitting things in a grid every vertex will have 4 neighboring tiles so if this was 1 we would over drop the height by 4
-    //            try
-    //            {
-    //                if()
-    //                vertexHeightMapSquare[meshVert.x, meshVert.y] -= deltaHeight * .25f;
-    //            }
-    //            catch(Exception e)
-    //            {
-    //                Debug.LogError("asdasdasd");
-    //            }
-    //        }
-    //    }
-
-    //    tileHeightMapSquare[tileX, tileY] = newHeight;
-    //}
 
     /// <summary>
     /// evens out the height map between this tile and its adjacents

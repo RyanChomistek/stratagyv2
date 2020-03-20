@@ -44,6 +44,9 @@ public class PlaneNode : TerrainNode
                 float Value = GetInputValue("Value", this.Value);
                 float FallOffRadius = GetInputValue("FallOffRadius", this.FallOffRadius);
 
+                SquareArray<float> subBlock = OutputArraySquare.GetSubBlock(BottomLeft, WidthHeight.x, 0);
+                ArrayUtilityFunctions.StandardDeviation(subBlock, out float mean, out float std);   
+
                 Vector2Int center = new Vector2Int((BottomLeft.x + WidthHeight.x), (BottomLeft.x + WidthHeight.x)) / 2;
                 Vector2 maxDistance = WidthHeight / 2;
                 maxDistance *= FallOffRadius;
@@ -61,7 +64,7 @@ public class PlaneNode : TerrainNode
                             if(delta > 0)
                             {
                                 float oldValue = OutputArraySquare[x, y];
-                                OutputArraySquare[x, y] = Mathf.Lerp(oldValue, Value, delta);
+                                OutputArraySquare[x, y] = Mathf.Lerp(oldValue, mean, delta);
                             }
                         }
                     }

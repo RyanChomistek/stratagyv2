@@ -88,6 +88,31 @@ public class SquareArray<T> : System.ICloneable
         return false;
     }
 
+    public SquareArray<T> GetSubBlock(Vector2Int offset, int newSideLength, T defaultValue)
+    {
+        SquareArray<T> newSquareArray = new SquareArray<T>(newSideLength);
+
+        for (int x = 0; x < newSideLength; x++)
+        {
+            for (int y = 0; y < newSideLength; y++)
+            {
+                int offsetX = x + offset.x;
+                int offsetY = y + offset.y;
+
+                if (InBounds(offsetX, offsetY))
+                {
+                    newSquareArray[x, y] = this[offsetX, offsetY];
+                }
+                else
+                {
+                    newSquareArray[x, y] = defaultValue;
+                }
+            }
+        }
+
+        return newSquareArray;
+    }
+
     public T[,] To2D()
     {
         T[,] twoDMap = new T[SideLength, SideLength];

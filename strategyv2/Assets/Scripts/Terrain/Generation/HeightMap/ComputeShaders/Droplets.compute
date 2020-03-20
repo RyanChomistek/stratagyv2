@@ -5,7 +5,6 @@ RWStructuredBuffer<float> waterMap;
 int mapSize;
 
 int numThreads;
-int numElementsToProcess;
 
 int maxLifetime;
 float inertia;
@@ -14,6 +13,12 @@ float evaporateSpeed;
 float gravity;
 float startSpeed;
 float startWater;
+
+uint4 seed;
+int numDropletsPerThread;
+
+float RunWeight;
+float StopWeight;
 
 bool InBounds(int i, int mapSize)
 {
@@ -70,28 +75,70 @@ float3 CalculateHeightAndGradient(float posX, float posY) {
 	return float3(gradientX, gradientY, height);
 }
 
+uint TausStep(uint z, int S1, int S2, int S3, uint M)
+{
+	uint b = (((z << S1) ^ z) >> S2);
+	return ((z & M) << S3) ^ b;
+}
+
+uint LCGStep(uint z, uint A, uint C)
+{
+	return A * z + C;
+}
+
+struct RandomResult
+{
+	uint4 state;
+	float value;
+};
+
+RandomResult HybridTaus(uint4 state)
+{
+	state.x = TausStep(state.x, 13, 19, 12, 4294967294);
+	state.y = TausStep(state.y, 2, 25, 4, 4294967288);
+	state.z = TausStep(state.z, 3, 11, 17, 4294967280);
+	state.w = LCGStep(state.w, 1664525, 1013904223);
+
+	RandomResult rand;
+	rand.state = state;
+	rand.value = 2.3283064365387e-10 * (state.x ^ state.y ^ state.z ^ state.w);
+
+	return rand;
+}
+
+uint Random(uint idx, uint idy, uint max)
+{
+	seed.x += idx;
+	seed.y += idy;
+	seed.z += (uint)(sin(idx * 71.01) * 5061564);
+	seed.w += (uint)(cos(idy * 23.7) * 10267329);
+
+	return (uint) (HybridTaus(seed).value * max);
+}
+
 [numthreads(1, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	int mapBufferLength = mapSize * mapSize;
-	int startIndex = id.x * numElementsToProcess;
 
-	for (int offset = 0; offset < numElementsToProcess && offset + startIndex < mapBufferLength; offset++)
+	for (int dropletCnt = 0; dropletCnt < numDropletsPerThread; dropletCnt++)
 	{
-		int index = startIndex + offset;
-
+		uint idx = id.x * 4026739;
+		uint idy = (dropletCnt * 7002353);
+		int index = Random(idx, idy, mapBufferLength);
+		
 		float posX = float(index) % mapSize;
 		float posY = float(index) / mapSize;
-		float dirX = 0;
-		float dirY = 0;
 		float speed = startSpeed;
 		float water = startWater;
+		float2 dir = float2(0, 0);
 
-		for (int lifetime = 0; lifetime < maxLifetime; lifetime++) 
+		for (int lifetime = 0; lifetime < maxLifetime; lifetime++)
 		{
 			int nodeX = (int)posX;
 			int nodeY = (int)posY;
 			int dropletIndex = nodeY * mapSize + nodeX;
+			//waterMap[dropletIndex] = lifetime;
 
 			// Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
 			float cellOffsetX = posX - nodeX;
@@ -101,18 +148,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			float3 heightAndGradient = CalculateHeightAndGradient(posX, posY);
 
 			// Update the droplet's direction and position (move position 1 unit regardless of speed)
-			dirX = (dirX * inertia - heightAndGradient.x * (1 - inertia));
-			dirY = (dirY * inertia - heightAndGradient.y * (1 - inertia));
+			dir = (dir * inertia) - (heightAndGradient.xy * (1 - inertia));
+			dir = normalize(dir);
 
-			// Normalize direction
-			float len = max(0.01, sqrt(dirX * dirX + dirY * dirY));
-			dirX /= len;
-			dirY /= len;
-			posX += dirX;
-			posY += dirY;
+			posX += dir.x;
+			posY += dir.y;
 
 			// Stop simulating droplet if it's not moving or has flowed over edge of map
-			if ((dirX == 0 && dirY == 0) || posX > mapSize || posX < 0|| posY > mapSize || posY < 0)
+			if (dir.x == 0 && dir.y == 0)
+			{
+				waterMap[dropletIndex] += water * StopWeight;
+				break;
+			}
+
+			if (posX > mapSize || posX < 0 || posY > mapSize || posY < 0)
 			{
 				break;
 			}
@@ -124,7 +173,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			// Update droplet's speed and water content
 			speed = sqrt(max(0, speed * speed + deltaHeight * gravity));
 			water *= (1 - evaporateSpeed);
-			waterMap[dropletIndex] += water;
+			waterMap[dropletIndex] += water * RunWeight;
+
+			if (lifetime == maxLifetime - 1)
+			{
+				waterMap[dropletIndex] += water * StopWeight;
+			}
 		}
 	}
 }

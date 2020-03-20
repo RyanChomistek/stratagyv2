@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateNodeMenu("Operators/Array/Smooth")]
+[CreateNodeMenu("Operators/Array/Terrace")]
 public class TerraceNode : TerrainNode
 {
     [Input] public int NumSteps = 5;

@@ -282,16 +282,28 @@ public class ArrayUtilityFunctions
         }
     }
 
-    public static float StandardDeviation(SquareArray<float> arr, out float mean, out float std)
+    public static float StandardDeviation(SquareArray<float> arr, out float mean, out float std, bool ignoreZero = false)
     {
         mean = 0;
-
+        int len = 0;
         for (int i = 0; i < arr.Length; i++)
         {
+            if(ignoreZero)
+            {
+                if(arr[i] != 0)
+                {
+                    len++;
+                }
+            }
+            else
+            {
+                len++;
+            }
+
             mean += arr[i];
         }
 
-        mean /= arr.Length;
+        mean /= len;
         std = 0;
 
         for (int i = 0; i < arr.Length; i++)
@@ -299,7 +311,7 @@ public class ArrayUtilityFunctions
             std += Mathf.Pow(mean - arr[i], 2);
         }
 
-        std /= arr.Length;
+        std /= len;
         return Mathf.Sqrt(std);
     }
 

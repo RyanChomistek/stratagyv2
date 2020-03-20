@@ -114,13 +114,10 @@ RandomResult HybridTaus(uint4 state)
 
 uint Random(uint idx, uint idy, uint max)
 {
-	//uint idx = id;
-	//uint idy = id % mapSize;
-
 	seed.x += idx;
 	seed.y += idy;
-	seed.z += (uint)(sin(idx * 71.01) * 500461564);
-	seed.w += (uint)(cos(idy * 53.7) * 1023467329);
+	seed.z += (uint)(sin(idx * 71.01) * 5061564);
+	seed.w += (uint)(cos(idy * 53.7) * 10267329);
 
 	return (uint) (HybridTaus(seed).value * max);
 }
@@ -133,7 +130,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	for (int dropletCnt = 0; dropletCnt < numDropletsPerThread; dropletCnt++)
 	{
-		uint idx = id.x;
+		uint idx = id.x * 4026739;
 		uint idy = (dropletCnt * 7002353);
 		int index = Random(idx, idy, mapBufferLength);
 

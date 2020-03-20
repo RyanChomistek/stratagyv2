@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Name: Recalculate Button
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 2712, y: 1016}
+  position: {x: 2712, y: 1464}
   ports:
     keys: []
     values: []
@@ -96,6 +96,8 @@ MonoBehaviour:
   visualization: {fileID: 0}
   Length: -1
   SideLength: -1
+  Min: 0
+  Max: 0
   Array: 
 --- !u!114 &-7047686693151852607
 MonoBehaviour:
@@ -141,7 +143,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   Size: 0
-  SizeSquared: 63504
+  SizeSquared: 28224
   Array: []
 --- !u!114 &-5962888096694636794
 MonoBehaviour:
@@ -161,7 +163,7 @@ MonoBehaviour:
     keys:
     - InputMap
     - Padding
-    - TileToVertexScale
+    - TargetTileSize
     - OutputVertexMap
     - OutputTileMap
     - OutputVertexMapSize
@@ -188,7 +190,7 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-    - _fieldName: TileToVertexScale
+    - _fieldName: TargetTileSize
       _node: {fileID: -5962888096694636794}
       _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
@@ -256,11 +258,11 @@ MonoBehaviour:
       _dynamic: 0
   InputMap: []
   Padding: 3
-  TileToVertexScale: 2
+  TargetTileSize: 128
   OutputVertexMap: []
   OutputTileMap: []
   OutputVertexMapSize: 505
-  OutputTileMapSize: 252
+  OutputTileMapSize: 168
 --- !u!114 &-1799120873692120379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -401,7 +403,7 @@ MonoBehaviour:
   m_Name: Visualize Float Array
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 2712, y: 1560}
+  position: {x: 2696, y: 1576}
   ports:
     keys:
     - Array
@@ -419,8 +421,10 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   visualization: {fileID: 0}
-  Length: 63504
-  SideLength: 252
+  Length: 28224
+  SideLength: 168
+  Min: 0
+  Max: 211.71928
   Array: []
 --- !u!114 &-244412701278807443
 MonoBehaviour:
@@ -449,6 +453,9 @@ MonoBehaviour:
     - InputHeightMap
     - InputWaterMap
     - WaterMapOutput
+    - RunWeight
+    - StopWeight
+    - numDropletsPerTile
     values:
     - _fieldName: Droplets
       _node: {fileID: -244412701278807443}
@@ -561,14 +568,44 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
+    - _fieldName: RunWeight
+      _node: {fileID: -244412701278807443}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: StopWeight
+      _node: {fileID: -244412701278807443}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: numDropletsPerTile
+      _node: {fileID: -244412701278807443}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
   Droplets: {fileID: 7200000, guid: 06bd32f0f6d1f624f9538f2852316c5b, type: 3}
   MaxNumThreads: 65535
-  maxLifetime: 400
+  maxLifetime: 120
+  numDropletsPerTile: 1
   evaporateSpeed: 0.01
   gravity: 4
   startSpeed: 1
   startWater: 1
-  inertia: 0.3
+  inertia: 0
+  RunWeight: 0.1
+  StopWeight: 1
   InputHeightMap: []
   InputWaterMap: []
   WaterMapOutput: []
@@ -600,7 +637,7 @@ MonoBehaviour:
   - {fileID: 1650224706048885816}
   - {fileID: -8353010815280260178}
   PauseRecalculation: 0
-  RandomizeSeed: 0
+  RandomizeSeed: 1
   seed: 0
 --- !u!114 &1650224706048885816
 MonoBehaviour:
@@ -702,7 +739,7 @@ MonoBehaviour:
       _dynamic: 0
   Size: 0
   DefaultValue: 1
-  SizeSquared: 63504
+  SizeSquared: 28224
   Array: 
 --- !u!114 &2332284765029373644
 MonoBehaviour:
@@ -844,7 +881,7 @@ MonoBehaviour:
   InputVertexHeightMap: []
   InputGradientMap: []
   InputWaterMap: []
-  WaterPercentThreshold: 0.5
+  WaterPercentThreshold: 1
   TerrainGradientThreshold: 1
   OutputTerrain: 
   OutputTileHeightMap: []
@@ -882,6 +919,8 @@ MonoBehaviour:
   visualization: {fileID: 0}
   Length: 262144
   SideLength: 512
+  Min: 0.000490917
+  Max: 1
   Array: []
 --- !u!114 &5018357937924676886
 MonoBehaviour:
@@ -938,7 +977,7 @@ MonoBehaviour:
   m_Name: Visualize Float Array
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 2184, y: 1560}
+  position: {x: 2456, y: 1656}
   ports:
     keys:
     - Array
@@ -956,6 +995,8 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   visualization: {fileID: 0}
-  Length: 63504
-  SideLength: 252
+  Length: 28224
+  SideLength: 168
+  Min: 0.011266788
+  Max: 0.9847905
   Array: []
