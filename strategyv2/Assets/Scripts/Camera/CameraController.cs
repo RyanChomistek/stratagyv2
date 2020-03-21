@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public float CameraMoveSpeed = 5;
+    public float CameraPanSpeed = 5;
 
     // rotations
     public float CameraRotateSensitivity = .25f;
@@ -22,10 +22,13 @@ public class CameraController : MonoBehaviour
             (handler, x) => { handler.IgnoreUI = false; },
             (handler, mousePosition, delta) =>
             {
-                transform.position -= delta;
-                handler.LastMousePosition = mousePosition - delta;
+                var deltaNorm = -delta.normalized;
+                var forward = transform.forward;
+                var compositeDelta = transform.up * deltaNorm.y + transform.right * deltaNorm.x;
+                transform.position += compositeDelta * CameraPanSpeed * transform.position.y;
             },
-            (handler, point) => { handler.IgnoreUI = true; }));
+            (handler, point) => { handler.IgnoreUI = true; }, 
+            useWorldCoordinates: false));
 
         InputController.Instance.RegisterHandler(new DragHandler("Fire2",
             (handler, x) => { handler.IgnoreUI = false; },
@@ -65,7 +68,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         //arrow keys
-        Vector3 cameraMove = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0) * CameraMoveSpeed;
+        Vector3 cameraMove = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0) * CameraPanSpeed;
         GetComponent<Rigidbody>().velocity = cameraMove;
     }
 }

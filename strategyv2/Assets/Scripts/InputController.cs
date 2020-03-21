@@ -216,12 +216,14 @@ public class DragHandler : ButtonHandler
     {
         if (this.IsCurrentlyDragging)
         {
-            var mousePosition = InputController.GetMousePosition2D(this.UseWorldCoordinates);
-            var mouseDelta = mousePosition - this.LastMousePosition;
-            //Debug.Log($"last {LastMousePosition}, current {mousePosition}, delta {mouseDelta}");
+            if(InputController.TryGetMousePosition2D(this.UseWorldCoordinates, out Vector3 mousePosition))
+            {
+                var mouseDelta = mousePosition - this.LastMousePosition;
+                //Debug.Log($"last {LastMousePosition}, current {mousePosition}, delta {mouseDelta}");
 
-            this.LastMousePosition = mousePosition;
-            this.OnDragCallBack(this, mousePosition, mouseDelta);
+                this.LastMousePosition = mousePosition;
+                this.OnDragCallBack(this, mousePosition, mouseDelta);
+            }
         }
     }
 
