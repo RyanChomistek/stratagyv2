@@ -508,8 +508,20 @@ public class TerrainMeshGenerator : MonoBehaviour
             // make sure there are no improvements on the tile and that its grass
             if (mapData.TerrainMap[tilePosition.x, tilePosition.y] == Terrain.Grass)
             {
-                if(improvement == Improvement.Empty)
-                    return Mathf.CeilToInt(otherArgs.GrassDensity * (1 - mapData.GradientMap[tilePosition.x, tilePosition.y].magnitude));
+                if (improvement == Improvement.Empty)
+                {
+                    float numItems = 1;
+                    float weightPerItem = 1 / numItems;
+
+                    float gradientWeight = Mathf.Max(0, weightPerItem * (1- mapData.GradientMap[tilePosition.x, tilePosition.y].magnitude * 10));
+                    //float waterWeight = weightPerItem - mapData.WaterMap[tilePosition.x, tilePosition.y];
+                    //float elevationWeight = weightPerItem * (1 - mapData.HeightMap[tilePosition.x, tilePosition.y]);
+
+                    float combinationWeight = gradientWeight;
+
+                    return Mathf.CeilToInt(otherArgs.GrassDensity * combinationWeight);
+                }
+                    
                 if (improvement == Improvement.Forest)
                     return otherArgs.GrassDensity / 10;
             }

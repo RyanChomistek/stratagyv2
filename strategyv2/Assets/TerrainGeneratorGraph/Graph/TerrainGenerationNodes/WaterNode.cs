@@ -92,6 +92,17 @@ public class WaterNode : TerrainNode
 
             mapBuffer.Release();
             waterMapBuffer.Release();
+
+            SquareArray<float> WaterMapSquare = new SquareArray<float>(WaterMapOutput);
+            ArrayUtilityFunctions.SmoothMT(WaterMapSquare, 5, 4);
+
+            ArrayUtilityFunctions.StandardDeviation(WaterMapSquare, out float mean, out float std, true);
+
+            float delta = std;
+            float min = Mathf.Max(mean - delta, 0);
+            float max = mean + delta;
+
+            ArrayUtilityFunctions.Normalize(WaterMapSquare, min, max);
         }
     }
 
