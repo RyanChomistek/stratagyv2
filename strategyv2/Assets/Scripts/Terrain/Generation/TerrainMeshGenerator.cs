@@ -258,6 +258,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         ProfilingUtilities.LogAction(() => {
             ConstructTrees(tData, mapData, otherArgs);
             ConstructGrass(tData, mapData, otherArgs);
+            ConstructFarms(tData, mapData, otherArgs);
             //ConstructRocks(tData, mapData, otherArgs);
             ConstructRoadMeshes(mapData, otherArgs);
         }, "Set Details");
@@ -541,6 +542,22 @@ public class TerrainMeshGenerator : MonoBehaviour
         {
             // make sure there are no improvements on the tile and that its grass
             if (mapData.TerrainMap[tilePosition.x, tilePosition.y] == Terrain.Mountain)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        });
+    }    
+    
+    public void ConstructFarms(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
+    {
+        ConstructDetailLayer(tData, mapData, otherArgs, 2, (tilePosition) =>
+        {
+            // make sure there are no improvements on the tile and that its grass
+            if (mapData.ImprovmentMap[tilePosition.x, tilePosition.y] == Improvement.Farm)
             {
                 return 1;
             }
