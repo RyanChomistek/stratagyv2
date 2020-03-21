@@ -256,7 +256,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
 
         ProfilingUtilities.LogAction(() => {
-            ConstructTrees(tData, mapData.ImprovmentMap, mapData.HeightMap, mapData.GradientMap, otherArgs);
+            ConstructTrees(tData, mapData, otherArgs);
             ConstructGrass(tData, mapData, otherArgs);
             //ConstructRocks(tData, mapData, otherArgs);
             ConstructRoadMeshes(mapData, otherArgs);
@@ -439,48 +439,53 @@ public class TerrainMeshGenerator : MonoBehaviour
         return new Vector2(pos.x * scale, pos.y * scale);
     }
 
-    public void ConstructTrees(TerrainData tData, SquareArray<Improvement> improvementMap, SquareArray<float> heightMap, SquareArray<Vector2> gradientMap, MeshGeneratorArgs otherArgs)
+    public void ConstructTrees(TerrainData tData, MapData md, MeshGeneratorArgs otherArgs)
     {
         List<TreeInstance> trees = new List<TreeInstance>();
-        Vector3 tileSize = new Vector3(1 / (float)improvementMap.SideLength, 0, 1 / (float)improvementMap.SideLength);
-        float nudgeRadius = .25f;
-        float scaleNudgeBase = .2f;
+        Vector3 tileSize = new Vector3(1 / (float)md.ImprovmentMap.SideLength, 0, 1 / (float)md.ImprovmentMap.SideLength);
+        float nudgeRadius = .75f;
+        float scaleNudgeBase = .25f;
 
-        //TreeDensity
-        //int numTreeIterations = (int)TreeDensity < 1 ? 1 : (int)TreeDensity;
         if (otherArgs.GenerateTreeMeshes)
         {
-            for (int x = 0; x < improvementMap.SideLength; x++)
+            for (int x = 0; x < md.ImprovmentMap.SideLength; x++)
             {
-                for (int y = 0; y < improvementMap.SideLength; y++)
+                for (int y = 0; y < md.ImprovmentMap.SideLength; y++)
                 {
-                    if (improvementMap[x, y] == Improvement.Forest && UnityEngine.Random.value < otherArgs.TreeDensity)
+                    if (md.ImprovmentMap[x, y] == Improvement.Forest)
                     {
-                        // Move the tree a little so that we dont get a grid
-                        Vector3 nudge =
-                            new Vector3(
-                                UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.x,
-                                0,
-                                UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.z);
+                        for (int i = 0; i < otherArgs.TreeDensity; i++)
+                        {
+                            // Move the tree a little so that we dont get a grid
+                            Vector3 nudge =
+                                new Vector3(
+                                    UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.x,
+                                    0,
+                                    UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.z);
 
-                        Vector3 treePos =
-                            new Vector3(
-                                x / (float)improvementMap.SideLength,
-                                heightMap[x, y],
-                                y / (float)improvementMap.SideLength) + nudge;
+                            Vector3 treePos = new Vector3(
+                                    x / (float)md.ImprovmentMap.SideLength,
+                                    0,
+                                    y / (float)md.ImprovmentMap.SideLength) + nudge;
 
-                        TreeInstance tree = new TreeInstance();
-                        tree.color = Color.white;
+                            // Find closes vertex (do this because we need a higher resolution height than tiles can provide)
+                            float vertexScale = md.VertexHeightMap.SideLength / (float)md.HeightMap.SideLength;
+                            Vector2Int vertexIndex = VectorUtilityFunctions.RoundVector(new Vector2(x, y) * vertexScale);
+                            treePos.y = md.VertexHeightMap[vertexIndex];
 
-                        float scaleNudge = UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase);
-                        tree.heightScale = .5f + scaleNudge;
-                        tree.widthScale = .5f + scaleNudge;
+                            TreeInstance tree = new TreeInstance();
+                            //tree.color = Color.white;
 
-                        tree.lightmapColor = Color.white;
-                        tree.position = treePos;
-                        tree.prototypeIndex = 0;
-                        tree.widthScale = 1;
-                        trees.Add(tree);
+                            float scaleNudge = UnityEngine.Random.Range(-scaleNudgeBase, scaleNudgeBase);
+                            tree.heightScale = .5f + scaleNudge;
+                            tree.widthScale = .5f + scaleNudge;
+
+                            tree.lightmapColor = Color.white;
+                            tree.position = treePos;
+                            tree.prototypeIndex = 0;
+                            tree.widthScale = 1;
+                            trees.Add(tree);
+                        }
                     }
                 }
             }
@@ -556,8 +561,6 @@ public class TerrainMeshGenerator : MonoBehaviour
     /// <param name="densityFunc"> function to get the density of the detail given a tile location </param>
     public void ConstructDetailLayer(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs, int layer, Func<Vector2Int, int> densityFunc)
     {
-        
-
         // Get all of layer.
         var map = tData.GetDetailLayer(0, 0, tData.detailWidth, tData.detailHeight, layer);
 

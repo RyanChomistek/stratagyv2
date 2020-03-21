@@ -271,13 +271,13 @@ public class ArrayUtilityFunctions
         Normalize(arr, min, max);
     }
 
-    public static void Normalize(SquareArray<float> arr, float min, float max)
+    public static void Normalize(SquareArray<float> arr, float min, float max, float scale = 1)
     {
         for (int x = 0; x < arr.SideLength; x++)
         {
             for (int y = 0; y < arr.SideLength; y++)
             {
-                arr[x, y] = Mathf.InverseLerp(min, max, arr[x, y]);
+                arr[x, y] = Mathf.InverseLerp(min, max, arr[x, y]) * scale;
             }
         }
     }
