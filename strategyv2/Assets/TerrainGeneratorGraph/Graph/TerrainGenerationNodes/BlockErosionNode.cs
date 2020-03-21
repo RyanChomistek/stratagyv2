@@ -316,7 +316,7 @@ public class BlockErosionNode : TerrainNode
         //Settings.erosion.SetBuffer(0, "waterMap", waterMapBuffer);
 
         // Generate random indices for droplet placement
-        int numDroplets = Settings.numDropletsPerCell * HeightMap.Length;
+        int numDroplets = (int) (Settings.numDropletsPerCell * HeightMap.Length);
         int[] randomIndices = new int[numDroplets];
         int blockBuffer = 0;
         for (int i = 0; i < numDroplets; i++)

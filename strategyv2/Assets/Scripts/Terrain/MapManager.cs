@@ -246,7 +246,8 @@ public class MapManager : MonoBehaviour
 
         ProfilingUtilities.LogAction(() =>
         {
-            MeshGen.ConstructWaterMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
+            //MeshGen.ConstructLakeMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
+            MeshGen.ConstructWaterPlaneMesh(MapGen.m_MapData, m_MeshArgs);
             ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
             //MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
             //MeshGen.ConstructGridMesh(MapGen.m_MapData);

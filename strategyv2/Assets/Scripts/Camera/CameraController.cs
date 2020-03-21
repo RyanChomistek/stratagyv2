@@ -18,14 +18,14 @@ public class CameraController : MonoBehaviour
     public float CameraZoomSensitivity = 10f;
     private void Start()
     {
-        InputController.Instance.RegisterHandler(new DragHandler("MiddleMouse", 
-            (handler, x) => { handler.IgnoreUI = false; }, 
+        InputController.Instance.RegisterHandler(new DragHandler("MiddleMouse",
+            (handler, x) => { handler.IgnoreUI = false; },
             (handler, mousePosition, delta) =>
             {
                 transform.position -= delta;
                 handler.LastMousePosition = mousePosition - delta;
             },
-            (handler,point) => { handler.IgnoreUI = true; }));
+            (handler, point) => { handler.IgnoreUI = true; }));
 
         InputController.Instance.RegisterHandler(new DragHandler("Fire2",
             (handler, x) => { handler.IgnoreUI = false; },
@@ -39,8 +39,12 @@ public class CameraController : MonoBehaviour
         InputController.Instance.RegisterHandler(new AxisHandler("Mouse ScrollWheel",
             (handler, delta) =>
             {
-                delta *= 1 + Camera.main.transform.position.y;
-                Camera.main.transform.localPosition += Vector3.forward * delta * CameraZoomSensitivity;
+                //delta *= 1 + Camera.main.transform.position.y;
+                //Camera.main.transform.localPosition += Vector3.forward * delta * CameraZoomSensitivity;
+                delta *= Camera.main.transform.position.y * CameraZoomSensitivity;
+
+                transform.position += transform.forward * delta;
+
             }, false));
 
         UpdateRotation(Vector3.forward);

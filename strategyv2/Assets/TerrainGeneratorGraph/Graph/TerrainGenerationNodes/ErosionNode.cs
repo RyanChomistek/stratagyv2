@@ -10,7 +10,7 @@ public class ErosionSettings
     public bool enabled = true;
     public ComputeShader erosion;
     public int MaxNumThreads = 65535;
-    public int numDropletsPerCell = 8;
+    public float numDropletsPerCell = 8;
     public int maxLifetime = 30;
     public float sedimentCapacityFactor = 3;
     public float minSedimentCapacity = .01f;
@@ -35,7 +35,7 @@ public class ErosionNode : TerrainNode
 {
     [Input] public ComputeShader erosion;
     [Input] public int MaxNumThreads = 65535;
-    [Input] public int numDropletsPerCell = 8;
+    [Input] public float numDropletsPerCell = 8;
     [Input] public int maxLifetime = 30;
     [Input] public float sedimentCapacityFactor = 3;
     [Input] public float minSedimentCapacity = .01f;
@@ -66,7 +66,7 @@ public class ErosionNode : TerrainNode
     {
         ComputeShader erosion = GetInputValue("erosion", this.erosion);
         int MaxNumThreads = GetInputValue("MaxNumThreads", this.MaxNumThreads);
-        int numDropletsPerCell = GetInputValue("numDropletsPerCell", this.numDropletsPerCell);
+        float numDropletsPerCell = GetInputValue("numDropletsPerCell", this.numDropletsPerCell);
         int maxLifetime = GetInputValue("maxLifetime", this.maxLifetime);
         float sedimentCapacityFactor = GetInputValue("sedimentCapacityFactor", this.sedimentCapacityFactor);
         float minSedimentCapacity = GetInputValue("minSedimentCapacity", this.minSedimentCapacity);
@@ -158,7 +158,7 @@ public class ErosionNode : TerrainNode
         Debug.Log(numThreads);
 
         int numElementsToProcess = Mathf.CeilToInt(HeightMap.Length / (float)numThreads);
-        int numDropletsPerThread = Settings.numDropletsPerCell * numElementsToProcess;
+        int numDropletsPerThread = (int) (Settings.numDropletsPerCell * numElementsToProcess);
         //Debug.Log($"Erosion: num elements = {HeightMap.Length}, num GPU Threads = {numThreads}, each doing {numElementsToProcess} elements");
 
         // HeightMap buffer

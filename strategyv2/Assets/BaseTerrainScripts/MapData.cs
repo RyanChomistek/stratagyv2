@@ -26,6 +26,8 @@ public class MapData
     [SerializeField]
     public SquareArray<Vector2> LayeredGradientMap;
 
+    public float WaterHeight;
+
     // Cached componets
     [NonSerialized]
     private List<HashSet<Vector2Int>> m_LandComponents = null;
@@ -73,7 +75,8 @@ public class MapData
             WaterMap = WaterMap.Clone() as SquareArray<float>,
             GradientMap = GradientMap.Clone() as SquareArray<Vector2>,
             LayeredGradientMap = LayeredGradientMap.Clone() as SquareArray<Vector2>,
-            RoadPaths = RoadPaths.Select(x => x.ToList()).ToList()
+            RoadPaths = RoadPaths.Select(x => x.ToList()).ToList(),
+            WaterHeight = WaterHeight
         };
 
         return other;
