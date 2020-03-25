@@ -7,12 +7,15 @@ public class VisualizeImprovementArrayNode : VisualizeArrayNode
 {
     [Input] public Improvement[] Array;
 
+    static Color Orange = new Color(1, .64f, 0);
+
     private static Dictionary<Improvement, Color> improvementColors = new Dictionary<Improvement, Color>(){
         { Improvement.Empty, Color.black },
-        { Improvement.Farm, Color.yellow },
+        { Improvement.Farm, Orange },
         { Improvement.Forest, Color.green },
         { Improvement.Road, Color.black },
         { Improvement.Town, Color.cyan },
+        { Improvement.Desert, Color.yellow },
     };
 
     public override void Recalculate()

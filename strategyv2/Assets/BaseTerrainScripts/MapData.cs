@@ -36,7 +36,7 @@ public class MapData
         {
             if(m_LandComponents == null)
             {
-                m_LandComponents = ArrayUtilityFunctions.FindComponents(Terrain.Grass, TerrainMap.SideLength, 0, ref TerrainMap);
+                m_LandComponents = ArrayUtilityFunctions.FindComponents(Terrain.Grass, 0, TerrainMap);
             }
 
             return m_LandComponents;

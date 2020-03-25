@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -21,6 +22,9 @@ public class MeshGeneratorArgs
 
     // if this is false we will attempt to create lakes out of the individual water components
     public bool UseWaterPlane = true;
+
+    public bool GenerateMillMeshes = true;
+    public float MillDensityPerTile = .01f;
 }
 
 public class AlphaMapChannels
@@ -28,7 +32,7 @@ public class AlphaMapChannels
     public float[] channels = { 0, 0, 0, 0, 0 };
 
     const int GrassIndex = 0;
-    const int WaterIndex = 1;
+    const int SandIndex = 1;
     const int RockIndex = 2;
     const int RoadIndex = 3;
     const int SnowIndex = 4;
@@ -36,7 +40,7 @@ public class AlphaMapChannels
     public void SetAlphaMapPos(float[,,] alphaData, int x, int y)
     {
         alphaData[y, x, GrassIndex] = channels[GrassIndex];
-        alphaData[y, x, WaterIndex] = channels[WaterIndex];
+        alphaData[y, x, SandIndex] = channels[SandIndex];
         alphaData[y, x, RockIndex] = channels[RockIndex];
         alphaData[y, x, RoadIndex] = channels[RoadIndex];
         alphaData[y, x, SnowIndex] = channels[SnowIndex];
@@ -68,7 +72,7 @@ public class AlphaMapChannels
         if (terrain == Terrain.Water)
         {
             channels[GrassIndex] = 0;
-            channels[WaterIndex] = 1;
+            channels[SandIndex] = 1;
             channels[RockIndex] = 0;
             channels[RoadIndex] = 0;
             channels[SnowIndex] = 0;
@@ -78,7 +82,7 @@ public class AlphaMapChannels
             float rockyness = gradient.magnitude * 3;
 
             channels[GrassIndex] = 0;
-            channels[WaterIndex] = 0;
+            channels[SandIndex] = 0;
             channels[RockIndex] = rockyness;
             channels[RoadIndex] = 0;
             channels[SnowIndex] = 1 - rockyness;
@@ -86,9 +90,17 @@ public class AlphaMapChannels
         else
         {
             float rockyness = gradient.magnitude * 10;
+            if(improvement == Improvement.Desert)
+            {
+                channels[GrassIndex] = 0;
+                channels[SandIndex] = 1 - rockyness;
+            }
+            else
+            {
+                channels[GrassIndex] = 1 - rockyness;
+                channels[SandIndex] = 0;
+            }
 
-            channels[GrassIndex] = 1 - rockyness;
-            channels[WaterIndex] = 0;
             channels[RockIndex] = rockyness;
             channels[RoadIndex] = 0;
             channels[SnowIndex] = 0;
@@ -97,7 +109,7 @@ public class AlphaMapChannels
         if (improvement == Improvement.Road)
         {
             channels[GrassIndex] = 0;
-            channels[WaterIndex] = 0;
+            channels[SandIndex] = 0;
             channels[RockIndex] = 0;
             channels[RoadIndex] = 1;
             channels[SnowIndex] = 0;
@@ -173,13 +185,16 @@ public class TerrainMeshGenerator : MonoBehaviour
     private GameObject m_GridMeshContainer;
     #endregion GridMesh
 
-    // Graph
-    //figure out how to import graph stuff might need to isolate utils for the graph to use
+    [SerializeField]
+    private GameObject m_MillPrefab;
+    private List<GameObject> m_DetailMeshes = new List<GameObject>();
 
     void Awake()
     {
         Instance = this;
         m_Terrain.detailObjectDistance = 2000;
+        m_Terrain.treeDistance = 2000;
+        ClearDetailMeshes();
     }
 
     //TODO Block this into chuncks 
@@ -204,7 +219,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             {
                 for (int x = 0; x < tData.alphamapWidth; x++)
                 {
-                    channelsMap[x,y] = new AlphaMapChannels();
+                    channelsMap[x, y] = new AlphaMapChannels();
                 }
             }
 
@@ -254,11 +269,13 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         }, "Set alpha maps");
 
+        ClearDetailMeshes();
 
         ProfilingUtilities.LogAction(() => {
             ConstructTrees(tData, mapData, otherArgs);
-            ConstructGrass(tData, mapData, otherArgs);
+            //ConstructGrass(tData, mapData, otherArgs);
             ConstructFarms(tData, mapData, otherArgs);
+            ConstructMills(tData, mapData, otherArgs);
             //ConstructRocks(tData, mapData, otherArgs);
             ConstructRoadMeshes(mapData, otherArgs);
         }, "Set Details");
@@ -299,6 +316,20 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         ac.Normalize();
         return ac;
+    }
+
+    public void ClearDetailMeshes()
+    {
+        m_DetailMeshes.ForEach(x =>
+        {
+            if (x != null)
+            {
+                DestroyImmediate(x);
+            }
+        });
+        m_DetailMeshes.Clear();
+
+        FindObjectsOfType<InfiniteRotator>().ToList().ForEach(x => { DestroyImmediate(x.gameObject); });
     }
 
     public void ConstructGridMesh(MapData mapdata)
@@ -422,16 +453,33 @@ public class TerrainMeshGenerator : MonoBehaviour
         return m_Terrain.SampleHeight(worldPosition);
     }
 
+    public Vector3 GetWorldPositionFromTilePosition(Vector2 position, int mapSize, bool center = false)
+    {
+        Vector3 tilePos = new Vector3(position.x, 0, position.y);
+        Vector3 worldPos = ConvertTilePositionToWorldPosition(tilePos, mapSize, center);
+        float height = GetHeightAtWorldPosition(worldPos);
+        worldPos.y = height;
+
+        return worldPos;
+    }
+
     public Vector2Int ConvertWorldPositionToTilePosition(Vector3 worldPosition, MapData mapData)
     {
         float scale = m_Terrain.terrainData.bounds.max.x / mapData.TileMapSize;
         return new Vector2Int(Mathf.FloorToInt(worldPosition.x / scale), Mathf.FloorToInt(worldPosition.z / scale));
     }
 
-    public Vector3 ConvertTilePositionToWorldPosition(Vector3 pos, int mapSize)
+    public Vector3 ConvertTilePositionToWorldPosition(Vector3 pos, int mapSize, bool center = false)
     {
         float scale = m_Terrain.terrainData.bounds.max.x / mapSize;
-        return new Vector3(pos.x * scale, pos.y * m_Terrain.terrainData.size.y, pos.z * scale);
+        var worldPos = new Vector3(pos.x * scale, pos.y * m_Terrain.terrainData.size.y, pos.z * scale);
+
+        if(center)
+        {
+            worldPos += new Vector3(.5f, 0, .5f) * scale;
+        }
+
+        return worldPos;
     }
 
     public Vector2 ConvertTilePositionToWorldPosition(Vector2 pos, int mapSize)
@@ -552,6 +600,27 @@ public class TerrainMeshGenerator : MonoBehaviour
         });
     }    
     
+    public void ConstructMills(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
+    {
+        List<HashSet<Vector2Int>> components = ArrayUtilityFunctions.FindComponents(Improvement.Farm, 0, mapData.ImprovmentMap);
+
+        foreach (HashSet<Vector2Int> component in components)
+        {
+            int numMills = Mathf.FloorToInt(component.Count * otherArgs.MillDensityPerTile);
+            if (numMills != 0)
+            {
+                List<Vector2Int> componentList = component.ToList();
+                for(int i = 0; i < numMills; i++)
+                {
+                    Vector2 tilePos = componentList[UnityEngine.Random.Range(0, componentList.Count)];
+                    var worldPos = GetWorldPositionFromTilePosition(tilePos, mapData.HeightMap.SideLength, true);
+                    var millObject = Instantiate(m_MillPrefab, worldPos, Quaternion.identity, transform);
+                    m_DetailMeshes.Add(millObject);
+                }
+            }
+        }
+    }
+
     public void ConstructFarms(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
     {
         ConstructDetailLayer(tData, mapData, otherArgs, 2, (tilePosition) =>
@@ -559,7 +628,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             // make sure there are no improvements on the tile and that its grass
             if (mapData.ImprovmentMap[tilePosition.x, tilePosition.y] == Improvement.Farm)
             {
-                return 1;
+                return otherArgs.GrassDensity;
             }
             else
             {
@@ -656,7 +725,7 @@ public class TerrainMeshGenerator : MonoBehaviour
 
         List<HashSet<Vector2Int>> components = null;
         ProfilingUtilities.LogAction(() => {
-            components = ArrayUtilityFunctions.FindComponents(Terrain.Water, heightMap.SideLength, 2, ref terrainTileMap);
+            components = ArrayUtilityFunctions.FindComponents(Terrain.Water, 2, terrainTileMap);
         }, "create components time");
 
         SquareArray<float> waterClone = waterMap.Clone() as SquareArray<float>;

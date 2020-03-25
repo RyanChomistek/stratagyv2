@@ -1,0 +1,19 @@
+{
+    "name": "TerrainGraphEditor",
+    "references": [
+        "GUID:47f1633136008e94e9a7e93b1e324c1c",
+        "GUID:807e515b2e5cc3b42926ec2f5e1f04e3",
+        "GUID:667054b87eea2ea45a2fd4ad399b8a6a"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

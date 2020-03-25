@@ -17,6 +17,7 @@ public class MapManagerEditor : CustomEditorBase
         {
             //var soldiers = new List<Soldier>() { new Soldier() };
             //myTarget.AttachedDivision.TransferSoldiers(soldiers);
+
             mapManager.GenerateMap();
         }
 

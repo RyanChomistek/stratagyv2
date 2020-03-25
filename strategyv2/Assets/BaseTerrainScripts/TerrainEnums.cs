@@ -10,7 +10,7 @@ public enum Terrain
 
 public enum Improvement
 {
-    Empty, Road, Farm, Town, Forest
+    Empty, Road, Farm, Town, Forest, Desert
 }
 
 

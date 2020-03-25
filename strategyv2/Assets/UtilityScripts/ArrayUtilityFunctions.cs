@@ -315,9 +315,9 @@ public class ArrayUtilityFunctions
         return Mathf.Sqrt(std);
     }
 
-    public static List<HashSet<Vector2Int>> FindComponents<T>(T target, int mapSize, int bufferWidth, ref SquareArray<T> terrainTileMap)
+    public static List<HashSet<Vector2Int>> FindComponents<T>(T target, int bufferWidth, SquareArray<T> tileMap)
     {
-        SquareArray<int> componentMap = new SquareArray<int>(mapSize);
+        SquareArray<int> componentMap = new SquareArray<int>(tileMap.SideLength);
 
         int componentCounter = 1;
 
@@ -336,7 +336,7 @@ public class ArrayUtilityFunctions
         {
             for (int x = 0; x < componentMap.SideLength; x++)
             {
-                if (terrainTileMap[x, y].Equals(target) && componentMap[x, y] == 0)
+                if (tileMap[x, y].Equals(target) && componentMap[x, y] == 0)
                 {
                     HashSet<Vector2Int> componet = FloodFill(
                         target,
@@ -345,7 +345,7 @@ public class ArrayUtilityFunctions
                         componentCounter,
                         floodFillDirections,
                         bufferWidth,
-                        ref terrainTileMap);
+                        tileMap);
 
                     components.Add(componet);
                     componentCounter++;
@@ -364,7 +364,7 @@ public class ArrayUtilityFunctions
         int componentNumber,
         Vector2Int[] floodFillDirections,
         int bufferWidth,
-        ref SquareArray<T> tileMap)
+        SquareArray<T> tileMap)
     {
         HashSet<Vector2Int> componet = new HashSet<Vector2Int>();
 
@@ -410,7 +410,7 @@ public class ArrayUtilityFunctions
             foreach (var dir in floodFillDirections)
             {
                 Vector2Int newPos = currPos + dir;
-                if (IsUnmarkedTile(target, newPos, adjacentDirections, ref componentMap, ref tileMap))
+                if (IsUnmarkedTile(target, newPos, adjacentDirections, ref componentMap, tileMap))
                 {
                     cellsToBeProcessed.Push(newPos);
                 }
@@ -434,7 +434,7 @@ public class ArrayUtilityFunctions
         Vector2Int Pos,
         List<Vector2Int> adjacentDirections,
         ref SquareArray<int> componentMap,
-        ref SquareArray<T> tileMap)
+        SquareArray<T> tileMap)
     {
         bool inBounds = componentMap.InBounds(Pos);
         if (inBounds && componentMap[Pos.x, Pos.y] == 0)
@@ -483,4 +483,6 @@ public class ArrayUtilityFunctions
 
         return res;
     }
+
+
 }

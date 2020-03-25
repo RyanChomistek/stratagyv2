@@ -11,6 +11,8 @@ public class FarmTileNode : TerrainNode
     [Input] public float[] InputWaterMap = null;
 
     [Input] public float WaterPercentThreshold = .1f;
+    [Input] public float GradientThreshold = .2f;
+
     [Output] public Improvement[] OutputImprovement = null;
 
     public override void Flush()
@@ -37,6 +39,7 @@ public class FarmTileNode : TerrainNode
         Terrain[] InputTerrain = GetInputValue("InputTerrain", this.InputTerrain);
         Improvement[] InputImprovementTerrain = GetInputValue("InputImprovementTerrain", this.InputImprovementTerrain);
         float WaterPercentThreshold = GetInputValue("WaterPercentThreshold", this.WaterPercentThreshold);
+        float GradientThreshold = GetInputValue("GradientThreshold", this.GradientThreshold);
 
         if (IsInputArrayValid(InputWaterMap) &&
             IsInputArrayValid(InputGradientMap) &&
@@ -48,10 +51,11 @@ public class FarmTileNode : TerrainNode
 
             SquareArray<Terrain> terrainMapSquare = new SquareArray<Terrain>(InputTerrain);
             SquareArray<float> waterMapSquare = new SquareArray<float>(InputWaterMap);
+            SquareArray<Vector2> GradientMapSquare = new SquareArray<Vector2>(InputGradientMap);
 
             for(int i = 0; i < InputWaterMap.Length; i++)
             {
-                if(InputWaterMap[i] > WaterPercentThreshold && terrainMapSquare[i] == Terrain.Grass)
+                if(InputWaterMap[i] > WaterPercentThreshold && terrainMapSquare[i] == Terrain.Grass && GradientMapSquare[i].magnitude < GradientThreshold)
                 {
                     improvementMapSquare[i] = Improvement.Farm;
                 }

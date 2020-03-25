@@ -227,9 +227,26 @@ MonoBehaviour:
   visualization: {fileID: 0}
   Length: 16129
   SideLength: 127
-  Min: 0.01356072
+  Min: 0.0013939193
   Max: 0.48000067
   Array: []
+--- !u!114 &-5060514854832764882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fddd98a07488d64aa6ac4f8acb8266b, type: 3}
+  m_Name: Recalculate Button
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -1104.1941, y: 263.45477}
+  ports:
+    keys: []
+    values: []
 --- !u!114 &-4929103345380979740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -263,7 +280,7 @@ MonoBehaviour:
   visualization: {fileID: 0}
   Length: 1069156
   SideLength: 1034
-  Min: 0.00051342085
+  Min: 0.000547851
   Max: 0.5
   Array: []
 --- !u!114 &-4730294017814461104
@@ -591,7 +608,7 @@ MonoBehaviour:
   Min: 0
   Max: 0
   Value: 257
-  LastUsedValue: 194
+  LastUsedValue: 344
 --- !u!114 &-2523066552665593521
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -902,7 +919,7 @@ MonoBehaviour:
   m_Name: Erosion
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 792, y: 328}
+  position: {x: 824, y: 328}
   ports:
     keys:
     - erosion
@@ -1111,7 +1128,7 @@ MonoBehaviour:
   m_Name: Plane
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 248, y: 328}
+  position: {x: 216, y: 248}
   ports:
     keys:
     - InputArray
@@ -1200,7 +1217,7 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  Iterations: 16
+  Iterations: 1
   InputArray: []
   BottomLeft: {x: 0, y: 0}
   WidthHeight: {x: 0, y: 0}
@@ -1332,7 +1349,7 @@ MonoBehaviour:
   InputGradientMap: []
   InputImprovements: 
   LandComponents: []
-  Iterations: 0
+  Iterations: 3
   OutputImprovements: 
   OutputRoadPaths: []
 --- !u!114 &-754288173688535627
@@ -1433,6 +1450,8 @@ MonoBehaviour:
   - {fileID: 4078657611248697596}
   - {fileID: 5275699380626964051}
   - {fileID: -4271367969207412392}
+  - {fileID: -5060514854832764882}
+  - {fileID: 3549095219897162573}
   - {fileID: 0}
   PauseRecalculation: 0
   RandomizeSeed: 1
@@ -1510,7 +1529,7 @@ MonoBehaviour:
         PublicKeyToken=null
       connections:
       - fieldName: OutputImprovement
-        node: {fileID: 5275699380626964051}
+        node: {fileID: 3549095219897162573}
         reroutePoints: []
       _direction: 0
       _connectionType: 0
@@ -1848,7 +1867,7 @@ MonoBehaviour:
   Length: 1069156
   SideLength: 1034
   Min: 0
-  Max: 0.4800008
+  Max: 0.4800012
   Array: []
 --- !u!114 &2265247752927332766
 MonoBehaviour:
@@ -2066,6 +2085,93 @@ MonoBehaviour:
   ports:
     keys: []
     values: []
+--- !u!114 &3549095219897162573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a9df2b095f26a04cb966bc21661d223, type: 3}
+  m_Name: Desert Tile
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 4664, y: -200}
+  ports:
+    keys:
+    - InputTerrain
+    - InputImprovementTerrain
+    - InputWaterMap
+    - MaxWaterPercent
+    - OutputImprovement
+    values:
+    - _fieldName: InputTerrain
+      _node: {fileID: 3549095219897162573}
+      _typeQualifiedName: Terrain[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: OutputTerrain
+        node: {fileID: 4164499557037180783}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputImprovementTerrain
+      _node: {fileID: 3549095219897162573}
+      _typeQualifiedName: Improvement[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: OutputImprovement
+        node: {fileID: 5275699380626964051}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputWaterMap
+      _node: {fileID: 3549095219897162573}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: WaterMapOutput
+        node: {fileID: 4031290059279981005}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: MaxWaterPercent
+      _node: {fileID: 3549095219897162573}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputImprovement
+      _node: {fileID: 3549095219897162573}
+      _typeQualifiedName: Improvement[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: Array
+        node: {fileID: 4078657611248697596}
+        reroutePoints: []
+      - fieldName: ImprovementMap
+        node: {fileID: 388784083238228226}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  InputTerrain: 
+  InputImprovementTerrain: 
+  InputWaterMap: []
+  MaxWaterPercent: 0.1
+  OutputImprovement: 
 --- !u!114 &3780863861758410234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2264,6 +2370,9 @@ MonoBehaviour:
       - fieldName: InputWaterMap
         node: {fileID: 5275699380626964051}
         reroutePoints: []
+      - fieldName: InputWaterMap
+        node: {fileID: 3549095219897162573}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -2322,7 +2431,7 @@ MonoBehaviour:
   m_Name: Visualize Improvement Array
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 4664, y: -120}
+  position: {x: 5016, y: -184}
   ports:
     keys:
     - Array
@@ -2333,7 +2442,7 @@ MonoBehaviour:
         PublicKeyToken=null
       connections:
       - fieldName: OutputImprovement
-        node: {fileID: 5275699380626964051}
+        node: {fileID: 3549095219897162573}
         reroutePoints: []
       _direction: 0
       _connectionType: 0
@@ -2424,6 +2533,9 @@ MonoBehaviour:
         reroutePoints: []
       - fieldName: InputTerrain
         node: {fileID: 5275699380626964051}
+        reroutePoints: []
+      - fieldName: InputTerrain
+        node: {fileID: 3549095219897162573}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -2648,7 +2760,7 @@ MonoBehaviour:
   m_Name: Farm Tile
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 4376, y: -152}
+  position: {x: 4296, y: -200}
   ports:
     keys:
     - InputTerrain
@@ -2657,6 +2769,7 @@ MonoBehaviour:
     - InputWaterMap
     - WaterPercentThreshold
     - OutputImprovement
+    - GradientThreshold
     values:
     - _fieldName: InputTerrain
       _node: {fileID: 5275699380626964051}
@@ -2720,13 +2833,19 @@ MonoBehaviour:
       _typeQualifiedName: Improvement[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
       connections:
-      - fieldName: Array
-        node: {fileID: 4078657611248697596}
-        reroutePoints: []
-      - fieldName: ImprovementMap
-        node: {fileID: 388784083238228226}
+      - fieldName: InputImprovementTerrain
+        node: {fileID: 3549095219897162573}
         reroutePoints: []
       _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GradientThreshold
+      _node: {fileID: 5275699380626964051}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
@@ -2734,7 +2853,8 @@ MonoBehaviour:
   InputImprovementTerrain: 
   InputGradientMap: []
   InputWaterMap: []
-  WaterPercentThreshold: 0.2
+  WaterPercentThreshold: 0.175
+  GradientThreshold: 0.1
   OutputImprovement: 
 --- !u!114 &5374775136501555456
 MonoBehaviour:
@@ -2848,7 +2968,7 @@ MonoBehaviour:
   Min: 0
   Max: 0
   Value: 136
-  LastUsedValue: 194
+  LastUsedValue: 692
 --- !u!114 &5920237000001316389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2950,7 +3070,7 @@ MonoBehaviour:
   m_Name: Random Float
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -120, y: 776}
+  position: {x: -200, y: 696}
   ports:
     keys:
     - Min
@@ -2990,7 +3110,7 @@ MonoBehaviour:
   Min: 1
   Max: 2
   Value: 0
-  LastUsedValue: 0.35724553
+  LastUsedValue: -0.900096
 --- !u!114 &6564731426483647036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3025,7 +3145,7 @@ MonoBehaviour:
   Length: 1069156
   SideLength: 1034
   Min: 0
-  Max: 0.4800008
+  Max: 0.4800012
   Array: []
 --- !u!114 &6607410489340545039
 MonoBehaviour:
@@ -3323,7 +3443,7 @@ MonoBehaviour:
   Min: 0
   Max: 0
   Value: 201
-  LastUsedValue: 597
+  LastUsedValue: 489
 --- !u!114 &7552540819215511812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3417,11 +3537,11 @@ MonoBehaviour:
       - fieldName: Padding
         node: {fileID: -2497009574658782132}
         reroutePoints: []
-      - fieldName: ErosionBrushRadius
-        node: {fileID: -1835521945685905138}
-        reroutePoints: []
       - fieldName: A
         node: {fileID: -4146464537681388985}
+        reroutePoints: []
+      - fieldName: ErosionBrushRadius
+        node: {fileID: -1835521945685905138}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
