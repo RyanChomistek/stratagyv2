@@ -8,7 +8,6 @@ public class PlaneNode : TerrainNode
     [Input] public float[] InputArray = null;
     [Input] public Vector2Int BottomLeft;
     [Input] public Vector2Int WidthHeight;
-    [Input] public float Value = .5f;
     [Input] public float FallOffRadius = .5f;
 
     [Output] public float[] OutputArray = null;
@@ -41,7 +40,6 @@ public class PlaneNode : TerrainNode
             {
                 Vector2Int BottomLeft = GetInputValue("BottomLeft", this.BottomLeft);
                 Vector2Int WidthHeight = GetInputValue("WidthHeight", this.WidthHeight);
-                float Value = GetInputValue("Value", this.Value);
                 float FallOffRadius = GetInputValue("FallOffRadius", this.FallOffRadius);
 
                 SquareArray<float> subBlock = OutputArraySquare.GetSubBlock(BottomLeft, WidthHeight.x, 0);

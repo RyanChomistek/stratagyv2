@@ -134,6 +134,7 @@ public class RoadMeshCreator : PathSceneTool {
         if (meshHolder == null) {
             meshHolder = new GameObject ("Road Mesh Holder");
             meshHolder.transform.SetParent(transform.parent);
+            meshHolder.tag = "RoadMesh";
         }
 
         meshHolder.transform.rotation = Quaternion.identity;

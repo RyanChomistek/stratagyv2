@@ -250,7 +250,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                         Vector2Int neighborTerrainMapPos = terrainMapPos + new Vector2Int(dx, dy);
                         if (mapData.TerrainMap.InBounds(neighborTerrainMapPos))
                         {
-                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale);
+                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale) / 2;
                             float distance = (neighborTileAphaMapPosCenter - alphaMapPositionReal).magnitude;
                             float weight = 1 - (distance / maxDistance);
                             if (weight > 0)
@@ -329,7 +329,23 @@ public class TerrainMeshGenerator : MonoBehaviour
         });
         m_DetailMeshes.Clear();
 
-        FindObjectsOfType<InfiniteRotator>().ToList().ForEach(x => { DestroyImmediate(x.gameObject); });
+        List<InfiniteRotator> rotators = FindObjectsOfType<InfiniteRotator>().ToList();
+
+        rotators.ForEach(x => { DestroyImmediate(x.gameObject); });
+
+        List<RoadMeshCreator> rmcs = FindObjectsOfType<RoadMeshCreator>().ToList();
+
+        rmcs.ForEach(x => {
+            if (x != null)
+            {
+                var GO = x.gameObject;
+                x.GetComponent<RoadMeshCreator>().OnDestroy();
+                DestroyImmediate(x.GetComponent<RoadMeshCreator>());
+                DestroyImmediate(GO);
+            }
+        });
+
+        m_PathCreators.Clear();
     }
 
     public void ConstructGridMesh(MapData mapdata)
@@ -396,19 +412,6 @@ public class TerrainMeshGenerator : MonoBehaviour
     {
         TerrainData tData = m_Terrain.terrainData;
         float alphaMapScale = tData.alphamapWidth / (float)mapdata.TileMapSize;
-
-        m_PathCreators.ForEach(x =>
-        {
-            if(x != null)
-            {
-                var GO = x.gameObject;
-                x.GetComponent<RoadMeshCreator>().OnDestroy();
-                DestroyImmediate(x.GetComponent<RoadMeshCreator>());
-                DestroyImmediate(GO);
-            }
-        });
-
-        m_PathCreators.Clear();
 
         if(!otherArgs.GenerateRoadMeshes)
         {
@@ -491,8 +494,9 @@ public class TerrainMeshGenerator : MonoBehaviour
     public void ConstructTrees(TerrainData tData, MapData md, MeshGeneratorArgs otherArgs)
     {
         List<TreeInstance> trees = new List<TreeInstance>();
-        Vector3 tileSize = new Vector3(1 / (float)md.ImprovmentMap.SideLength, 0, 1 / (float)md.ImprovmentMap.SideLength);
-        float nudgeRadius = .75f;
+        //float tileScaleToWorld = m_Terrain.terrainData.bounds.max.x / md.ImprovmentMap.SideLength;
+        Vector3 tileScaleToNormalized = new Vector3(1 / (float)md.ImprovmentMap.SideLength, 0, 1 / (float)md.ImprovmentMap.SideLength);
+        float nudgeScale = .25f;
         float scaleNudgeBase = .25f;
 
         if (otherArgs.GenerateTreeMeshes)
@@ -508,9 +512,9 @@ public class TerrainMeshGenerator : MonoBehaviour
                             // Move the tree a little so that we dont get a grid
                             Vector3 nudge =
                                 new Vector3(
-                                    UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.x,
+                                    UnityEngine.Random.Range(-tileScaleToNormalized.x, tileScaleToNormalized.x) * nudgeScale,
                                     0,
-                                    UnityEngine.Random.Range(-nudgeRadius, nudgeRadius) * tileSize.z);
+                                    UnityEngine.Random.Range(-tileScaleToNormalized.z, tileScaleToNormalized.z) * nudgeScale);
 
                             Vector3 treePos = new Vector3(
                                     x / (float)md.ImprovmentMap.SideLength,
@@ -626,7 +630,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         ConstructDetailLayer(tData, mapData, otherArgs, 2, (tilePosition) =>
         {
             // make sure there are no improvements on the tile and that its grass
-            if (mapData.ImprovmentMap[tilePosition.x, tilePosition.y] == Improvement.Farm)
+            if (mapData.ImprovmentMap.InBounds(tilePosition) && mapData.ImprovmentMap[tilePosition.x, tilePosition.y] == Improvement.Farm)
             {
                 return otherArgs.GrassDensity;
             }
@@ -649,6 +653,10 @@ public class TerrainMeshGenerator : MonoBehaviour
     {
         // Get all of layer.
         var map = tData.GetDetailLayer(0, 0, tData.detailWidth, tData.detailHeight, layer);
+        int tileLookDistance = 1;
+        
+        float detailMapScale = tData.detailWidth / ((float)mapData.TerrainMap.SideLength + 1);
+        float maxDistance = detailMapScale * tileLookDistance * .75f;
 
         // For each pixel in the detail map...
         for (int y = 0; y < tData.detailHeight; y++)
@@ -659,7 +667,27 @@ public class TerrainMeshGenerator : MonoBehaviour
                 {
                     // Here we do y, x because the details coordinates are flipped from ours
                     Vector2Int tilePosition = ConvertDetailPositionToTilePosition(tData, mapData, new Vector2Int(y, x), otherArgs);
-                    map[x, y] = densityFunc(tilePosition);
+                    Vector2 detailPos = new Vector2(y, x);
+                    float value = 0;
+
+                    for (int dx = -tileLookDistance; dx <= tileLookDistance; dx++)
+                    {
+                        for (int dy = -tileLookDistance; dy <= tileLookDistance; dy++)
+                        {
+                            Vector2Int neighborTerrainMapPos = tilePosition + new Vector2Int(dx, dy);
+                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * detailMapScale + new Vector2(detailMapScale, detailMapScale) / 2;
+                            float distance = (neighborTileAphaMapPosCenter - detailPos).magnitude;
+                            float weight = 1 - (distance / maxDistance);
+                            
+                            if (weight > 0)
+                            {
+                                value += densityFunc(neighborTerrainMapPos) * weight;
+                            }
+                        }
+                    }
+
+                    //map[x, y] = 0;
+                    map[x, y] = Mathf.FloorToInt(value);
                 }
                 else
                 {
