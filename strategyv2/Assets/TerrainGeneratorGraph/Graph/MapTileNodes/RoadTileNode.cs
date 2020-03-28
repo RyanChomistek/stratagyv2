@@ -141,7 +141,28 @@ public class RoadTileNode : TerrainNode
         }
 
         // Pick a random component
-        TileComponent component = landComponents[rand.Next(landComponents.Count)];
+        // Pick a random number between 0 and the total sum of all components
+        // Makes it so that the liklyhood of a road spawning on a component is perportional to its size
+        int totalSize = landComponents.Sum(x => x.Locations.Count);
+        int randElement = rand.Next(totalSize);
+        TileComponent component = null;
+
+        // Find which component we picked
+        int currCount = 0;
+        foreach (var tempComponent in landComponents)
+        {
+            if(randElement < (currCount + tempComponent.Locations.Count))
+            {
+                component = tempComponent;
+            }
+            
+            currCount += tempComponent.Locations.Count;
+        }
+
+        if(component == null)
+        {
+            Debug.LogError("bad component element");
+        }
 
         // Get the edges of the component
         HashSet<Vector2Int> edges = FindEdgesOfComponent(component.Locations);
