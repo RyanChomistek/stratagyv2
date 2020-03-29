@@ -13,8 +13,8 @@ public class VisualizeImprovementArrayNode : VisualizeArrayNode
         { Improvement.Empty, Color.black },
         { Improvement.Farm, Orange },
         { Improvement.Forest, Color.green },
-        { Improvement.Road, Color.black },
-        { Improvement.Town, Color.cyan },
+        { Improvement.Road, Color.cyan },
+        { Improvement.Town, Color.magenta },
         { Improvement.Desert, Color.yellow },
     };
 

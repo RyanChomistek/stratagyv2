@@ -61,5 +61,9 @@ public class FarmTileNode : TerrainNode
                 }
             }
         }
+        else
+        {
+            throw new System.Exception("input arrays invalid");
+        }
     }
 }

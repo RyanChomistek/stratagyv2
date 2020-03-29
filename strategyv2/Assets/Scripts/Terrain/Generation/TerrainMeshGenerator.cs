@@ -12,7 +12,7 @@ public class MeshGeneratorArgs
     public float ElevationScale = 10;
     public float WaterScale = .1f;
 
-    public bool GenerateWaterMeshes= true;
+    public bool GenerateWaterMeshes = true;
     public bool GenerateTreeMeshes = true;
     public bool GenerateDetailMeshes = true;
     public bool GenerateRoadMeshes = true;
@@ -29,14 +29,16 @@ public class MeshGeneratorArgs
 
 public class AlphaMapChannels
 {
-    public float[] channels = { 0, 0, 0, 0, 0 };
+    public float[] channels = { 0, 0, 0, 0, 0, 0 };
 
     const int GrassIndex = 0;
     const int SandIndex = 1;
     const int RockIndex = 2;
     const int RoadIndex = 3;
     const int SnowIndex = 4;
-    const int MaxIndex = 5;
+    const int DirtIndex = 5;
+    const int MaxIndex = 6;
+
     public void SetAlphaMapPos(float[,,] alphaData, int x, int y)
     {
         alphaData[y, x, GrassIndex] = channels[GrassIndex];
@@ -44,6 +46,7 @@ public class AlphaMapChannels
         alphaData[y, x, RockIndex] = channels[RockIndex];
         alphaData[y, x, RoadIndex] = channels[RoadIndex];
         alphaData[y, x, SnowIndex] = channels[SnowIndex];
+        alphaData[y, x, DirtIndex] = channels[DirtIndex];
     }
 
     public AlphaMapChannels()
@@ -69,50 +72,79 @@ public class AlphaMapChannels
             channels = new float[MaxIndex];
         }
 
-        if (terrain == Terrain.Water)
-        {
-            channels[GrassIndex] = 0;
-            channels[SandIndex] = 1;
-            channels[RockIndex] = 0;
-            channels[RoadIndex] = 0;
-            channels[SnowIndex] = 0;
-        }
-        else if (terrain == Terrain.Mountain)
-        {
-            float rockyness = gradient.magnitude * 3;
+        float rockyness = gradient.magnitude * 3;
 
-            channels[GrassIndex] = 0;
-            channels[SandIndex] = 0;
-            channels[RockIndex] = rockyness;
-            channels[RoadIndex] = 0;
-            channels[SnowIndex] = 1 - rockyness;
-        }
-        else
+        switch (terrain)
         {
-            float rockyness = gradient.magnitude * 10;
-            if(improvement == Improvement.Desert)
-            {
+            case Terrain.Water:
                 channels[GrassIndex] = 0;
-                channels[SandIndex] = 1 - rockyness;
-            }
-            else
-            {
-                channels[GrassIndex] = 1 - rockyness;
+                channels[SandIndex] = 1;
+                channels[RockIndex] = 0;
+                channels[RoadIndex] = 0;
+                channels[SnowIndex] = 0;
+                channels[DirtIndex] = 0;
+                break;
+
+            case Terrain.Mountain:
+                channels[GrassIndex] = 0;
                 channels[SandIndex] = 0;
-            }
+                channels[RockIndex] = rockyness;
+                channels[RoadIndex] = 0;
+                channels[SnowIndex] = 1 - rockyness;
+                channels[DirtIndex] = 0;
+                break;
 
-            channels[RockIndex] = rockyness;
-            channels[RoadIndex] = 0;
-            channels[SnowIndex] = 0;
-        }
+            case Terrain.Grass:
+                rockyness = gradient.magnitude * 10;
 
-        if (improvement == Improvement.Road)
-        {
-            channels[GrassIndex] = 0;
-            channels[SandIndex] = 0;
-            channels[RockIndex] = 0;
-            channels[RoadIndex] = 1;
-            channels[SnowIndex] = 0;
+                switch (improvement)
+                {
+                    case Improvement.Desert:
+                        channels[GrassIndex] = 0;
+                        channels[SandIndex] = 1 - rockyness;
+                        channels[RockIndex] = rockyness;
+                        channels[RoadIndex] = 0;
+                        channels[SnowIndex] = 0;
+                        channels[DirtIndex] = 0;
+                        break;
+
+                    case Improvement.Road:
+                        channels[GrassIndex] = 0;
+                        channels[SandIndex] = 0;
+                        channels[RockIndex] = 0;
+                        channels[RoadIndex] = 1;
+                        channels[SnowIndex] = 0;
+                        channels[DirtIndex] = 0;
+                        break;
+
+                    case Improvement.Town:
+                        channels[GrassIndex] = 0;
+                        channels[SandIndex] = 0;
+                        channels[RockIndex] = 0;
+                        channels[RoadIndex] = 0;
+                        channels[SnowIndex] = 0;
+                        channels[DirtIndex] = 1;
+                        break;
+
+                    case Improvement.Farm:
+                        channels[GrassIndex] = 0;
+                        channels[SandIndex] = 0;
+                        channels[RockIndex] = 0;
+                        channels[RoadIndex] = 0;
+                        channels[SnowIndex] = 0;
+                        channels[DirtIndex] = 1;
+                        break;
+
+                    default:
+                        channels[GrassIndex] = 1 - rockyness;
+                        channels[SandIndex] = 0;
+                        channels[RockIndex] = rockyness;
+                        channels[RoadIndex] = 0;
+                        channels[SnowIndex] = 0;
+                        break;
+                }
+
+                break;
         }
     }
 
@@ -276,6 +308,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             //ConstructGrass(tData, mapData, otherArgs);
             ConstructFarms(tData, mapData, otherArgs);
             ConstructMills(tData, mapData, otherArgs);
+            ConstructHouses(tData, mapData, otherArgs);
             //ConstructRocks(tData, mapData, otherArgs);
             ConstructRoadMeshes(mapData, otherArgs);
         }, "Set Details");
@@ -641,6 +674,22 @@ public class TerrainMeshGenerator : MonoBehaviour
         });
     }
 
+    public void ConstructHouses(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs)
+    {
+        ConstructDetailLayer(tData, mapData, otherArgs, 3, (tilePosition) =>
+        {
+            // make sure there are no improvements on the tile and that its grass
+            if (mapData.ImprovmentMap.InBounds(tilePosition) && mapData.ImprovmentMap[tilePosition.x, tilePosition.y] == Improvement.Town)
+            {
+                return mapData.TerrainMap.SideLength / m_Terrain.terrainData.bounds.max.x;
+            }
+            else
+            {
+                return 0;
+            }
+        });
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -649,10 +698,10 @@ public class TerrainMeshGenerator : MonoBehaviour
     /// <param name="otherArgs"></param>
     /// <param name="layer"></param>
     /// <param name="densityFunc"> function to get the density of the detail given a tile location </param>
-    public void ConstructDetailLayer(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs, int layer, Func<Vector2Int, int> densityFunc)
+    public void ConstructDetailLayer(TerrainData tData, MapData mapData, MeshGeneratorArgs otherArgs, int layer, Func<Vector2Int, float> densityFunc)
     {
         // Get all of layer.
-        var map = tData.GetDetailLayer(0, 0, tData.detailWidth, tData.detailHeight, layer);
+        int[,] map = tData.GetDetailLayer(0, 0, tData.detailWidth, tData.detailHeight, layer);
         int tileLookDistance = 1;
         
         float detailMapScale = tData.detailWidth / ((float)mapData.TerrainMap.SideLength + 1);
@@ -686,7 +735,12 @@ public class TerrainMeshGenerator : MonoBehaviour
                         }
                     }
 
-                    //map[x, y] = 0;
+                    // if the value is less than one we need to randomly select if it should get a value
+                    if(value < 1 && UnityEngine.Random.Range(0f,1f) < value)
+                    {
+                        value = 1;
+                    }
+
                     map[x, y] = Mathf.FloorToInt(value);
                 }
                 else

@@ -51,5 +51,9 @@ public class DesertTileNode : TerrainNode
                 }
             }
         }
+        else
+        {
+            throw new System.Exception("input arrays invalid");
+        }
     }
 }

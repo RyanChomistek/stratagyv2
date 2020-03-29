@@ -61,6 +61,11 @@ public class SquareArray<T> : System.ICloneable
         return (y * SideLength) + x;
     }
 
+    public Vector2Int Convert1DCoordinateTo2D(int i)
+    {
+        return new Vector2Int(i / SideLength, i % SideLength);
+    }
+
     public bool InBounds(int x, int y)
     {
         if (x < SideLength &&
@@ -86,6 +91,23 @@ public class SquareArray<T> : System.ICloneable
         }
 
         return false;
+    }
+
+    public IEnumerable<T> Adjacent(Vector2Int vec2, int radius = 1)
+    {
+        List<T> adjacents = new List<T>();
+        for(int x = vec2.x - radius; x <= vec2.y + radius; x++)
+        {
+            for (int y = vec2.y - radius; y <= vec2.y + radius; y++)
+            {
+                if(InBounds(x,y))
+                {
+                    adjacents.Add(this[x, y]);
+                }
+            }
+        }
+
+        return adjacents;
     }
 
     public SquareArray<T> GetSubBlock(Vector2Int offset, int newSideLength, T defaultValue)

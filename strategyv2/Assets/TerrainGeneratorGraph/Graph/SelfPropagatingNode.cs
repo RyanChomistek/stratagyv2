@@ -9,11 +9,11 @@ public abstract class SelfPropagatingNode : XNode.Node
 {
     protected TerrainGeneratorGraph Graph { get { return base.graph as TerrainGeneratorGraph; } }
 
+    public bool IsError = false;
+
     // should be called on the first node to set of a recalc chain
     public void StartPropogation()
     {
-        //EnterRecalculate();
-        //Propogate();
         (Graph as TerrainGeneratorGraph).RecalculateFullGraph();
     }
 
@@ -134,6 +134,7 @@ public abstract class SelfPropagatingNode : XNode.Node
         System.DateTime startRecalc = System.DateTime.Now;
         if (!(this.Graph as TerrainGeneratorGraph).PauseRecalculation)
         {
+            IsError = false;
             this.Recalculate();
             System.DateTime endRecalc = System.DateTime.Now;
             recalcTime = endRecalc - startRecalc;

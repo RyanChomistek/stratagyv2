@@ -69,5 +69,9 @@ public class ForestTileNode : TerrainNode
                 }
             }
         }
+        else
+        {
+            throw new System.Exception("input arrays invalid");
+        }
     }
 }

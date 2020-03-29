@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
@@ -108,7 +109,7 @@ public class TerrainGeneratorGraph : NodeGraph
     {
         HashSet<SelfPropagatingNode> inputs = FindInputNodes(current);
         
-        foreach (var input in inputs)
+        foreach (SelfPropagatingNode input in inputs)
         {
             if(!calcedNodes.Contains(input))
             {
@@ -117,7 +118,15 @@ public class TerrainGeneratorGraph : NodeGraph
             }
         }
 
-        current.Recalculate();
+        current.IsError = false;
+        try
+        {
+            current.Recalculate();
+        }
+        catch(Exception e)
+        {
+            current.IsError = true;
+        }
         //Debug.Log(current);
     }
 

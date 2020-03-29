@@ -67,6 +67,10 @@ public class RoadTileNode : TerrainNode
                 OutputRoadPaths.Add(OutputRoadPath);
             }
         }
+        else
+        {
+            throw new System.Exception("input arrays invalid");
+        }
     }
 
     public static void Generate(SquareArray<Improvement> improvements, in SquareArray<Terrain> terrain, SquareArray<float> heightMap, List<TileComponent> landComponents, System.Random rand, out List<Vector3> roadPath)
