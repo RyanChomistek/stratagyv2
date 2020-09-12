@@ -14,6 +14,7 @@ public class MeshGenerationNode : TerrainNode
     [Input] public Vector2[] LayeredGradientMap = null;
     [Input] public List<RoadPath> RoadPaths = null;
     [Input] public float WaterHeight = 0;
+    [Input] public float[] SedimentMap = null;
     public override object GetValue(XNode.NodePort port)
     {
         Debug.LogError("MeshGenerationNode should not be used for output");
@@ -32,6 +33,7 @@ public class MeshGenerationNode : TerrainNode
         LayeredGradientMap = GetInputValue("LayeredGradientMap", this.LayeredGradientMap);
         RoadPaths = GetInputValue("RoadPaths", this.RoadPaths);
         WaterHeight = GetInputValue("WaterHeight", this.WaterHeight);
+        SedimentMap = GetInputValue("SedimentMap", this.SedimentMap);
     }
 
     public MapData GetValueAsMapData()
@@ -49,8 +51,9 @@ public class MeshGenerationNode : TerrainNode
             mapData.LayeredGradientMap = new SquareArray<Vector2>(LayeredGradientMap);
 
         mapData.WaterHeight = WaterHeight;
+        mapData.SedimentMap = new SquareArray<float>(SedimentMap);
 
-        if(RoadPaths != null)
+        if (RoadPaths != null)
         {
             List<List<Vector3>> outputRoadPaths = new List<List<Vector3>>();
             RoadPaths.ForEach(x => outputRoadPaths.Add(x.Path));

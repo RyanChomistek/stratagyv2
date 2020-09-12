@@ -20,7 +20,8 @@ public class MapManager : MonoBehaviour
     public TerrainMapTile BaseTerrainTile;
 
     public MapGenerator MapGen;
-    public TerrainMeshGenerator MeshGen;
+    // public TerrainMeshGenerator MeshGen;
+    public LandMeshGenerator landMeshGen;
 
     [SerializeField]
     private List<MapTileSettings> MapTiles;
@@ -247,8 +248,11 @@ public class MapManager : MonoBehaviour
         ProfilingUtilities.LogAction(() =>
         {
             //MeshGen.ConstructLakeMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
-            MeshGen.ConstructWaterPlaneMesh(MapGen.m_MapData, m_MeshArgs);
-            ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
+            
+            // MeshGen.ConstructWaterPlaneMesh(MapGen.m_MapData, m_MeshArgs);
+            // ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
+            landMeshGen.ConstructMesh(MapGen.m_MapData, terrainTileLookup, improvementTileLookup);
+            
             //MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
             //MeshGen.ConstructGridMesh(MapGen.m_MapData);
         }, "MAP GEN: done constructing meshes");
@@ -283,26 +287,28 @@ public class MapManager : MonoBehaviour
 
     public float getHeightAtWorldPosition(Vector3 position)
     {
-        return MeshGen.GetHeightAtWorldPosition(position);
+        // return MeshGen.GetHeightAtWorldPosition(position);
+        return landMeshGen.GetHeightAtWorldPosition(position);
     }
 
     public TerrainMapTile GetTileFromPosition(Vector3 position)
     {
-        var tilePos = MeshGen.ConvertWorldPositionToTilePosition(position, MapGen.m_MapData);
+        //var tilePos = MeshGen.ConvertWorldPositionToTilePosition(position, MapGen.m_MapData);
+        var tilePos = landMeshGen.ConvertWorldPositionToTilePosition(position);
         return map[tilePos.x, tilePos.y];
     }
 
     public Vector2Int GetTilePositionFromPosition(Vector3 position)
     {
-        var tilePos = MeshGen.ConvertWorldPositionToTilePosition(position, MapGen.m_MapData);
+        var tilePos = landMeshGen.ConvertWorldPositionToTilePosition(position);
         return tilePos;
     }
 
     public Vector3 GetWorldPositionFromTilePosition(Vector2 position)
     {
         Vector3 tilePos = new Vector3(position.x, 0, position.y);
-        Vector3 worldPos = MeshGen.ConvertTilePositionToWorldPosition(tilePos, MapGen.m_MapData.TileMapSize);
-        float height = MeshGen.GetHeightAtWorldPosition(worldPos);
+        Vector3 worldPos = landMeshGen.ConvertTilePositionToWorldPosition(tilePos, MapGen.m_MapData.TileMapSize);
+        float height = landMeshGen.GetHeightAtWorldPosition(worldPos);
         worldPos.y = height;
 
         return worldPos;
@@ -318,8 +324,8 @@ public class MapManager : MonoBehaviour
     public Vector3 ClampPositionToInBounds(Vector3 position)
     {
         var gridStart = Vector3.zero;
-        float x = Mathf.Clamp(position.x, 0, MeshGen.GetMeshMapSize());
-        float z = Mathf.Clamp(position.z, 0, MeshGen.GetMeshMapSize());
+        float x = Mathf.Clamp(position.x, 0, landMeshGen.GetMeshSize().x);
+        float z = Mathf.Clamp(position.z, 0, landMeshGen.GetMeshSize().z);
         return new Vector3(x, 0, z);
     }
 

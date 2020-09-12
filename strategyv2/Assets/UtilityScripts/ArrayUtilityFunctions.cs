@@ -282,6 +282,17 @@ public class ArrayUtilityFunctions
         }
     }
 
+    public static void Invert(SquareArray<float> arr, float min, float max, float scale = 1)
+    {
+        for (int x = 0; x < arr.SideLength; x++)
+        {
+            for (int y = 0; y < arr.SideLength; y++)
+            {
+                arr[x, y] = max - arr[x,y];
+            }
+        }
+    }
+
     public static float StandardDeviation(SquareArray<float> arr, out float mean, out float std, bool ignoreZero = false)
     {
         mean = 0;

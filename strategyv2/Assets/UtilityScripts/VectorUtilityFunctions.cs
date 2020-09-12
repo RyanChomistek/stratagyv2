@@ -23,4 +23,14 @@ public class VectorUtilityFunctions
     {
         return new Vector2Int(Mathf.RoundToInt(vec.x), Mathf.RoundToInt(vec.y));
     }
+
+    public static Vector2 DivScaler(Vector2 vec, float val)
+    {
+        return new Vector2(vec.x / val, vec.y / val);
+    }
+
+    public static Vector3 DivScaler(Vector3 vec, float val)
+    {
+        return new Vector3(vec.x / val, vec.y / val, vec.z / val);
+    }
 }

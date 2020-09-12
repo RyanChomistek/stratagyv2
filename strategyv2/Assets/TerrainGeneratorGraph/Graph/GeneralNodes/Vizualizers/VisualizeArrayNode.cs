@@ -11,9 +11,10 @@ public class VisualizeArrayNode : SelfPropagatingNode
     public int Length = -1;
     public int SideLength = -1;
 
+    public bool SetMinMax = false;
     public float Min;
     public float Max;
-
+    public float Average;
     public override void Flush()
     {
         
@@ -45,17 +46,34 @@ public class VisualizeArrayNode : SelfPropagatingNode
     protected void GenerateVisualization<T>(T[] arr, Func<T, float> valueGetter)
     {
         SquareArray<T> TSquare = new SquareArray<T>(arr);
-        Min = float.PositiveInfinity;
-        Max = float.NegativeInfinity;
+
+        if(!SetMinMax)
+        {
+            Min = float.PositiveInfinity;
+            Max = float.NegativeInfinity;
+
+            for (int x = 0; x < TSquare.SideLength; x++)
+            {
+                for (int y = 0; y < TSquare.SideLength; y++)
+                {
+                    float val = valueGetter(TSquare[x, y]);
+                    Min = Mathf.Min(Min, val);
+                    Max = Mathf.Max(Max, val);
+                }
+            }
+        }
+
+        Average = 0;
         for (int x = 0; x < TSquare.SideLength; x++)
         {
             for (int y = 0; y < TSquare.SideLength; y++)
             {
                 float val = valueGetter(TSquare[x, y]);
-                Min = Mathf.Min(Min, val);
-                Max = Mathf.Max(Max, val);
+                Average += val;
             }
         }
+
+        Average /= TSquare.Length;
 
         float delta = Max - Min;
         if(delta == 0)
@@ -66,6 +84,7 @@ public class VisualizeArrayNode : SelfPropagatingNode
         int texSize = 1024;
         float scale = texSize / (float)TSquare.SideLength;
         visualization = new Texture2D(texSize, texSize);
+        
         for (int x = 0; x < texSize; x++)
         {
             for (int y = 0; y < texSize; y++)

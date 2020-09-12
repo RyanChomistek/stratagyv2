@@ -25,7 +25,7 @@ MonoBehaviour:
     InitialPopulation: 0
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
-    SimpleDisplayColor: {r: 0.35617658, g: 0.44116035, b: 0.8679245, a: 0}
+    SimpleDisplayColor: {r: 1, g: 0.88742167, b: 0.33490568, a: 1}
     Improvable: 0
     TerrainType: 2
     Height: 0

@@ -25,6 +25,8 @@ public class MapData
     public SquareArray<Vector2> GradientMap;
     [SerializeField]
     public SquareArray<Vector2> LayeredGradientMap;
+    [SerializeField]
+    public SquareArray<float> SedimentMap;
 
     public float WaterHeight;
 

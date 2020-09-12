@@ -170,4 +170,17 @@ public abstract class SelfPropagatingNode : XNode.Node
     {
         return arr != null && arr.Length > 0;
     }
+
+    protected bool AreAllValid<T>(params T[][] list)
+    {
+        foreach(var obj in list)
+        {
+            if(obj == null || obj.Length == 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

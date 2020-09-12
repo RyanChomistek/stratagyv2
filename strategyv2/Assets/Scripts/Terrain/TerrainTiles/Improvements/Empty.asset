@@ -42,6 +42,6 @@ MonoBehaviour:
     InitialPopulation: 0
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
-    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 1}
     Improvable: 1
     Improvement: 0
