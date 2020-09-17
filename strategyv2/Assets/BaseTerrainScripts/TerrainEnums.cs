@@ -5,7 +5,7 @@ using UnityEngine;
 
 public enum Terrain
 {
-    Empty, Grass, Water, Mountain
+    Empty, Grass, Water, Mountain, Max
 }
 
 public enum Improvement

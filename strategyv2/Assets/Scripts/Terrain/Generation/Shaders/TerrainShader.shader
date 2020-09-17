@@ -6,10 +6,11 @@
         _MainTex("Albedo (RGB)", 2D) = "white" {}
         _Glossiness("Smoothness", Range(0,1)) = 0.5
         _Metallic("Metallic", Range(0,1)) = 0.0
-        _Rock("Rock", Color) = (1,1,1,1)
-        _RimPower("Rim Power", Float) = .5
-        _RimFac("Rim Fac", Range(0,1)) = 1
+        _SedimentPower("Rim Power", Range(.1,10)) = .5
+        _SedimentFac("Rim Fac", Range(0,2)) = 1
         _SedimentTex("Albedo (RGB)", 2D) = "white" {}
+        _SedimentHeightPower("Height Power", Range(.1,3)) = .5
+        _SedimentHeightFac("Height Fac", Range(0,2)) = 1
     }
     SubShader
     {
@@ -38,10 +39,11 @@
         half _Glossiness;
         half _Metallic;
         fixed4 _Color;
-        fixed4 _Rock;
         half _MaxHeight;
-        half _RimFac;
-        half _RimPower;
+        half _SedimentFac;
+        half _SedimentPower;
+        half _SedimentHeightPower;
+        half _SedimentHeightFac;
 
         // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
         // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
@@ -59,10 +61,15 @@
             fixed4 terrainColor = tex2D(_MainTex, IN.uv_MainTex); // terraincolor;
             fixed4 sedimentColor = tex2D(_SedimentTex, IN.uv_SedimentTex); // terraincolor;
 
-            float rockWeight = pow(sedimentColor, _RimPower) * _RimFac;
-            terrainColor = lerp(terrainColor, _Rock, rockWeight);
+            float rockWeight = pow(sedimentColor.a, _SedimentPower) * _SedimentFac;
+            float heightWeight = pow(normalizedHeight, _SedimentHeightPower) * _SedimentHeightFac;
 
-            o.Albedo = terrainColor.rgb;
+            rockWeight = rockWeight * heightWeight;
+
+            float3 finalColor = lerp(terrainColor.rgb, sedimentColor.rgb, rockWeight);
+
+
+            o.Albedo = finalColor;
 
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;

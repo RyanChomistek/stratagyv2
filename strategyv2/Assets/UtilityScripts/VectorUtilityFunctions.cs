@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class VectorUtilityFunctions
 {
-    static public Vector2 Vector2IntToVector2(Vector2Int v2i)
+    static public Vector2 Vec2IntToVec2(Vector2Int v2i)
     {
         return new Vector2(v2i.x, v2i.y)
 ;    }

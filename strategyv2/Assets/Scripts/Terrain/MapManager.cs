@@ -50,6 +50,9 @@ public class MapManager : MonoBehaviour
 
     public bool IsFinishedGeneratingMap { get; private set; }
 
+    Dictionary<Terrain, TerrainMapTile> terrainTileLookup = new Dictionary<Terrain, TerrainMapTile>();
+    Dictionary<Improvement, ImprovementMapTile> improvementTileLookup = new Dictionary<Improvement, ImprovementMapTile>();
+
     /// <summary>
     /// The higher this number the more fine the nave mesh compared to the terrain mesh
     /// </summary>
@@ -212,8 +215,8 @@ public class MapManager : MonoBehaviour
 
     public void GenerateMap()
     {
-        Dictionary<Terrain, TerrainMapTile> terrainTileLookup = new Dictionary<Terrain, TerrainMapTile>();
-        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup = new Dictionary<Improvement, ImprovementMapTile>();
+        terrainTileLookup = new Dictionary<Terrain, TerrainMapTile>();
+        improvementTileLookup = new Dictionary<Improvement, ImprovementMapTile>();
 
         ProfilingUtilities.LogAction(() =>
         {
@@ -235,7 +238,6 @@ public class MapManager : MonoBehaviour
                 }
             }
         }, "MAP GEN: finished setup");
-        //yield return new WaitForEndOfFrame();
 
         ProfilingUtilities.LogAction(() =>
         {
@@ -243,20 +245,23 @@ public class MapManager : MonoBehaviour
             ConvertMapGenerationToMapTiles(terrainTileLookup, improvementTileLookup);
             SetUpAjdacentTiles();
         }, "MAP GEN: done generating map tiles");
-        //yield return new WaitForEndOfFrame();
 
+        ReconstructMesh();
+    }
+
+    public void ReconstructMesh()
+    {
         ProfilingUtilities.LogAction(() =>
         {
             //MeshGen.ConstructLakeMeshes(MapGen.m_MapData, m_MeshArgs, MapGen.HeightMap, MapGen.WaterMap, MapGen.terrainMap, m_MeshArgs);
-            
+
             // MeshGen.ConstructWaterPlaneMesh(MapGen.m_MapData, m_MeshArgs);
             // ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
             landMeshGen.ConstructMesh(MapGen.m_MapData, terrainTileLookup, improvementTileLookup);
-            
+
             //MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
             //MeshGen.ConstructGridMesh(MapGen.m_MapData);
         }, "MAP GEN: done constructing meshes");
-        //yield return new WaitForEndOfFrame();
     }
 
     private void SetUpAjdacentTiles()

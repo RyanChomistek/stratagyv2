@@ -65,18 +65,22 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.182
+    - _Glossiness: 0
     - _GlossyReflections: 1
     - _GrassBlendAmount: 0.502
     - _GrassHeightFadePower: 6
     - _GrassMaxHeight: 0.594
     - _GrassSlopeThreshold: 1
-    - _Metallic: 0.15
+    - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _RimFac: 1
-    - _RimPower: 6.54
+    - _RimPower: 9.91
+    - _SedimentFac: 1
+    - _SedimentHeightFac: 1
+    - _SedimentHeightPower: 0.75
+    - _SedimentPower: 8.92
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -89,3 +93,4 @@ Material:
     - _MainCol: {r: 0.5566038, g: 0.4536819, b: 0.112896055, a: 1}
     - _RimColour: {r: 1, g: 0.81188756, b: 0.504717, a: 1}
     - _Rock: {r: 0, g: 0, b: 0, a: 1}
+    - _Sediment: {r: 1, g: 1, b: 1, a: 1}

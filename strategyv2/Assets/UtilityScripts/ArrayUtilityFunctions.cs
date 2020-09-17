@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -30,41 +31,61 @@ public class ArrayUtilityFunctions
     /// </summary>
     public static SquareArray<float> SmoothMT(SquareArray<float> map, int kernalSize, int numThreads = DefaultNumThreadsForJob)
     {
+        var kernel = CreateGaussianKernel(kernalSize);
+        return Convolution2DMT(map, kernel, numThreads);
+    }
+
+    /// <summary>
+    /// remove jagged edges, mutithreaded dont use for small maps
+    /// </summary>
+    public static SquareArray<T> SmoothMT<T>(SquareArray<T> map, int kernalSize, Func<T, T, float, T> aggrigate, int numThreads = DefaultNumThreadsForJob)
+    {
+        var kernel = CreateGaussianKernel(kernalSize);
+        return Convolution2DMT(map, kernel, aggrigate, numThreads);
+    }
+
+    public static SquareArray<T> SmoothMT<T>(SquareArray<T> map, SquareArray<float> kernel, Func<T, T, float, T> aggrigate, int numThreads = DefaultNumThreadsForJob)
+    {
+        return Convolution2DMT(map, kernel, aggrigate, numThreads);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="kernalSize"> must be a power of 2</param>
+    /// <returns></returns>
+    public static SquareArray<float> CreateGaussianKernel(int kernalSize)
+    {
         float sigma = 1;
         float r, s = 2.0f * sigma * sigma;
-
-        //gausian smoothing filter
-        var kernel = new List<List<float>>();
+        int halfSize = kernalSize / 2;
+        SquareArray<float> kernel = new SquareArray<float>(kernalSize+1);
 
         float sum = 0;
         for (int x = -kernalSize / 2; x <= kernalSize / 2; x++)
         {
-            var row = new List<float>();
             for (int y = -kernalSize / 2; y <= kernalSize / 2; y++)
             {
                 r = Mathf.Sqrt(x * x + y * y);
                 float val = (Mathf.Exp(-(r * r) / s)) / (Mathf.PI * s);
 
                 sum += val;
-                row.Add(val);
+                kernel[x + halfSize, y + halfSize] = (val);
             }
-
-            kernel.Add(row);
         }
 
-        for (int i = 0; i < kernel.Count; i++)
+        for (int i = 0; i < kernel.SideLength; i++)
         {
-            var row = kernel[i];
-            for (int j = 0; j < kernel.Count; j++)
+            for (int j = 0; j < kernel.SideLength; j++)
             {
-                row[j] /= sum;
+                kernel[i, j] /= sum;
             }
         }
 
-        return Convolution2DMT(map, kernel, numThreads);
+        return kernel;
     }
 
-    public static void ForMT(SquareArray<float> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    public static void ForMT<T>(SquareArray<T> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
     {
         int size = map.SideLength / numThreads;
         int remainder = map.SideLength - (size * numThreads);
@@ -194,43 +215,11 @@ public class ArrayUtilityFunctions
         For(map.SideLength, action, numThreads);
     }
 
-    public static SquareArray<float> Convolution2D(SquareArray<float> arr, List<List<float>> kernel)
-    {
-        //var convolutedArr = new float[arr.GetUpperBound(0) + 1, arr.GetUpperBound(1) + 1];
-        SquareArray<float> convolutedArr = new SquareArray<float>(arr.SideLength);
-        int k_h = kernel.Count;
-        int k_w = kernel[0].Count;
-
-        //do a 2d convolution
-        for (int x = 0; x < arr.SideLength; x++)
-        {
-            for (int y = 0; y < arr.SideLength; y++)
-            {
-                for (int k_x = 0; k_x < k_w; k_x++)
-                {
-                    for (int k_y = 0; k_y < k_h; k_y++)
-                    {
-                        float k = kernel[k_y][k_x];
-                        int heightMapOffset_x = x + k_x - (k_w / 2);
-                        int heightMapOffset_y = y + k_y - (k_h / 2);
-
-                        if (arr.InBounds(heightMapOffset_x, heightMapOffset_y))
-                            convolutedArr[x, y] += arr[heightMapOffset_x, heightMapOffset_y] * k;
-                    }
-                }
-            }
-        }
-
-        Normalize(convolutedArr);
-
-        return convolutedArr;
-    }
-
-    public static SquareArray<float> Convolution2DMT(SquareArray<float> map, List<List<float>> kernel, int numThreads = DefaultNumThreadsForJob)
+    public static SquareArray<float> Convolution2DMT(SquareArray<float> map, SquareArray<float> kernel, int numThreads = DefaultNumThreadsForJob)
     {
         var convolutedArr = new SquareArray<float>(map.SideLength);
-        int k_h = kernel.Count;
-        int k_w = kernel[0].Count;
+        int k_h = kernel.SideLength;
+        int k_w = kernel.SideLength;
 
         //int size = (map.GetUpperBound(1) + 1) / numThreads;
         int mapSize = map.SideLength;
@@ -240,7 +229,7 @@ public class ArrayUtilityFunctions
             {
                 for (int k_y = 0; k_y < k_h; k_y++)
                 {
-                    float k = kernel[k_y][k_x];
+                    float k = kernel[k_x, k_y];
                     int heightMapOffset_x = x + k_x - (k_w / 2);
                     int heightMapOffset_y = y + k_y - (k_h / 2);
 
@@ -253,6 +242,60 @@ public class ArrayUtilityFunctions
         Normalize(convolutedArr);
 
         return convolutedArr;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="map"></param>
+    /// <param name="kernel"></param>
+    /// <param name="aggrigate"> arg1 current total, arg2 current value, arg3 scale | returns a new total</param>
+    /// <param name="numThreads"></param>
+    /// <returns></returns>
+    public static SquareArray<T> Convolution2DMT<T>(
+        SquareArray<T> map,
+        SquareArray<float> kernel,
+        Func<T, T, float, T> aggrigate,
+        int numThreads = DefaultNumThreadsForJob)
+    {
+        var convolutedArr = new SquareArray<T>(map.SideLength);
+        int k_h = kernel.SideLength;
+        int k_w = kernel.SideLength;
+
+        int mapSize = map.SideLength;
+
+        ForMT(map, (x, y) =>
+        {
+            for (int k_x = 0; k_x < k_w; k_x++)
+            {
+                for (int k_y = 0; k_y < k_h; k_y++)
+                {
+                    float k = kernel[k_x, k_y];
+                    int heightMapOffset_x = x + k_x - (k_w / 2);
+                    int heightMapOffset_y = y + k_y - (k_h / 2);
+
+                    if (map.InBounds(heightMapOffset_x, heightMapOffset_y))
+                    {
+                        convolutedArr[x, y] = aggrigate(convolutedArr[x, y], map[heightMapOffset_x, heightMapOffset_y], k);
+                    }
+
+                }
+            }
+        }, numThreads);
+
+        return convolutedArr;
+    }
+
+    public static void Scale(SquareArray<float> arr, float scale = 1)
+    {
+        for (int x = 0; x < arr.SideLength; x++)
+        {
+            for (int y = 0; y < arr.SideLength; y++)
+            {
+                arr[x, y] *= scale;
+            }
+        }
     }
 
     public static void Normalize(SquareArray<float> arr)
@@ -484,6 +527,17 @@ public class ArrayUtilityFunctions
         return res;
     }
 
+    public static void Add(SquareArray<float> arr, float amt)
+    {
+        for (int x = 0; x < arr.SideLength; x++)
+        {
+            for (int y = 0; y < arr.SideLength; y++)
+            {
+                arr[x, y] += amt;
+            }
+        }
+    }
+
     public static SquareArray<float> Subtract(SquareArray<float> left, SquareArray<float> right)
     {
         SquareArray<float> res = new SquareArray<float>(left.SideLength);
@@ -495,5 +549,44 @@ public class ArrayUtilityFunctions
         return res;
     }
 
+    public static SquareArray<Color32> Blend(SquareArray<Color32> bigArray, SquareArray<Color32> smallArray, SquareArray<float> kernel)
+    {
+        float bigToSmallCordScale = smallArray.SideLength / (float) bigArray.SideLength;
+        float smallToBigCordScale = bigArray.SideLength / (float) smallArray.SideLength;
+        //float maxDistance = smallToBigCordScale * tileLookDistance;
+        int tileLookDistance = kernel.SideLength / 2;
+        SquareArray<Color32> output = new SquareArray<Color32>(bigArray.SideLength);
 
+        ArrayUtilityFunctions.ForMT(bigArray, (x, y) =>
+            {
+                Vector2Int bigArrayPos = new Vector2Int(x, y);
+                Vector2Int smallArrayPos = VectorUtilityFunctions.FloorVector(new Vector2(x, y) * bigToSmallCordScale);
+
+                // loop through all of the neightbor tiles
+                for (int dx = -tileLookDistance; dx <= tileLookDistance; dx++)
+                {
+                    for (int dy = -tileLookDistance; dy <= tileLookDistance; dy++)
+                    {
+                        var tileDelta = new Vector2Int(dx, dy);
+                        var kernelPos = new Vector2Int(dx + tileLookDistance, dy + tileLookDistance);
+                        Vector2Int smallArrayNeighborPos = smallArrayPos + tileDelta;
+                        if (smallArray.InBounds(smallArrayNeighborPos))
+                        {
+                            // Get the midpoint of the neighbor tile
+                            Vector2 bigArrayNeighborTilePosCenter =
+                                VectorUtilityFunctions.Vec2IntToVec2(smallArrayNeighborPos) * smallToBigCordScale +
+                                    new Vector2(smallToBigCordScale, smallToBigCordScale) / 2;
+
+                            float distance = (bigArrayNeighborTilePosCenter - bigArrayPos).magnitude;
+                            Color neighborColor = bigArray[VectorUtilityFunctions.FloorVector(bigArrayNeighborTilePosCenter)];
+                            output[bigArrayPos] += neighborColor * (1/ distance);
+                        }
+                    }
+                }
+
+                // normalize
+            });
+
+        return output;
+    }
 }

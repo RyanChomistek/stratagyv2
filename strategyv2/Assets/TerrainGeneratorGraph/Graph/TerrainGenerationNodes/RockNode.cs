@@ -44,6 +44,10 @@ public class RockNode : TerrainNode
             float max = .1f;
             float scale = 1 / max;
 
+            float noiseScale = .2f;
+            ArrayUtilityFunctions.Scale(NoiseSA, noiseScale);
+            ArrayUtilityFunctions.Add(NoiseSA, 1 - noiseScale);
+
             // get the difference between the before/after erosion
             // multiply the diff by the noise
             for (int x = 0; x < BeforeErosionSA.SideLength; x++)
@@ -51,7 +55,7 @@ public class RockNode : TerrainNode
                 for (int y = 0; y < BeforeErosionSA.SideLength; y++)
                 {
                     // before - after = (positive, means soil was taken away| negative soil was added)
-                    float delta = (BeforeErosionSA[x, y] - AfterErosionSA[x, y]);
+                    float delta = (BeforeErosionSA[x, y] - AfterErosionSA[x, y]) * NoiseSA[x, y];
                     //outputSA[x, y] = delta * NoiseSA[x, y];
                     outputSA[x, y] = Mathf.Clamp(delta, min, max) * scale;
                 }

@@ -12,7 +12,10 @@ public class LandMeshGenerator : MonoBehaviour
 
     private MapData m_Mapdata = null;
 
-    public void ConstructMesh(MapData mapData, Dictionary<Terrain, TerrainMapTile> terrainTileLookup, Dictionary<Improvement, ImprovementMapTile> improvementTileLookup)
+    public void ConstructMesh(
+        MapData mapData, 
+        Dictionary<Terrain, TerrainMapTile> terrainTileLookup, 
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup)
     {
         m_Mapdata = mapData;
         ref SquareArray<float> heightMap = ref mapData.VertexHeightMap;
@@ -56,40 +59,155 @@ public class LandMeshGenerator : MonoBehaviour
         m_Mesh.triangles = triangles;
         m_Mesh.uv = uvs;
         m_Mesh.RecalculateNormals();
+        
         m_MeshFilter.sharedMesh = m_Mesh;
 
         // Set texture for sediment
-        SquareArray<Color32> sedimentColors = new SquareArray<Color32>(mapData.SedimentMap.SideLength);
-        Texture2D SedimentTexture = new Texture2D(mapData.SedimentMap.SideLength, mapData.SedimentMap.SideLength);
-        for (int x = 0; x < mapData.SedimentMap.SideLength; x++)
+        int sedimentTextureSize = 1024;
+        SquareArray<Color32> sedimentColors = new SquareArray<Color32>(sedimentTextureSize);
+        Texture2D SedimentTexture = new Texture2D(sedimentTextureSize, sedimentTextureSize);
+        float sedimentTextureCordToSedimentScale = (float)mapData.SedimentMap.SideLength / (float)sedimentTextureSize;
+        float sedimentCordToTerrainCordScale = (float)mapData.TerrainMap.SideLength / (float)mapData.SedimentMap.SideLength;
+
+        for (int x = 0; x < sedimentTextureSize; x++)
         {
-            for (int y = 0; y < mapData.SedimentMap.SideLength; y++)
+            for (int y = 0; y < sedimentTextureSize; y++)
             {
-                sedimentColors[x, y] = Color32.Lerp(Color.black, Color.white, mapData.SedimentMap[x, y]);
+                Vector2 sedimentUV = new Vector2((x * sedimentTextureCordToSedimentScale), (y * sedimentTextureCordToSedimentScale));
+                Vector2Int sedimentPos = VectorUtilityFunctions.FloorVector(sedimentUV);
+                Vector2 uv = sedimentUV * sedimentCordToTerrainCordScale;
+
+                Vector2Int tilePos = VectorUtilityFunctions.FloorVector(uv);
+
+                Color sedimentColor = terrainTileLookup[mapData.TerrainMap[tilePos]].SedimentColor;
+
+                sedimentColors[x,y] = 
+                    new Color(sedimentColor.r, sedimentColor.g, sedimentColor.b, mapData.SedimentMap[sedimentPos]);
             }
         }
+
         SedimentTexture.SetPixels32(sedimentColors.Array);
         SedimentTexture.Apply(true);
 
         // Set texture for terrain
-        SquareArray<Color32> terrainColors = new SquareArray<Color32>(mapData.TerrainMap.SideLength);
-        Texture2D terrainTexture = new Texture2D(mapData.TerrainMap.SideLength, mapData.TerrainMap.SideLength);
-        
-        for (int x = 0; x < mapData.TerrainMap.SideLength; x++)
-        {
-            for (int y = 0; y < mapData.TerrainMap.SideLength; y++)
-            {
-                terrainColors[x, y] = terrainTileLookup[mapData.TerrainMap[x, y]].SimpleDisplayColor;
-            }
-        }
-        
-        terrainTexture.SetPixels32(terrainColors.Array);
-        terrainTexture.Apply(true);
+        GenerateTerrainTexure(mapData, terrainTileLookup);
+        //int terrainTextureSize = 256;
+        //SquareArray<Color32> terrainColors = new SquareArray<Color32>(terrainTextureSize);
+        //Texture2D terrainTexture = new Texture2D(terrainTextureSize, terrainTextureSize, TextureFormat.ARGB32, false);
 
-        m_MeshRenderer.sharedMaterial.mainTexture = terrainTexture;
+        //int terrainTextureTiledSize = mapData.TerrainMap.SideLength;
+        //SquareArray<Color32> terrainColorsTiled = new SquareArray<Color32>(terrainTextureTiledSize);
+
+        //float terrainTextureCordToTerrainCordScale = (float)mapData.TerrainMap.SideLength / (float)terrainTextureSize;
+
+        //for (int x = 0; x < terrainTextureSize; x++)
+        //{
+        //    for (int y = 0; y < terrainTextureSize; y++)
+        //    {
+        //        Vector2 uv = new Vector2((x * terrainTextureCordToTerrainCordScale), (y * terrainTextureCordToTerrainCordScale));
+        //        Vector2Int tilePos = VectorUtilityFunctions.FloorVector(uv);
+        //        terrainColors[x, y] = terrainTileLookup[mapData.TerrainMap[tilePos]].SimpleDisplayColor;
+        //        terrainColorsTiled[tilePos] = terrainTileLookup[mapData.TerrainMap[tilePos]].SimpleDisplayColor;
+        //    }
+        //}
+
+
+        //var kernel = new SquareArray<float>(16);
+        //kernel.SetAll(1.0f/(kernel.SideLength * kernel.SideLength));
+        //SquareArray<Color32> blendedColors = ArrayUtilityFunctions.Blend(terrainColors, terrainColorsTiled, kernel);
+
+        //terrainTexture.SetPixels32(blendedColors.Array);
+        //terrainTexture.Apply(true);
+
+        //m_MeshRenderer.sharedMaterial.mainTexture = terrainTexture;
         m_MeshRenderer.sharedMaterial.SetTexture("_SedimentTex", SedimentTexture);
         m_MeshRenderer.sharedMaterial.SetFloat("_MaxHeight", m_MeshSize.y);
         // m_MeshRenderer.sharedMaterial = material;
+    }
+
+    public void GenerateTerrainTexure(MapData mapData,
+        Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
+    {
+        int terrainTextureSize = 256;
+        int numThreads = 16;
+        SquareArray<TerrainChannels> alphaMap = new SquareArray<TerrainChannels>(terrainTextureSize);
+        TerrainChannels[] neighborChannels = new TerrainChannels[numThreads];
+
+        float texCordToTileCordScale = (float)mapData.TerrainMap.SideLength / (float)terrainTextureSize;
+        float TileCordToTexCordScale = (float)terrainTextureSize / (float)mapData.TerrainMap.SideLength;
+
+        for (int x = 0; x < terrainTextureSize; x++)
+        {
+            for (int y = 0; y < terrainTextureSize; y++)
+            {
+                alphaMap[x,y] = new TerrainChannels();
+            }
+        }
+
+        for (int i = 0; i < numThreads; i++)
+        {
+            neighborChannels[i] = new TerrainChannels();
+        }
+
+        int tileLookDistance = 2;
+        float maxDistance = TileCordToTexCordScale * tileLookDistance;
+        SquareArray<Color32> terrainColors = new SquareArray<Color32>(terrainTextureSize);
+
+        ArrayUtilityFunctions.ForMT(alphaMap.SideLength, (threadId, x, y) =>
+        {
+            Vector2Int tilePos = VectorUtilityFunctions.FloorVector(new Vector2(x, y) * texCordToTileCordScale);
+            Vector2Int texPos = new Vector2Int(x, y);
+            Vector2 texPosReal = VectorUtilityFunctions.Vec2IntToVec2(texPos);
+            TerrainChannels ac = alphaMap[texPos];
+            TerrainChannels neighborAc = neighborChannels[threadId];
+
+            // loop through all of the neightbor tiles
+            for (int dx = -tileLookDistance; dx <= tileLookDistance; dx++)
+            {
+                for (int dy = -tileLookDistance; dy <= tileLookDistance; dy++)
+                {
+                    Vector2Int neighborTilePos = tilePos + new Vector2Int(dx, dy);
+                    if (mapData.TerrainMap.InBounds(neighborTilePos))
+                    {
+                        Vector2 neighborTileAphaMapPosCenter =
+                            VectorUtilityFunctions.Vec2IntToVec2(neighborTilePos) * TileCordToTexCordScale +
+                            new Vector2(TileCordToTexCordScale, TileCordToTexCordScale) / 2;
+                        float distance = (neighborTileAphaMapPosCenter - texPosReal).magnitude;
+                        float weight = 1 - (distance / maxDistance);
+                        if (weight > 0)
+                        {
+                            neighborAc.Set(mapData.TerrainMap[neighborTilePos]);
+
+                            neighborAc.Scale(weight);
+                            ac.Add(neighborAc);
+                        }
+                    }
+                }
+            }
+
+            ac.Normalize();
+            terrainColors[x, y] = MixColors(ac, terrainTileLookup);
+        }, numThreads);
+
+
+
+        Texture2D terrainTexture = new Texture2D(terrainTextureSize, terrainTextureSize, TextureFormat.ARGB32, false);
+        terrainTexture.SetPixels32(terrainColors.Array);
+        terrainTexture.Apply(true);
+        m_MeshRenderer.sharedMaterial.mainTexture = terrainTexture;
+    }
+
+    private Color32 MixColors(TerrainChannels channels, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
+    {
+        Color sum = new Color();
+        for(int i = 0; i < (int)Terrain.Max; i++)
+        {
+            float weight = channels.channels[i];
+            if(terrainTileLookup.ContainsKey((Terrain)i))
+                sum += terrainTileLookup[(Terrain) i].SimpleDisplayColor * weight;
+        }
+
+        return sum;
     }
 
     public float GetHeightAtWorldPosition(Vector3 position)

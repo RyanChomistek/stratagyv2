@@ -161,4 +161,15 @@ public class SquareArray<T> : System.ICloneable
     {
         return new SquareArray<T>((T[]) Array.Clone());
     }
+
+    public void SetAll(T val)
+    {
+        for (int x = 0; x < SideLength; x++)
+        {
+            for (int y = 0; y < SideLength; y++)
+            {
+                this[x, y] = val;
+            }
+        }
+    }
 }

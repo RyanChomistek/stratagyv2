@@ -26,6 +26,7 @@ public class MapTile
     [SerializeField]
     public float PopulationSpreadRate = .1f;
     public Color SimpleDisplayColor;
+    public Color SedimentColor;
 
     [Tooltip("can this tile be improved")]
     public bool Improvable = true;
@@ -51,5 +52,6 @@ public class MapTile
 
         this.Improvable = other.Improvable;
         this.SimpleDisplayColor = other.SimpleDisplayColor;
+        this.SedimentColor = other.SedimentColor;
     }
 }

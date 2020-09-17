@@ -27,160 +27,6 @@ public class MeshGeneratorArgs
     public float MillDensityPerTile = .01f;
 }
 
-public class AlphaMapChannels
-{
-    public float[] channels = { 0, 0, 0, 0, 0, 0 };
-
-    const int GrassIndex = 0;
-    const int SandIndex = 1;
-    const int RockIndex = 2;
-    const int RoadIndex = 3;
-    const int SnowIndex = 4;
-    const int DirtIndex = 5;
-    const int MaxIndex = 6;
-
-    public void SetAlphaMapPos(float[,,] alphaData, int x, int y)
-    {
-        alphaData[y, x, GrassIndex] = channels[GrassIndex];
-        alphaData[y, x, SandIndex] = channels[SandIndex];
-        alphaData[y, x, RockIndex] = channels[RockIndex];
-        alphaData[y, x, RoadIndex] = channels[RoadIndex];
-        alphaData[y, x, SnowIndex] = channels[SnowIndex];
-        alphaData[y, x, DirtIndex] = channels[DirtIndex];
-    }
-
-    public AlphaMapChannels()
-    { }
-
-    public AlphaMapChannels(float[] arr)
-    {
-        for (int i = 0; i < arr.Length; i++)
-        {
-            channels[i] = arr[i];
-        }
-    }
-
-    public AlphaMapChannels(Terrain terrain, Improvement improvement, Vector2 gradient)
-    {
-        Set(terrain, improvement, gradient);
-    }
-
-    public void Set(Terrain terrain, Improvement improvement, Vector2 gradient)
-    {
-        if(channels == null)
-        {
-            channels = new float[MaxIndex];
-        }
-
-        float rockyness = gradient.magnitude * 3;
-
-        switch (terrain)
-        {
-            case Terrain.Water:
-                channels[GrassIndex] = 0;
-                channels[SandIndex] = 1;
-                channels[RockIndex] = 0;
-                channels[RoadIndex] = 0;
-                channels[SnowIndex] = 0;
-                channels[DirtIndex] = 0;
-                break;
-
-            case Terrain.Mountain:
-                channels[GrassIndex] = 0;
-                channels[SandIndex] = 0;
-                channels[RockIndex] = rockyness;
-                channels[RoadIndex] = 0;
-                channels[SnowIndex] = 1 - rockyness;
-                channels[DirtIndex] = 0;
-                break;
-
-            case Terrain.Grass:
-                rockyness = gradient.magnitude * 10;
-
-                switch (improvement)
-                {
-                    case Improvement.Desert:
-                        channels[GrassIndex] = 0;
-                        channels[SandIndex] = 1 - rockyness;
-                        channels[RockIndex] = rockyness;
-                        channels[RoadIndex] = 0;
-                        channels[SnowIndex] = 0;
-                        channels[DirtIndex] = 0;
-                        break;
-
-                    case Improvement.Road:
-                        channels[GrassIndex] = 0;
-                        channels[SandIndex] = 0;
-                        channels[RockIndex] = 0;
-                        channels[RoadIndex] = 1;
-                        channels[SnowIndex] = 0;
-                        channels[DirtIndex] = 0;
-                        break;
-
-                    case Improvement.Town:
-                        channels[GrassIndex] = 0;
-                        channels[SandIndex] = 0;
-                        channels[RockIndex] = 0;
-                        channels[RoadIndex] = 0;
-                        channels[SnowIndex] = 0;
-                        channels[DirtIndex] = 1;
-                        break;
-
-                    case Improvement.Farm:
-                        channels[GrassIndex] = 0;
-                        channels[SandIndex] = 0;
-                        channels[RockIndex] = 0;
-                        channels[RoadIndex] = 0;
-                        channels[SnowIndex] = 0;
-                        channels[DirtIndex] = 1;
-                        break;
-
-                    default:
-                        channels[GrassIndex] = 1 - rockyness;
-                        channels[SandIndex] = 0;
-                        channels[RockIndex] = rockyness;
-                        channels[RoadIndex] = 0;
-                        channels[SnowIndex] = 0;
-                        break;
-                }
-
-                break;
-        }
-    }
-
-    public void Scale(float weight)
-    {
-        for (int i = 0; i < channels.Length; i++)
-        {
-            channels[i] *= weight;
-        }
-    }
-
-    public void Add(AlphaMapChannels Other)
-    {
-        for (int i = 0; i < channels.Length; i++)
-        {
-            channels[i] += Other.channels[i];
-        }
-    }
-
-    public void Normalize()
-    {
-        float totalLen = 0;
-        for (int i = 0; i < channels.Length; i++)
-        {
-            totalLen += channels[i] * channels[i];
-        }
-
-        totalLen = Mathf.Sqrt(totalLen);
-
-        for (int i = 0; i < channels.Length; i++)
-        {
-            channels[i] /= totalLen;
-        }
-    }
-}
-
 public class TerrainMeshGenerator : MonoBehaviour
 {
     public static TerrainMeshGenerator Instance;
@@ -272,7 +118,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                 Vector2Int alphaMapPos = new Vector2Int(x, y);
                 AlphaMapChannels ac = channelsMap[x, y];
                 AlphaMapChannels neighborAc = neighborChannels[threadId];
-                Vector2 alphaMapPositionReal = VectorUtilityFunctions.Vector2IntToVector2(alphaMapPos);
+                Vector2 alphaMapPositionReal = VectorUtilityFunctions.Vec2IntToVec2(alphaMapPos);
 
                 // loop through all of the neightbor tiles
                 for (int dx = -tileLookDistance; dx <= tileLookDistance; dx++)
@@ -282,7 +128,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                         Vector2Int neighborTerrainMapPos = terrainMapPos + new Vector2Int(dx, dy);
                         if (mapData.TerrainMap.InBounds(neighborTerrainMapPos))
                         {
-                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale) / 2;
+                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vec2IntToVec2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale) / 2;
                             float distance = (neighborTileAphaMapPosCenter - alphaMapPositionReal).magnitude;
                             float weight = 1 - (distance / maxDistance);
                             if (weight > 0)
@@ -322,7 +168,7 @@ public class TerrainMeshGenerator : MonoBehaviour
     public static AlphaMapChannels GetInterpolateAphaChannels(Vector2Int alphaMapPos, Vector2Int terrainMapPos, MapData mapData, float alphaMapScale)
     {
         AlphaMapChannels ac = new AlphaMapChannels();
-        Vector2 alphaMapPositionReal = VectorUtilityFunctions.Vector2IntToVector2(alphaMapPos);
+        Vector2 alphaMapPositionReal = VectorUtilityFunctions.Vec2IntToVec2(alphaMapPos);
         int tileLookDistance = 1;
         float maxDistance = alphaMapScale * tileLookDistance;
 
@@ -334,7 +180,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                 Vector2Int neighborTerrainMapPos = terrainMapPos + new Vector2Int(dx, dy);
                 if (mapData.TerrainMap.InBounds(neighborTerrainMapPos))
                 {
-                    Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale);
+                    Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vec2IntToVec2(neighborTerrainMapPos) * alphaMapScale + new Vector2(alphaMapScale, alphaMapScale);
                     float distance = (neighborTileAphaMapPosCenter - alphaMapPositionReal).magnitude;
                     float weight = 1 - (distance / maxDistance);
                     if (weight > 0)
@@ -724,7 +570,7 @@ public class TerrainMeshGenerator : MonoBehaviour
                         for (int dy = -tileLookDistance; dy <= tileLookDistance; dy++)
                         {
                             Vector2Int neighborTerrainMapPos = tilePosition + new Vector2Int(dx, dy);
-                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vector2IntToVector2(neighborTerrainMapPos) * detailMapScale + new Vector2(detailMapScale, detailMapScale) / 2;
+                            Vector2 neighborTileAphaMapPosCenter = VectorUtilityFunctions.Vec2IntToVec2(neighborTerrainMapPos) * detailMapScale + new Vector2(detailMapScale, detailMapScale) / 2;
                             float distance = (neighborTileAphaMapPosCenter - detailPos).magnitude;
                             float weight = 1 - (distance / maxDistance);
                             
