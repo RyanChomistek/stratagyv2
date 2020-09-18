@@ -22,6 +22,7 @@ public class MapManager : MonoBehaviour
     public MapGenerator MapGen;
     // public TerrainMeshGenerator MeshGen;
     public LandMeshGenerator landMeshGen;
+    public WaterMeshGenerator waterMeshGen;
 
     [SerializeField]
     private List<MapTileSettings> MapTiles;
@@ -257,8 +258,8 @@ public class MapManager : MonoBehaviour
 
             // MeshGen.ConstructWaterPlaneMesh(MapGen.m_MapData, m_MeshArgs);
             // ProfilingUtilities.LogAction(() => MeshGen.ConstructMesh(MapGen.m_MapData, m_MeshArgs, terrainTileLookup), "mesh time");
-            landMeshGen.ConstructMesh(MapGen.m_MapData, terrainTileLookup, improvementTileLookup);
-
+            landMeshGen.ConstructMesh(MapGen.m_MapData, terrainTileLookup, improvementTileLookup, m_MeshArgs);
+            waterMeshGen.ConstructWaterPlaneMesh(MapGen.m_MapData, m_MeshArgs);
             //MeshGen.ConstructRoadMeshes(MapGen.m_MapData);
             //MeshGen.ConstructGridMesh(MapGen.m_MapData);
         }, "MAP GEN: done constructing meshes");

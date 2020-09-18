@@ -25,6 +25,8 @@ public class MeshGeneratorArgs
 
     public bool GenerateMillMeshes = true;
     public float MillDensityPerTile = .01f;
+
+    public Vector3 MeshSize;
 }
 
 public class TerrainMeshGenerator : MonoBehaviour

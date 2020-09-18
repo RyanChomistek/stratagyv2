@@ -8,15 +8,16 @@ public class LandMeshGenerator : MonoBehaviour
     [SerializeField] private MeshRenderer m_MeshRenderer;
     [SerializeField] private MeshFilter m_MeshFilter;
 
-    [SerializeField] private Vector3 m_MeshSize;
-
     private MapData m_Mapdata = null;
+    private MeshGeneratorArgs m_MeshArgs;
 
     public void ConstructMesh(
         MapData mapData, 
         Dictionary<Terrain, TerrainMapTile> terrainTileLookup, 
-        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup)
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup,
+        MeshGeneratorArgs meshArgs)
     {
+        m_MeshArgs = meshArgs;
         m_Mapdata = mapData;
         ref SquareArray<float> heightMap = ref mapData.VertexHeightMap;
 
@@ -36,7 +37,7 @@ public class LandMeshGenerator : MonoBehaviour
                 int vertIndex = y * mapSize + x;
                 Vector2 uv = new Vector2((x / (float)mapSize), (y / (float)mapSize));
                 uvs[vertIndex] = uv;
-                verts[vertIndex] = new Vector3(uv.x * m_MeshSize.x, heightMap[x, y] * m_MeshSize.y, uv.y * m_MeshSize.z);
+                verts[vertIndex] = new Vector3(uv.x * meshArgs.MeshSize.x, heightMap[x, y] * meshArgs.MeshSize.y, uv.y * meshArgs.MeshSize.z);
 
                 if (x != mapSize - 1 && y != mapSize - 1)
                 {
@@ -49,7 +50,6 @@ public class LandMeshGenerator : MonoBehaviour
                     triangles[t + 3] = vertIndex + mapSize + 1;
                     triangles[t + 4] = vertIndex + 1;
                     triangles[t + 5] = vertIndex;
-                    t += 6;
                 }
             }
         }
@@ -62,67 +62,11 @@ public class LandMeshGenerator : MonoBehaviour
         
         m_MeshFilter.sharedMesh = m_Mesh;
 
-        // Set texture for sediment
-        int sedimentTextureSize = 1024;
-        SquareArray<Color32> sedimentColors = new SquareArray<Color32>(sedimentTextureSize);
-        Texture2D SedimentTexture = new Texture2D(sedimentTextureSize, sedimentTextureSize);
-        float sedimentTextureCordToSedimentScale = (float)mapData.SedimentMap.SideLength / (float)sedimentTextureSize;
-        float sedimentCordToTerrainCordScale = (float)mapData.TerrainMap.SideLength / (float)mapData.SedimentMap.SideLength;
-
-        for (int x = 0; x < sedimentTextureSize; x++)
-        {
-            for (int y = 0; y < sedimentTextureSize; y++)
-            {
-                Vector2 sedimentUV = new Vector2((x * sedimentTextureCordToSedimentScale), (y * sedimentTextureCordToSedimentScale));
-                Vector2Int sedimentPos = VectorUtilityFunctions.FloorVector(sedimentUV);
-                Vector2 uv = sedimentUV * sedimentCordToTerrainCordScale;
-
-                Vector2Int tilePos = VectorUtilityFunctions.FloorVector(uv);
-
-                Color sedimentColor = terrainTileLookup[mapData.TerrainMap[tilePos]].SedimentColor;
-
-                sedimentColors[x,y] = 
-                    new Color(sedimentColor.r, sedimentColor.g, sedimentColor.b, mapData.SedimentMap[sedimentPos]);
-            }
-        }
-
-        SedimentTexture.SetPixels32(sedimentColors.Array);
-        SedimentTexture.Apply(true);
-
         // Set texture for terrain
         GenerateTerrainTexure(mapData, terrainTileLookup);
-        //int terrainTextureSize = 256;
-        //SquareArray<Color32> terrainColors = new SquareArray<Color32>(terrainTextureSize);
-        //Texture2D terrainTexture = new Texture2D(terrainTextureSize, terrainTextureSize, TextureFormat.ARGB32, false);
+        GenerateSedimentTexture(mapData, terrainTileLookup);
 
-        //int terrainTextureTiledSize = mapData.TerrainMap.SideLength;
-        //SquareArray<Color32> terrainColorsTiled = new SquareArray<Color32>(terrainTextureTiledSize);
-
-        //float terrainTextureCordToTerrainCordScale = (float)mapData.TerrainMap.SideLength / (float)terrainTextureSize;
-
-        //for (int x = 0; x < terrainTextureSize; x++)
-        //{
-        //    for (int y = 0; y < terrainTextureSize; y++)
-        //    {
-        //        Vector2 uv = new Vector2((x * terrainTextureCordToTerrainCordScale), (y * terrainTextureCordToTerrainCordScale));
-        //        Vector2Int tilePos = VectorUtilityFunctions.FloorVector(uv);
-        //        terrainColors[x, y] = terrainTileLookup[mapData.TerrainMap[tilePos]].SimpleDisplayColor;
-        //        terrainColorsTiled[tilePos] = terrainTileLookup[mapData.TerrainMap[tilePos]].SimpleDisplayColor;
-        //    }
-        //}
-
-
-        //var kernel = new SquareArray<float>(16);
-        //kernel.SetAll(1.0f/(kernel.SideLength * kernel.SideLength));
-        //SquareArray<Color32> blendedColors = ArrayUtilityFunctions.Blend(terrainColors, terrainColorsTiled, kernel);
-
-        //terrainTexture.SetPixels32(blendedColors.Array);
-        //terrainTexture.Apply(true);
-
-        //m_MeshRenderer.sharedMaterial.mainTexture = terrainTexture;
-        m_MeshRenderer.sharedMaterial.SetTexture("_SedimentTex", SedimentTexture);
-        m_MeshRenderer.sharedMaterial.SetFloat("_MaxHeight", m_MeshSize.y);
-        // m_MeshRenderer.sharedMaterial = material;
+        m_MeshRenderer.sharedMaterial.SetFloat("_MaxHeight", meshArgs.MeshSize.y);
     }
 
     public void GenerateTerrainTexure(MapData mapData,
@@ -197,6 +141,38 @@ public class LandMeshGenerator : MonoBehaviour
         m_MeshRenderer.sharedMaterial.mainTexture = terrainTexture;
     }
 
+    public void GenerateSedimentTexture(MapData mapData,
+        Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
+    {
+        // Set texture for sediment
+        int sedimentTextureSize = 1024;
+        SquareArray<Color32> sedimentColors = new SquareArray<Color32>(sedimentTextureSize);
+        Texture2D SedimentTexture = new Texture2D(sedimentTextureSize, sedimentTextureSize);
+        float sedimentTextureCordToSedimentScale = (float)mapData.SedimentMap.SideLength / (float)sedimentTextureSize;
+        float sedimentCordToTerrainCordScale = (float)mapData.TerrainMap.SideLength / (float)mapData.SedimentMap.SideLength;
+
+        for (int x = 0; x < sedimentTextureSize; x++)
+        {
+            for (int y = 0; y < sedimentTextureSize; y++)
+            {
+                Vector2 sedimentUV = new Vector2((x * sedimentTextureCordToSedimentScale), (y * sedimentTextureCordToSedimentScale));
+                Vector2Int sedimentPos = VectorUtilityFunctions.FloorVector(sedimentUV);
+                Vector2 uv = sedimentUV * sedimentCordToTerrainCordScale;
+
+                Vector2Int tilePos = VectorUtilityFunctions.FloorVector(uv);
+
+                Color sedimentColor = terrainTileLookup[mapData.TerrainMap[tilePos]].SedimentColor;
+
+                sedimentColors[x, y] =
+                    new Color(sedimentColor.r, sedimentColor.g, sedimentColor.b, mapData.SedimentMap[sedimentPos]);
+            }
+        }
+
+        SedimentTexture.SetPixels32(sedimentColors.Array);
+        SedimentTexture.Apply(true);
+        m_MeshRenderer.sharedMaterial.SetTexture("_SedimentTex", SedimentTexture);
+    }
+
     private Color32 MixColors(TerrainChannels channels, Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
         Color sum = new Color();
@@ -216,24 +192,24 @@ public class LandMeshGenerator : MonoBehaviour
 
         Vector2Int coord = VectorUtilityFunctions.RoundVector(position);
 
-        return heightMap[coord] * m_MeshSize.y;
+        return heightMap[coord] * m_MeshArgs.MeshSize.y;
     }
 
     public Vector2Int ConvertWorldPositionToTilePosition(Vector3 worldPosition)
     {
-        Vector3 scale = VectorUtilityFunctions.DivScaler(m_MeshSize, m_Mapdata.TileMapSize);
+        Vector3 scale = VectorUtilityFunctions.DivScaler(m_MeshArgs.MeshSize, m_Mapdata.TileMapSize);
 
         return new Vector2Int(Mathf.FloorToInt(worldPosition.x / scale.x), Mathf.FloorToInt(worldPosition.z / scale.z));
     }
 
     public Vector2 ConvertTilePositionToWorldPosition(Vector2 pos, int mapSize)
     {
-        Vector3 scale = VectorUtilityFunctions.DivScaler(m_MeshSize, m_Mapdata.TileMapSize);
+        Vector3 scale = VectorUtilityFunctions.DivScaler(m_MeshArgs.MeshSize, m_Mapdata.TileMapSize);
         return new Vector2(pos.x * scale.x, pos.y * scale.z);
     }
 
     public Vector3 GetMeshSize()
     {
-        return m_MeshSize;
+        return m_MeshArgs.MeshSize;
     }
 }
