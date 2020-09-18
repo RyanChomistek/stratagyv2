@@ -53,10 +53,10 @@ public class MapHighlight : MonoBehaviour
         
         var tilePosition = _map.GetTilePositionFromPosition(position);
 
-        if(!returnColors.ContainsKey(tilePosition) && MapManager.InBounds(_map.map, tilePosition.x, tilePosition.y))
+        if(!returnColors.ContainsKey(tilePosition) && _map.map.InBounds(tilePosition.x, tilePosition.y))
         {
-            returnColors.Add(tilePosition, _map.GetTileColor(tilePosition));
-            _highlightTileMap.SetTile(new Vector3Int(tilePosition.x, tilePosition.y, 0), BlankTile);
+            //returnColors.Add(tilePosition, _map.GetTileColor(tilePosition));
+            //_highlightTileMap.SetTile(new Vector3Int(tilePosition.x, tilePosition.y, 0), BlankTile);
         }
     }
 

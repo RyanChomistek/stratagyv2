@@ -25,8 +25,9 @@ MonoBehaviour:
     InitialPopulation: 0
     PopulationGrowthRate: 0.001
     PopulationSpreadRate: 0.001
-    DisplayTile: {fileID: 11400000, guid: c95a2c95928fc834687b94ce54691bff, type: 2}
-    SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SimpleDisplayColor: {r: 0.022516914, g: 0.4339623, b: 0.09136271, a: 1}
+    SecondaryDisplayColor: {r: 0.6792453, g: 0.5195207, b: 0.14417945, a: 0}
+    SedimentColor: {r: 0.31132078, g: 0.22211248, b: 0.10720008, a: 0}
     Improvable: 1
     TerrainType: 1
     Height: 0
@@ -43,7 +44,8 @@ MonoBehaviour:
     InitialPopulation: 0
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
-    DisplayTile: {fileID: 0}
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SecondaryDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SedimentColor: {r: 0, g: 0, b: 0, a: 0}
     Improvable: 0
     Improvement: 0

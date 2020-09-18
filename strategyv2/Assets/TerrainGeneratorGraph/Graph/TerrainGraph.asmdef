@@ -1,0 +1,17 @@
+{
+    "name": "TerrainGraph",
+    "references": [
+        "GUID:667054b87eea2ea45a2fd4ad399b8a6a",
+        "GUID:626070ea3273cb844a310aa4f53b31fa",
+        "GUID:e99243796bec2be4a82d312109ee5a23",
+        "GUID:950c671f8283c7440b9ebb24d1121996"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

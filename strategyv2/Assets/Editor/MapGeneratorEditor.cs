@@ -12,26 +12,17 @@ public class MapGeneratorEditor : CustomEditorBase
         MapGenerator levelGen = (MapGenerator)target;
 
         //Only show the mapsettings UI if we have a reference set up in the editor
-        if (levelGen.LayerSettings.Count > 0)
-        {
-            foreach (var layerSetting in levelGen.LayerSettings)
-            {
-                if(layerSetting != null)
-                {
-                    Editor layerSettingEditor = CreateEditor(layerSetting);
-                    layerSettingEditor.OnInspectorGUI();
-                }
+        //if (levelGen.LayerSettings.Count > 0)
+        //{
+        //    foreach (var layerSetting in levelGen.LayerSettings)
+        //    {
+        //        if(layerSetting != null)
+        //        {
+        //            Editor layerSettingEditor = CreateEditor(layerSetting);
+        //            layerSettingEditor.OnInspectorGUI();
+        //        }
                 
-            }
-
-            if (GUILayout.Button("Generate"))
-            {
-            }
-
-            if (GUILayout.Button("Clear"))
-            {
-                levelGen.ClearMap();
-            }
-        }
+        //    }
+        //}
     }
 }

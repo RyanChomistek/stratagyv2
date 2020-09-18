@@ -106,7 +106,10 @@ namespace Pathfinding {
 		/// </code>
 		/// </summary>
 		public override void AddConnection (GraphNode node, uint cost) {
-			if (node == null) throw new System.ArgumentNullException();
+            if (node == null)
+            {
+                throw new System.ArgumentNullException();
+            }
 
 			if (connections != null) {
 				for (int i = 0; i < connections.Length; i++) {

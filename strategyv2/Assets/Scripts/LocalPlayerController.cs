@@ -25,17 +25,25 @@ public class LocalPlayerController : PlayerController {
 
     void Start () {
         Instance = this;
-        MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
+        //MapManager.Instance.RenderMap(MapDisplays.TilesWithVision);
         ZoneDisplayManager.Instance.RegisterZoneDisplayCallback(SelectZoneDisplay);
     }
 	
 	void Update () {
-        DisplayRememberedDivisions();
-        DrawZones();
+        if(MapManager.Instance.IsFinishedGeneratingMap)
+        {
+            DisplayRememberedDivisions();
+            DrawZones();
+        }
     }
 
     public void DisplayRememberedDivisions()
     {
+        if(GeneralDivision != null)
+        {
+            return;
+        }
+
         foreach(var kvp in GeneralDivision.AttachedDivision.RememberedDivisions)
         {
             if(kvp.Value.HasBeenDestroyed)

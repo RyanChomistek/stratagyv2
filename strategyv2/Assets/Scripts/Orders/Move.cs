@@ -72,10 +72,11 @@ public class Move : Order {
 
     public void OnClickReturn(Vector3 mousePos, Division Host, PlayerController playerController)
     {
-        finish = new Vector3(mousePos.x, mousePos.y);
-        //InputController.Instance.UnRegisterOnClickCallBack(UICallback);
+        finish = mousePos;
+        Debug.Log($"path finish = {finish}");
         //clear ui
         OrderDisplayManager.Instance.ClearOrders();
+
         //need to get 
         RememberedDivision CommanderSendingOrder = GetRememberedDivisionFromHost(playerController.GeneralDivision.AttachedDivision, CommanderSendingOrderId);
         CommanderSendingOrder.SendOrderTo(new RememberedDivision(Host), new Move(Host, CommanderSendingOrder.DivisionId, finish), ref playerController.GeneralDivision.AttachedDivision.RememberedDivisions);
@@ -83,20 +84,11 @@ public class Move : Order {
 
     public override void Proceed(ControlledDivision Host)
     {
-        /*
-        Vector3 currLoc = Host.Controller.transform.position;
-        Vector3 dir = (finish - currLoc).normalized;
-        Vector3 moveVec = dir * Host.Speed;
-        //set start moving twords finish
-        Host.Controller.GetComponent<Rigidbody>().velocity = moveVec * GameManager.Instance.GameSpeed;
-        */
-        //MoveToTarget(Host);
         UpdateCalculatedValues(Host);
     }
 
     public override bool TestIfFinished(ControlledDivision Host)
     {
-        
         Vector3 currLoc = Host.Controller.transform.position;
         float distanceToFinish = (finish - currLoc).magnitude;
         if (distanceToFinish <= _thresholdDistance)

@@ -6,39 +6,69 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public float CameraMoveSpeed = 5;
+    public float CameraPanSpeed = 5;
+
+    // rotations
+    public float CameraRotateSensitivity = .25f;
+    public float MaxYAngle = 80f;
+    private Vector2 CurrentRotation;
 
     private Vector3 _lastMousePosition = new Vector3();
 
+    public float CameraZoomSensitivity = 10f;
     private void Start()
     {
-        InputController.Instance.RegisterHandler(new DragHandler("MiddleMouse", 
-            (handler, x) => { handler.IgnoreUI = false; }, 
+        InputController.Instance.RegisterHandler(new DragHandler("MiddleMouse",
+            (handler, x) => { handler.IgnoreUI = false; },
             (handler, mousePosition, delta) =>
             {
-                if (Camera.main.transform.position != transform.position)
-                {
-                    transform.position = Camera.main.transform.position;
-                }
-                transform.position -= delta;
-                handler.LastMousePosition = mousePosition - delta;
+                var deltaNorm = -delta.normalized;
+                var forward = transform.forward;
+                var compositeDelta = transform.up * deltaNorm.y + transform.right * deltaNorm.x;
+                transform.position += compositeDelta * CameraPanSpeed * transform.position.y;
             },
-            (handler,point) => { handler.IgnoreUI = true; }));
+            (handler, point) => { handler.IgnoreUI = true; }, 
+            useWorldCoordinates: false));
 
-        var zoomHandler = new AxisHandler("Mouse ScrollWheel",
+        InputController.Instance.RegisterHandler(new DragHandler("Fire2",
+            (handler, x) => { handler.IgnoreUI = false; },
+            (handler, mousePosition, delta) =>
+            {
+                UpdateRotation(delta);
+            },
+            (handler, point) => { handler.IgnoreUI = true; },
+            useWorldCoordinates:false));
+
+        InputController.Instance.RegisterHandler(new AxisHandler("Mouse ScrollWheel",
             (handler, delta) =>
             {
-                GetComponent<Cinemachine.CinemachineVirtualCamera>().m_Lens.OrthographicSize += delta * -2;
-            },false);
-        InputController.Instance.RegisterHandler(zoomHandler);
+                //delta *= 1 + Camera.main.transform.position.y;
+                //Camera.main.transform.localPosition += Vector3.forward * delta * CameraZoomSensitivity;
+                delta *= Camera.main.transform.position.y * CameraZoomSensitivity;
+
+                transform.position += transform.forward * delta;
+
+            }, false));
+
+        UpdateRotation(Vector3.forward);
+    }
+
+    private void UpdateRotation(Vector3 delta)
+    {
+        //Debug.Log(delta);
+        //transform.Rotate(new Vector3(-delta.y, delta.x), Space.Self);
+
+        CurrentRotation.x += delta.x * CameraRotateSensitivity;
+        CurrentRotation.y -= delta.y * CameraRotateSensitivity;
+        CurrentRotation.x = Mathf.Repeat(CurrentRotation.x, 360);
+        CurrentRotation.y = Mathf.Clamp(CurrentRotation.y, -MaxYAngle, MaxYAngle);
+        transform.rotation = Quaternion.Euler(CurrentRotation.y, CurrentRotation.x, 0);
     }
 
     void Update()
     {
         //arrow keys
-        Vector3 cameraMove = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0) * CameraMoveSpeed;
+        Vector3 cameraMove = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0) * CameraPanSpeed;
         GetComponent<Rigidbody>().velocity = cameraMove;
-
-       
     }
 }
