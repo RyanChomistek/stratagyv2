@@ -13,7 +13,6 @@ public class VisualizeArrayNodeEditor : SelfPropagatingNodeEditor
     {
         base.OnBodyGUI();
         VisualizeArrayNode node = target as VisualizeArrayNode;
-
         if (node.visualization != null)
         {
             Rect rect = EditorGUILayout.GetControlRect(false, 100);

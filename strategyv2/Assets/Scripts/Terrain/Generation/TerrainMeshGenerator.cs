@@ -72,8 +72,8 @@ public class TerrainMeshGenerator : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        m_Terrain.detailObjectDistance = 2000;
-        m_Terrain.treeDistance = 2000;
+        //m_Terrain.detailObjectDistance = 2000;
+        //m_Terrain.treeDistance = 2000;
         ClearDetailMeshes();
     }
 

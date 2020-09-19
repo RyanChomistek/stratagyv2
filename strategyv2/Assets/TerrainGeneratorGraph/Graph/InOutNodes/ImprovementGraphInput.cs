@@ -3,24 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateNodeMenu("In-Out/Improvement/ImprovementInput")]
-public class ImprovementGraphInput : TerrainNode
+public class ImprovementGraphInput : InputNode
 {
-    [Input] public float[] TileHeightMap = null;
-    [Input] public float[] VertexHeightMap = null;
-    [Input] public float[] TileWaterMap = null;
-    [Input] public Vector2[] GradientTileMap = null;
-    [Input] public Vector2[] LayeredGradientMap = null;
-    [Input] public int TileMapSize = -1;
-    public TerrainGeneratorGraph TerrainGraph;
+    [Output] public float[] TileHeightMap = null;
+    [Output] public float[] VertexHeightMap = null;
+    [Output] public Vector2[] GradientTileMap = null;
+    [Output] public Vector2[] LayeredGradientMap = null;
+    [Output] public int TileMapSize = -1;
 
     public override void Flush()
     {
-        FlushInputs<ImprovementGraphInput>(GetType());
+        FlushInputs(GetType());
     }
 
     public override void Recalculate()
     {
-        GetInputs<ImprovementGraphInput>(GetType());
+        SetLocals(typeof(ImprovementGraphInput));
+        Debug.Log("here");
         //ShowProps(this, 0, 2);
     }
 }

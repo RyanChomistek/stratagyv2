@@ -14,6 +14,11 @@ public class TerrainGeneratorGraph : NodeGraph
     private int seed = 0;
     public System.Random Rand;
 
+    [SerializeField]
+    public InputNode SubGraphInputNode;
+    
+    [SerializeField]
+    public OutputNode SubGraphOutputNode;
 
     public void RecalculateFullGraph()
     {
@@ -31,7 +36,7 @@ public class TerrainGeneratorGraph : NodeGraph
     }
 
     // This will recalculate the whole graph via back propogation
-    private void RecalculateFullGraphNoFlush()
+    public void RecalculateFullGraphNoFlush()
     {
         bool oldPauseRecalculationState = PauseRecalculation;
         PauseRecalculation = false;
@@ -130,7 +135,7 @@ public class TerrainGeneratorGraph : NodeGraph
         //Debug.Log(current);
     }
 
-    private void FlushNodeData()
+    public void FlushNodeData()
     {
         foreach (var node in nodes)
         {

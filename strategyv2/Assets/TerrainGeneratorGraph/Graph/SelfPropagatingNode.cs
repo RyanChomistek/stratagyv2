@@ -142,9 +142,37 @@ public abstract class SelfPropagatingNode : XNode.Node
         }
     }
 
-    public abstract void Recalculate();
+    public virtual void Recalculate()
+    {
+        foreach (var field in GetType().GetFields())
+        {
+            if (GetType() != field.DeclaringType)
+            {
+                continue;
+            }
 
-    public abstract void Flush();
+            object value = field.GetValue(this);
+            field.SetValue(this, GetInputValue(field.Name, value));
+        }
+    }
+
+    public virtual void Flush()
+    {
+        foreach (var field in GetType().GetFields())
+        {
+            if (GetType() != field.DeclaringType)
+            {
+                continue;
+            }
+
+            field.SetValue(this, null);
+        }
+    }
+
+    public override object GetValue(XNode.NodePort port)
+    {
+        return GetType().GetField(port.fieldName).GetValue(this);
+    }
 
     /// <summary>
     /// this function is used to recalc the next node in the calc chain, you might want to pass some information to that next node
@@ -166,9 +194,9 @@ public abstract class SelfPropagatingNode : XNode.Node
         //StartPropogation();
     }
 
-    public void GetInputs<T>(System.Type hostType)
+    protected virtual void SetLocals(System.Type hostType)
     {
-        foreach (var field in this.GetType().GetFields())
+        foreach (var field in hostType.GetFields())
         {
             if (hostType != field.DeclaringType)
             {
@@ -180,16 +208,15 @@ public abstract class SelfPropagatingNode : XNode.Node
         }
     }
 
-    public void FlushInputs<T>(System.Type hostType)
+    public void FlushInputs(System.Type hostType)
     {
-        foreach (var field in this.GetType().GetFields())
+        foreach (var field in hostType.GetFields())
         {
             if (hostType != field.DeclaringType)
             {
                 continue;
             }
 
-            object value = field.GetValue(this);
             field.SetValue(this, null);
         }
     }
