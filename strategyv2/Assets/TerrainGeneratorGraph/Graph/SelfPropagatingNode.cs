@@ -166,6 +166,34 @@ public abstract class SelfPropagatingNode : XNode.Node
         //StartPropogation();
     }
 
+    public void GetInputs<T>(System.Type hostType)
+    {
+        foreach (var field in this.GetType().GetFields())
+        {
+            if (hostType != field.DeclaringType)
+            {
+                continue;
+            }
+
+            object value = field.GetValue(this);
+            field.SetValue(this, GetInputValue(field.Name, value));
+        }
+    }
+
+    public void FlushInputs<T>(System.Type hostType)
+    {
+        foreach (var field in this.GetType().GetFields())
+        {
+            if (hostType != field.DeclaringType)
+            {
+                continue;
+            }
+
+            object value = field.GetValue(this);
+            field.SetValue(this, null);
+        }
+    }
+
     public bool IsInputArrayValid<T>(T[] arr)
     {
         return arr != null && arr.Length > 0;

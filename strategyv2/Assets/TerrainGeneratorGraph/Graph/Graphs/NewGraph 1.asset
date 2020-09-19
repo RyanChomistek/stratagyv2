@@ -1,0 +1,1777 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8801863497512901965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ae60ebcf419002468049f8141af830a, type: 3}
+  m_Name: Random Noise
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 968, y: 632}
+  ports:
+    keys:
+    - MaxNumThreads
+    - numOctaves
+    - persistence
+    - lacunarity
+    - initialScale
+    - heightMapComputeShader
+    - GenerationEnabled
+    - BaseHeightMap
+    - HeightMap
+    values:
+    - _fieldName: MaxNumThreads
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: numOctaves
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: persistence
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: lacunarity
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: initialScale
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: heightMapComputeShader
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: UnityEngine.ComputeShader, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GenerationEnabled
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: BaseHeightMap
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Array
+        node: {fileID: 2165934694654462386}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: HeightMap
+      _node: {fileID: -8801863497512901965}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: InputMap
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      - fieldName: Array
+        node: {fileID: -4812302733525914430}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  MaxNumThreads: 65535
+  numOctaves: 7
+  persistence: 0.5
+  lacunarity: 2
+  initialScale: 2
+  heightMapComputeShader: {fileID: 7200000, guid: 89aa1db8ee3484dffae04d05d3a5b5e7,
+    type: 3}
+  GenerationEnabled: 1
+  BaseHeightMap: []
+  HeightMap: []
+  HeightMapSize: 4194304
+--- !u!114 &-6399687210855526834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923da615197cc5641870e3d7c2968d59, type: 3}
+  m_Name: Visualize Float Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 2040, y: 136}
+  ports:
+    keys:
+    - Array
+    values:
+    - _fieldName: Array
+      _node: {fileID: -6399687210855526834}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputHeightMap
+        node: {fileID: -2627798124110874358}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  visualization: {fileID: 0}
+  Length: 4194304
+  SideLength: 2048
+  SetMinMax: 0
+  Min: 0
+  Max: 0
+  Average: 0
+  Array: []
+--- !u!114 &-4812302733525914430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923da615197cc5641870e3d7c2968d59, type: 3}
+  m_Name: Visualize Float Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1160, y: 1000}
+  ports:
+    keys:
+    - Array
+    values:
+    - _fieldName: Array
+      _node: {fileID: -4812302733525914430}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: HeightMap
+        node: {fileID: -8801863497512901965}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  visualization: {fileID: 0}
+  Length: 4194304
+  SideLength: 2048
+  SetMinMax: 0
+  Min: 0
+  Max: 0
+  Average: 0
+  Array: []
+--- !u!114 &-3587013776176719549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82dd37e45bfff6e4495d81d1c97a6667, type: 3}
+  m_Name: Int Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3592, y: 664}
+  ports:
+    keys:
+    - Size
+    - DefaultValue
+    - Array
+    values:
+    - _fieldName: Size
+      _node: {fileID: -3587013776176719549}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputTileMapSize
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: DefaultValue
+      _node: {fileID: -3587013776176719549}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Array
+      _node: {fileID: -3587013776176719549}
+      _typeQualifiedName: System.Int32[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: TerrainMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  Size: 0
+  DefaultValue: 1
+  SizeSquared: 1040400
+  Array: 
+--- !u!114 &-2627798124110874358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 249a303263e2028489923790c25749c9, type: 3}
+  m_Name: Block Erosion
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1736, y: 1048}
+  ports:
+    keys:
+    - erosion
+    - MaxNumThreads
+    - numDropletsPerCell
+    - maxLifetime
+    - sedimentCapacityFactor
+    - minSedimentCapacity
+    - depositSpeed
+    - erodeSpeed
+    - evaporateSpeed
+    - gravity
+    - startSpeed
+    - startWater
+    - inertia
+    - ErosionBrushRadius
+    - numBlocks
+    - BlockSize
+    - FallOffRatio
+    - OffsetFromStart
+    - InputHeightMap
+    - InputWaterMap
+    - OutputHeightMap
+    - OutputWaterMap
+    - HitMap
+    - GridSize
+    values:
+    - _fieldName: erosion
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: UnityEngine.ComputeShader, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: MaxNumThreads
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: numDropletsPerCell
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: maxLifetime
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: sedimentCapacityFactor
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: minSedimentCapacity
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: depositSpeed
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: erodeSpeed
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: evaporateSpeed
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: gravity
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: startSpeed
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: startWater
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: inertia
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: ErosionBrushRadius
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: numBlocks
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: BlockSize
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: FallOffRatio
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OffsetFromStart
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: UnityEngine.Vector2Int, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputHeightMap
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputWaterMap
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputHeightMap
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: InputHeightMap
+        node: {fileID: 2365155289254178858}
+        reroutePoints: []
+      - fieldName: Array
+        node: {fileID: -6399687210855526834}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputWaterMap
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: InputWaterMap
+        node: {fileID: 2365155289254178858}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: HitMap
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Array
+        node: {fileID: 2796045909386170090}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GridSize
+      _node: {fileID: -2627798124110874358}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  erosion: {fileID: 7200000, guid: ccece41fb078641419a06022d50ccbd8, type: 3}
+  MaxNumThreads: 65535
+  numDropletsPerCell: 8
+  maxLifetime: 90
+  sedimentCapacityFactor: 3
+  minSedimentCapacity: 0
+  depositSpeed: 0.3
+  erodeSpeed: 0.3
+  evaporateSpeed: 0.02
+  gravity: 4
+  startSpeed: 1
+  startWater: 1
+  inertia: 0.065
+  ErosionBrushRadius: 6
+  numBlocks: 3
+  BlockSize: 1024
+  GridSize: 1024
+  FallOffRatio: 0.7
+  OffsetFromStart: {x: 0, y: 0}
+  InputHeightMap: []
+  InputWaterMap: []
+  OutputHeightMap: []
+  OutputWaterMap: []
+  HitMap: 
+  HeightMapSize: 4194304
+--- !u!114 &-1398892394322449191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f69d16fc4bbf2e34f94ad6b6d5d53e75, type: 3}
+  m_Name: Visualize Int Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 2696, y: 328}
+  ports:
+    keys:
+    - Array
+    - Type
+    values:
+    - _fieldName: Array
+      _node: {fileID: -1398892394322449191}
+      _typeQualifiedName: System.Int32[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: HitMap
+        node: {fileID: 2365155289254178858}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Type
+      _node: {fileID: -1398892394322449191}
+      _typeQualifiedName: ArrayVisualizationType, TerrainGraph, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  visualization: {fileID: 0}
+  Length: 4194304
+  SideLength: 2048
+  SetMinMax: 0
+  Min: 0
+  Max: 0
+  Average: 0
+  Array: 
+  Type: 0
+--- !u!114 &-388909696589486315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dabc69502f10c714f8ec0aa6a0e00fca, type: 3}
+  m_Name: Int
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3080, y: 808}
+  ports:
+    keys:
+    - i
+    - o
+    values:
+    - _fieldName: i
+      _node: {fileID: -388909696589486315}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: o
+      _node: {fileID: -388909696589486315}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Padding
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  i: 3
+  o: 0
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b604cf06b29371b47bc79031217d6008, type: 3}
+  m_Name: NewGraph 1
+  m_EditorClassIdentifier: 
+  nodes:
+  - {fileID: 4519845158212277811}
+  - {fileID: 2165934694654462386}
+  - {fileID: -8801863497512901965}
+  - {fileID: 6924016329821877761}
+  - {fileID: 304432125536666103}
+  - {fileID: 2483222273229883900}
+  - {fileID: -388909696589486315}
+  - {fileID: 706834767354170111}
+  - {fileID: -3587013776176719549}
+  - {fileID: 4590531134815023692}
+  - {fileID: 7704863050841506286}
+  - {fileID: 7401147549306668700}
+  - {fileID: 6430824469680815170}
+  - {fileID: -1398892394322449191}
+  - {fileID: 2365155289254178858}
+  - {fileID: 8341641945612578378}
+  - {fileID: -2627798124110874358}
+  - {fileID: -6399687210855526834}
+  - {fileID: 2796045909386170090}
+  - {fileID: -4812302733525914430}
+  PauseRecalculation: 0
+  RandomizeSeed: 0
+  seed: 0
+--- !u!114 &304432125536666103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b23276cd0745fa44be3446b4160ad8c, type: 3}
+  m_Name: Mesh Generation
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 4344, y: 648}
+  ports:
+    keys:
+    - TileHeightMap
+    - VertexHeightMap
+    - TileWaterMap
+    - WaterHeight
+    - TerrainMap
+    - ImprovementMap
+    - GradientTileMap
+    - LayeredGradientMap
+    - RoadPaths
+    - SedimentMap
+    - TerrainColorNoiseMap
+    values:
+    - _fieldName: TileHeightMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputTileMap
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: VertexHeightMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputVertexMap
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: TileWaterMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputTileMap
+        node: {fileID: 706834767354170111}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: WaterHeight
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: TerrainMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: Terrain[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: Array
+        node: {fileID: -3587013776176719549}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: ImprovementMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: Improvement[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: Array
+        node: {fileID: 4590531134815023692}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GradientTileMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: UnityEngine.Vector2[], UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: GradientMap
+        node: {fileID: 7704863050841506286}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: LayeredGradientMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: UnityEngine.Vector2[], UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: GradientMap
+        node: {fileID: 6430824469680815170}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: RoadPaths
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Collections.Generic.List`1[[RoadPath, TerrainGraph,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0,
+        Culture=neutral, PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: SedimentMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: TerrainColorNoiseMap
+      _node: {fileID: 304432125536666103}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  TileHeightMap: []
+  VertexHeightMap: []
+  TileWaterMap: []
+  TerrainMap: 
+  ImprovementMap: 
+  GradientTileMap: []
+  LayeredGradientMap: []
+  RoadPaths: []
+  WaterHeight: 0
+  SedimentMap: []
+  TerrainColorNoiseMap: []
+--- !u!114 &706834767354170111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1431166260bdee46b64edd66fe4ad62, type: 3}
+  m_Name: Convert Map
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3336, y: 1016}
+  ports:
+    keys:
+    - InputMap
+    - Padding
+    - TargetTileSize
+    - OutputVertexMap
+    - OutputTileMap
+    - OutputVertexMapSize
+    - OutputTileMapSize
+    values:
+    - _fieldName: InputMap
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Array
+        node: {fileID: 2165934694654462386}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Padding
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: TargetTileSize
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputVertexMap
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: VertexWaterMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputTileMap
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: TileWaterMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputVertexMapSize
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputTileMapSize
+      _node: {fileID: 706834767354170111}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  InputMap: []
+  Padding: 0
+  TargetTileSize: 128
+  OutputVertexMap: []
+  OutputTileMap: []
+  OutputVertexMapSize: 2047
+  OutputTileMapSize: 1023
+--- !u!114 &2165934694654462386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e1bf79d9847b61499f001691cbd5f80, type: 3}
+  m_Name: Float Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 555.33905, y: 607.1909}
+  ports:
+    keys:
+    - Size
+    - Array
+    values:
+    - _fieldName: Size
+      _node: {fileID: 2165934694654462386}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: o
+        node: {fileID: 4519845158212277811}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Array
+      _node: {fileID: 2165934694654462386}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: BaseHeightMap
+        node: {fileID: -8801863497512901965}
+        reroutePoints: []
+      - fieldName: InputMap
+        node: {fileID: 706834767354170111}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  Size: 0
+  SizeSquared: 4194304
+  Array: []
+  InitializeValue: 0
+  InitialValue: 0
+--- !u!114 &2365155289254178858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 249a303263e2028489923790c25749c9, type: 3}
+  m_Name: Block Erosion
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 2072, y: 1000}
+  ports:
+    keys:
+    - erosion
+    - MaxNumThreads
+    - numDropletsPerCell
+    - maxLifetime
+    - sedimentCapacityFactor
+    - minSedimentCapacity
+    - depositSpeed
+    - erodeSpeed
+    - evaporateSpeed
+    - gravity
+    - startSpeed
+    - startWater
+    - inertia
+    - ErosionBrushRadius
+    - numBlocks
+    - BlockSize
+    - InputHeightMap
+    - InputWaterMap
+    - OutputHeightMap
+    - OutputWaterMap
+    - HitMap
+    - FallOffRatio
+    - OffsetFromStart
+    - GridSize
+    values:
+    - _fieldName: erosion
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: UnityEngine.ComputeShader, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: MaxNumThreads
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: numDropletsPerCell
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: maxLifetime
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: sedimentCapacityFactor
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: minSedimentCapacity
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: depositSpeed
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: erodeSpeed
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: evaporateSpeed
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: gravity
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: startSpeed
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: startWater
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: inertia
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: ErosionBrushRadius
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: numBlocks
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: BlockSize
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputHeightMap
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputHeightMap
+        node: {fileID: -2627798124110874358}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputWaterMap
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputWaterMap
+        node: {fileID: -2627798124110874358}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputHeightMap
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Array
+        node: {fileID: 8341641945612578378}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputWaterMap
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: HitMap
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Array
+        node: {fileID: -1398892394322449191}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: FallOffRatio
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OffsetFromStart
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: UnityEngine.Vector2Int, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GridSize
+      _node: {fileID: 2365155289254178858}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  erosion: {fileID: 7200000, guid: ccece41fb078641419a06022d50ccbd8, type: 3}
+  MaxNumThreads: 65535
+  numDropletsPerCell: 2
+  maxLifetime: 90
+  sedimentCapacityFactor: 3
+  minSedimentCapacity: 0
+  depositSpeed: 0.3
+  erodeSpeed: 0.3
+  evaporateSpeed: 0.02
+  gravity: 4
+  startSpeed: 1
+  startWater: 1
+  inertia: 0.065
+  ErosionBrushRadius: 6
+  numBlocks: 0
+  BlockSize: 512
+  GridSize: 64
+  FallOffRatio: 1.5
+  OffsetFromStart: {x: 64, y: 64}
+  InputHeightMap: []
+  InputWaterMap: []
+  OutputHeightMap: []
+  OutputWaterMap: []
+  HitMap: 
+  HeightMapSize: 4194304
+--- !u!114 &2483222273229883900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1431166260bdee46b64edd66fe4ad62, type: 3}
+  m_Name: Convert Map
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3240, y: 536}
+  ports:
+    keys:
+    - InputMap
+    - Padding
+    - TargetTileSize
+    - OutputVertexMap
+    - OutputTileMap
+    - OutputVertexMapSize
+    - OutputTileMapSize
+    values:
+    - _fieldName: InputMap
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: HeightMap
+        node: {fileID: -8801863497512901965}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Padding
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: o
+        node: {fileID: -388909696589486315}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: TargetTileSize
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputVertexMap
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: VertexHeightMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputTileMap
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: TileHeightMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      - fieldName: InputHeightMap
+        node: {fileID: 7704863050841506286}
+        reroutePoints: []
+      - fieldName: InputHeightMap
+        node: {fileID: 7401147549306668700}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputVertexMapSize
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputTileMapSize
+      _node: {fileID: 2483222273229883900}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Size
+        node: {fileID: -3587013776176719549}
+        reroutePoints: []
+      - fieldName: Size
+        node: {fileID: 4590531134815023692}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  InputMap: []
+  Padding: 0
+  TargetTileSize: 128
+  OutputVertexMap: []
+  OutputTileMap: []
+  OutputVertexMapSize: 2041
+  OutputTileMapSize: 1020
+--- !u!114 &2796045909386170090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f69d16fc4bbf2e34f94ad6b6d5d53e75, type: 3}
+  m_Name: Visualize Int Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1800, y: 120}
+  ports:
+    keys:
+    - Array
+    - Type
+    values:
+    - _fieldName: Array
+      _node: {fileID: 2796045909386170090}
+      _typeQualifiedName: System.Int32[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: HitMap
+        node: {fileID: -2627798124110874358}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Type
+      _node: {fileID: 2796045909386170090}
+      _typeQualifiedName: ArrayVisualizationType, TerrainGraph, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  visualization: {fileID: 0}
+  Length: 4194304
+  SideLength: 2048
+  SetMinMax: 0
+  Min: 0
+  Max: 0
+  Average: 0
+  Array: 
+  Type: 1
+--- !u!114 &4519845158212277811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dabc69502f10c714f8ec0aa6a0e00fca, type: 3}
+  m_Name: Int
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1544, y: 376}
+  ports:
+    keys:
+    - i
+    - o
+    values:
+    - _fieldName: i
+      _node: {fileID: 4519845158212277811}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: o
+      _node: {fileID: 4519845158212277811}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: Size
+        node: {fileID: 2165934694654462386}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  i: 2048
+  o: 0
+--- !u!114 &4590531134815023692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82dd37e45bfff6e4495d81d1c97a6667, type: 3}
+  m_Name: Int Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3576, y: 824}
+  ports:
+    keys:
+    - Size
+    - DefaultValue
+    - Array
+    values:
+    - _fieldName: Size
+      _node: {fileID: 4590531134815023692}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputTileMapSize
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: DefaultValue
+      _node: {fileID: 4590531134815023692}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: Array
+      _node: {fileID: 4590531134815023692}
+      _typeQualifiedName: System.Int32[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: ImprovementMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  Size: 0
+  DefaultValue: 0
+  SizeSquared: 1040400
+  Array: 
+--- !u!114 &6430824469680815170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6265cfb187ec0514db921e557340fed7, type: 3}
+  m_Name: Gradient
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3928, y: 312}
+  ports:
+    keys:
+    - InputHeightMap
+    - GradientMap
+    values:
+    - _fieldName: InputHeightMap
+      _node: {fileID: 6430824469680815170}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputHeightMap
+        node: {fileID: 7401147549306668700}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GradientMap
+      _node: {fileID: 6430824469680815170}
+      _typeQualifiedName: UnityEngine.Vector2[], UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: LayeredGradientMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  InputHeightMap: []
+  GradientMap: []
+--- !u!114 &6924016329821877761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fddd98a07488d64aa6ac4f8acb8266b, type: 3}
+  m_Name: Recalculate Button
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1496, y: 584}
+  ports:
+    keys: []
+    values: []
+--- !u!114 &7401147549306668700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0529c40bf5d810f4a986badceb3c2f69, type: 3}
+  m_Name: Terrace
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3560, y: 264}
+  ports:
+    keys:
+    - NumSteps
+    - InputHeightMap
+    - OutputHeightMap
+    values:
+    - _fieldName: NumSteps
+      _node: {fileID: 7401147549306668700}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: InputHeightMap
+      _node: {fileID: 7401147549306668700}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputTileMap
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: OutputHeightMap
+      _node: {fileID: 7401147549306668700}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: InputHeightMap
+        node: {fileID: 6430824469680815170}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  NumSteps: 5
+  InputHeightMap: []
+  OutputHeightMap: []
+--- !u!114 &7704863050841506286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6265cfb187ec0514db921e557340fed7, type: 3}
+  m_Name: Gradient
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 3848, y: 440}
+  ports:
+    keys:
+    - InputHeightMap
+    - GradientMap
+    values:
+    - _fieldName: InputHeightMap
+      _node: {fileID: 7704863050841506286}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputTileMap
+        node: {fileID: 2483222273229883900}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: GradientMap
+      _node: {fileID: 7704863050841506286}
+      _typeQualifiedName: UnityEngine.Vector2[], UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: GradientTileMap
+        node: {fileID: 304432125536666103}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  InputHeightMap: []
+  GradientMap: []
+--- !u!114 &8341641945612578378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923da615197cc5641870e3d7c2968d59, type: 3}
+  m_Name: Visualize Float Array
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 2280, y: 136}
+  ports:
+    keys:
+    - Array
+    values:
+    - _fieldName: Array
+      _node: {fileID: 8341641945612578378}
+      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: OutputHeightMap
+        node: {fileID: 2365155289254178858}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  IsError: 0
+  visualization: {fileID: 0}
+  Length: 4194304
+  SideLength: 2048
+  SetMinMax: 0
+  Min: 0
+  Max: 0
+  Average: 0
+  Array: []

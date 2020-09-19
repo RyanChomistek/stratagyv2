@@ -76,5 +76,7 @@ public class MeshGenerationNode : TerrainNode
         GradientTileMap = null;
         LayeredGradientMap = null;
         RoadPaths = null;
+        TerrainColorNoiseMap = null;
+        SedimentMap = null;
     }
 }
