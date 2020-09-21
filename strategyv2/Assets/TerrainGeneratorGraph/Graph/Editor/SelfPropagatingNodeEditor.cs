@@ -16,25 +16,23 @@ public class SelfPropagatingNodeEditor : NodeEditor
 
     public override void OnBodyGUI()
     {
-        base.OnBodyGUI();
-        Event e = Event.current;
-
         SelfPropagatingNode node = target as SelfPropagatingNode;
+        if (!node.Graph.FlushAfterRecalc)
+        {
+            if(GUILayout.Button("Recalculate"))
+            {
+                node.Graph.RecalculateFromNode(node);
+            }
+        }
 
-        //int delta = (DateTime.Now - StartTime).Milliseconds;
+        if(node.IsError)
+        {
+            var style = new GUIStyle(GUI.skin.label);
+            style.normal.textColor = Color.red;
+            style.alignment = TextAnchor.MiddleCenter;
+            GUILayout.Label("Error", style);
+        }
 
-        //// This is a hack, because on validate gets called every time a character is entered, 
-        //// so for not wait half a second to see if they dirt the thing again and wait to calc until after that
-        //if (IsDirty)
-        //{
-        //    StartTime = DateTime.Now;
-        //    IsWaitingToRecalc = true;
-        //}
-        //else if(IsWaitingToRecalc && delta > 500)
-        //{
-        //    //Debug.Log(delta);
-        //    node.StartPropogation();
-        //    IsWaitingToRecalc = false;
-        //}
+        base.OnBodyGUI();
     }
 }

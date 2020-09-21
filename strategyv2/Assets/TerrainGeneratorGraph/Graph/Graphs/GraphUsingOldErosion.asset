@@ -31,13 +31,14 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   visualization: {fileID: 0}
   Length: 1069156
   SideLength: 1034
   SetMinMax: 0
   Min: 0
   Max: 1
-  Average: 0.59357196
+  Average: 0.5923174
   Array: []
 --- !u!114 &-7516238912375551890
 MonoBehaviour:
@@ -96,6 +97,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   A: 0
   B: 0
   Output: 1034
@@ -140,6 +142,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   Size: 1024
   SizeSquared: 1048576
   Array: []
@@ -162,6 +165,7 @@ MonoBehaviour:
   ports:
     keys: []
     values: []
+  ExternalGraph: {fileID: 0}
 --- !u!114 &-4811720897111631377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,6 +183,7 @@ MonoBehaviour:
   ports:
     keys: []
     values: []
+  ExternalGraph: {fileID: 0}
 --- !u!114 &-4146464537681388985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -233,6 +238,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   A: 0
   B: 2
   Output: 10
@@ -351,6 +357,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   InputMap: []
   Padding: 0
   TargetTileSize: 128
@@ -507,6 +514,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 1
   IsError: 0
+  IsDirty: 1
   SubGraph: {fileID: 11400000, guid: e7fe796779615f8458fcad52d71ca762, type: 2}
 --- !u!114 &-1835521945685905138
 MonoBehaviour:
@@ -698,6 +706,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
   MaxNumThreads: 65535
   numDropletsPerCell: 8
@@ -829,6 +838,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   MaxNumThreads: 65535
   numOctaves: 7
   persistence: 0.5
@@ -913,6 +923,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   BeforeErosion: []
   AfterErosion: []
   Noise: []
@@ -955,6 +966,7 @@ MonoBehaviour:
   - {fileID: 0}
   PauseRecalculation: 0
   RandomizeSeed: 1
+  m_FlushAfterRecalc: 1
   seed: 0
   SubGraphInputNode: {fileID: 0}
   SubGraphOutputNode: {fileID: 0}
@@ -975,6 +987,7 @@ MonoBehaviour:
   ports:
     keys: []
     values: []
+  ExternalGraph: {fileID: 0}
 --- !u!114 &388784083238228226
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1137,6 +1150,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   TileHeightMap: []
   VertexHeightMap: []
   TileWaterMap: []
@@ -1195,6 +1209,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   InputHeightMap: []
   GradientMap: []
 --- !u!114 &1194477684348487619
@@ -1261,6 +1276,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   InputArray: []
   iterations: 0
   kernelSize: 3
@@ -1379,6 +1395,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   MaxNumThreads: 65535
   numOctaves: 7
   persistence: 0.5
@@ -1601,6 +1618,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   NumSteps: 10
   InputHeightMap: []
   OutputHeightMap: []
@@ -1651,6 +1669,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   Size: 0
   SizeSquared: 1069156
   Array: []
@@ -1697,6 +1716,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   i: 1024
   o: 0
 --- !u!114 &6607410489340545039
@@ -1746,6 +1766,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   InputHeightMap: []
   GradientMap: []
 --- !u!114 &7173846691327874285
@@ -1865,6 +1886,7 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   MaxNumThreads: 65535
   numOctaves: 64
   persistence: 0.6
@@ -1923,5 +1945,6 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   IsError: 0
+  IsDirty: 1
   i: 5
   o: 0

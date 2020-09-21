@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using XNode;
 
 [CreateNodeMenu("")]
 public abstract class SelfPropagatingNode : XNode.Node
 {
-    protected TerrainGeneratorGraph Graph { get { return base.graph as TerrainGeneratorGraph; } }
+    public TerrainGeneratorGraph Graph { get { return base.graph as TerrainGeneratorGraph; } }
 
+    [System.NonSerialized]
     public bool IsError = false;
+    //[System.NonSerialized]
+    public bool IsDirty = false;
 
     // should be called on the first node to set of a recalc chain
     public void StartPropogation()
@@ -151,8 +155,35 @@ public abstract class SelfPropagatingNode : XNode.Node
                 continue;
             }
 
+            // This is neither an input nor output ignore it
+            if(field.CustomAttributes.Count() == 0)
+            {
+                continue;
+            }
+
+            // will probably need to make this better if there is the possibility of putting more attributes on one field
+            var feildAttribute = field.CustomAttributes.First();
+
+            bool isInput = feildAttribute.AttributeType == typeof(InputAttribute);
+            bool isOutput = feildAttribute.AttributeType == typeof(OutputAttribute);
+
+            // This is neither an input nor output ignore it
+            if (!isInput && !isOutput)
+            {
+                continue;
+            }
+
             object value = field.GetValue(this);
             field.SetValue(this, GetInputValue(field.Name, value));
+
+            if (field.FieldType.IsArray && isInput)
+            {
+                var array = field.GetValue(this) as ICollection;
+                if (!IsInputArrayValid(array))
+                {
+                    throw new System.Exception($"input {field.Name} invalid");
+                }
+            }
         }
     }
 
@@ -161,6 +192,19 @@ public abstract class SelfPropagatingNode : XNode.Node
         foreach (var field in GetType().GetFields())
         {
             if (GetType() != field.DeclaringType)
+            {
+                continue;
+            }
+
+            // If the attribute is neither input nor output dont clear it
+            if (field.CustomAttributes.Count() == 0)
+            {
+                continue;
+            }
+
+            var feildAttribute = field.CustomAttributes.First();
+            if (feildAttribute.AttributeType == typeof(OutputAttribute) || 
+                feildAttribute.AttributeType == typeof(InputAttribute))
             {
                 continue;
             }
@@ -224,6 +268,11 @@ public abstract class SelfPropagatingNode : XNode.Node
     public bool IsInputArrayValid<T>(T[] arr)
     {
         return arr != null && arr.Length > 0;
+    }
+
+    public bool IsInputArrayValid(ICollection arr)
+    {
+        return arr != null && arr.Count > 0;
     }
 
     protected bool AreAllValid<T>(params T[][] list)

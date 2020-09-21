@@ -11,6 +11,11 @@ public class TerrainGeneratorGraph : NodeGraph
     public bool RandomizeSeed = false;
 
     [SerializeField]
+    private bool m_FlushAfterRecalc = true;
+
+    public bool FlushAfterRecalc { get { return m_FlushAfterRecalc; }  set { m_FlushAfterRecalc = value; } }
+
+    [SerializeField]
     private int seed = 0;
     public System.Random Rand;
 
@@ -25,14 +30,16 @@ public class TerrainGeneratorGraph : NodeGraph
         if(!PauseRecalculation)
         {
             RecalculateFullGraphNoFlush();
-            FlushNodeData();
+            if (m_FlushAfterRecalc)
+                FlushNodeData();
         }
     }
 
     public void ForceRecalculateFullGraph()
     {
         RecalculateFullGraphNoFlush();
-        FlushNodeData();
+        if (m_FlushAfterRecalc)
+            FlushNodeData();
     }
 
     // This will recalculate the whole graph via back propogation
@@ -58,20 +65,42 @@ public class TerrainGeneratorGraph : NodeGraph
         PauseRecalculation = oldPauseRecalculationState;
     }
 
+    public void RecalculateFromNode(SelfPropagatingNode sourceNode)
+    {
+        Stack<SelfPropagatingNode> processing = new Stack<SelfPropagatingNode>();
+
+        processing.Push(sourceNode);
+
+        while(processing.Count > 0)
+        {
+            SelfPropagatingNode curr = processing.Pop();
+            curr.IsDirty = true;
+            HashSet<SelfPropagatingNode> outputs = FindOutputNodes(curr);
+            foreach (SelfPropagatingNode output in outputs)
+            {
+                processing.Push(output);
+            }
+        }
+
+        RecalculateFullGraphNoFlush();
+    }
+
     public List<SelfPropagatingNode> FindRoots()
     {
         List<SelfPropagatingNode> roots = new List<SelfPropagatingNode>();
 
         int i = 0;
 
-        // Find the mesh generation node
         foreach (var node in nodes)
         {
             i++;
-            SelfPropagatingNode SPN = null;
-            if ((SPN = node as SelfPropagatingNode) && FindOutputNodes(SPN).Count == 0)
+            SelfPropagatingNode SPN = node as SelfPropagatingNode;
+            if (SPN != null)
             {
-                roots.Add(SPN);
+                if(FindOutputNodes(SPN).Count == 0)
+                    roots.Add(SPN);
+
+                SPN.IsDirty = true;
             }
         }
 
@@ -84,8 +113,11 @@ public class TerrainGeneratorGraph : NodeGraph
 
         MapData md = FindMeshNode().GetValueAsMapData();
 
-        FlushNodeData();
-
+        if(m_FlushAfterRecalc)
+        {
+            FlushNodeData();
+        }
+        
         return md;
     }
 
@@ -112,6 +144,11 @@ public class TerrainGeneratorGraph : NodeGraph
 
     private void BackPropogate(SelfPropagatingNode current, HashSet<SelfPropagatingNode> calcedNodes)
     {
+        if (!current.IsDirty)
+        {
+            return;
+        }
+
         HashSet<SelfPropagatingNode> inputs = FindInputNodes(current);
         
         foreach (SelfPropagatingNode input in inputs)
@@ -127,11 +164,12 @@ public class TerrainGeneratorGraph : NodeGraph
         try
         {
             current.Recalculate();
+            current.IsDirty = false;
         }
         catch(Exception e)
         {
             current.IsError = true;
-            Debug.LogError(e.Message);
+            Debug.LogError($"{e.Message}, {e.StackTrace}");
         }
         //Debug.Log(current);
     }
@@ -144,6 +182,7 @@ public class TerrainGeneratorGraph : NodeGraph
             if ((SPN = node as SelfPropagatingNode))
             {
                 SPN.Flush();
+                SPN.IsDirty = true;
             }
         }
     }
@@ -178,7 +217,7 @@ public class TerrainGeneratorGraph : NodeGraph
             {
                 foreach (NodePort otherInputPort in port.GetConnections())
                 {
-                    SelfPropagatingNode otherNode = null;
+                    SelfPropagatingNode otherNode;
                     if ((otherNode = otherInputPort.node as SelfPropagatingNode) && !outputs.Contains(otherNode))
                     {
                         outputs.Add(otherNode);

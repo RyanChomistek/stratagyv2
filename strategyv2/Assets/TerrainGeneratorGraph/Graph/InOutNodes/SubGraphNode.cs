@@ -9,7 +9,8 @@ public class SubGraphNode : TerrainNode
 
     public override void Flush()
     {
-        SubGraph.FlushNodeData();
+        if(SubGraph.FlushAfterRecalc)
+            SubGraph.FlushNodeData();
     }
 
     public override void Recalculate()
