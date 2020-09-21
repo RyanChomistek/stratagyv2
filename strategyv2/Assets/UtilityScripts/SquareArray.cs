@@ -26,6 +26,12 @@ public class SquareArray<T> : System.ICloneable
         get { return this[vec2.x, vec2.y]; }
         set { this[vec2.x, vec2.y] = (T) value; }
     }
+    
+    public T this[Vector2 vec2]
+    {
+        get { return this[VectorUtilityFunctions.FloorVector(vec2)]; }
+        set { this[VectorUtilityFunctions.FloorVector(vec2)] = (T) value; }
+    }
 
     public SquareArray(T[] array)
     {
@@ -77,6 +83,11 @@ public class SquareArray<T> : System.ICloneable
         }
 
         return false;
+    }
+
+    public bool InBounds(Vector2 position)
+    {
+        return InBounds(VectorUtilityFunctions.FloorVector(position));
     }
 
     public bool InBounds(Vector2Int position)

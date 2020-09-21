@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateNodeMenu("Visualizers/Vector2ArrayNode")]
+[CreateNodeMenu("Visualizers/VisualizeVector2Array")]
 public class VisualizeVector2ArrayNode : VisualizeArrayNode
 {
     [Input] public Vector2[] Array;

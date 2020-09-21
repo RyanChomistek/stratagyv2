@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateNodeMenu("TileNodes/Desert")]
 public class DesertTileNode : TerrainNode
 {
     [Input] public Terrain[] InputTerrain = null;
     [Input] public Improvement[] InputImprovementTerrain = null;
-    [Input] public float[] InputWaterMap = null;
+    [Input] public float[] InputMoistureMap = null;
 
-    [Input] public float MaxWaterPercent = .1f;
+    [Input] public float MaxMoisturePercent = 2f;
 
     [Output] public Improvement[] OutputImprovement = null;
 
@@ -16,36 +17,26 @@ public class DesertTileNode : TerrainNode
     {
         InputTerrain = null;
         InputImprovementTerrain = null;
-        InputWaterMap = null;
+        InputMoistureMap = null;
 
         OutputImprovement = null;
     }
 
-    public override object GetValue(XNode.NodePort port)
-    {
-        if (port.fieldName == "OutputImprovement")
-            return OutputImprovement;
-
-        return null;
-    }
-
     public override void Recalculate()
     {
-        float[] InputWaterMap = GetInputValue("InputWaterMap", this.InputWaterMap);
-        Terrain[] InputTerrain = GetInputValue("InputTerrain", this.InputTerrain);
+        base.Recalculate();
         Improvement[] InputImprovementTerrain = GetInputValue("InputImprovementTerrain", this.InputImprovementTerrain);
-        float MaxWaterPercent = GetInputValue("MaxWaterPercent", this.MaxWaterPercent);
 
-        if (IsInputArrayValid(InputWaterMap) &&
+        if (IsInputArrayValid(InputMoistureMap) &&
             IsInputArrayValid(InputTerrain) &&
             IsInputArrayValid(InputImprovementTerrain))
         {
             OutputImprovement = (Improvement[])InputImprovementTerrain.Clone();
             SquareArray<Improvement> improvementMapSquare = new SquareArray<Improvement>(OutputImprovement);
-            SquareArray<Terrain> terrainMapSquare = new SquareArray<Terrain>(InputTerrain);
-            for (int i = 0; i < InputWaterMap.Length; i++)
+            // SquareArray<Terrain> terrainMapSquare = new SquareArray<Terrain>(InputTerrain);
+            for (int i = 0; i < InputMoistureMap.Length; i++)
             {
-                if (InputWaterMap[i] < MaxWaterPercent && terrainMapSquare[i] == Terrain.Grass)
+                if (InputMoistureMap[i] < MaxMoisturePercent && InputTerrain[i] == Terrain.Grass)
                 {
                     improvementMapSquare[i] = Improvement.Desert;
                 }

@@ -131,6 +131,7 @@ public class TerrainGeneratorGraph : NodeGraph
         catch(Exception e)
         {
             current.IsError = true;
+            Debug.LogError(e.Message);
         }
         //Debug.Log(current);
     }

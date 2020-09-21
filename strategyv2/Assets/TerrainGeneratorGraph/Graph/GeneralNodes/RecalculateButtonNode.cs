@@ -5,5 +5,5 @@ using XNode;
 
 public class RecalculateButtonNode : XNode.Node
 {
-
+    public TerrainGeneratorGraph ExternalGraph;
 }

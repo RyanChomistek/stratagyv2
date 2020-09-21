@@ -16,7 +16,16 @@ public class RecalculateButtonNodeEditor : NodeEditor
             //var soldiers = new List<Soldier>() { new Soldier() };
             //myTarget.AttachedDivision.TransferSoldiers(soldiers);
             //mapManager.GenerateMap();
-            (target.graph as TerrainGeneratorGraph).ForceRecalculateFullGraph();
+            RecalculateButtonNode node = target as RecalculateButtonNode;
+            //
+            if(node.ExternalGraph != null)
+            {
+                node.ExternalGraph.ForceRecalculateFullGraph();
+            }
+            else
+            {
+                (target.graph as TerrainGeneratorGraph).ForceRecalculateFullGraph();
+            }
         }
 
         serializedObject.ApplyModifiedProperties();

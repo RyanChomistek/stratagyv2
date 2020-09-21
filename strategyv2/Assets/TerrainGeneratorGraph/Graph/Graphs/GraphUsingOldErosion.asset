@@ -37,7 +37,7 @@ MonoBehaviour:
   SetMinMax: 0
   Min: 0
   Max: 1
-  Average: 0.585844
+  Average: 0.59357196
   Array: []
 --- !u!114 &-7516238912375551890
 MonoBehaviour:
@@ -175,7 +175,7 @@ MonoBehaviour:
   m_Name: Recalculate Button
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 3358.878, y: 397.86755}
+  position: {x: 3736, y: 136}
   ports:
     keys: []
     values: []
@@ -453,9 +453,6 @@ MonoBehaviour:
       - fieldName: TerrainMap
         node: {fileID: 388784083238228226}
         reroutePoints: []
-      - fieldName: Array
-        node: {fileID: -430153706341854338}
-        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -693,9 +690,6 @@ MonoBehaviour:
       - fieldName: InputArray
         node: {fileID: 1194477684348487619}
         reroutePoints: []
-      - fieldName: Array
-        node: {fileID: 8995905338122135501}
-        reroutePoints: []
       - fieldName: AfterErosion
         node: {fileID: -636473684641528220}
         reroutePoints: []
@@ -923,45 +917,6 @@ MonoBehaviour:
   AfterErosion: []
   Noise: []
   OutputArray: []
---- !u!114 &-430153706341854338
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49d14ac30c44d1c4e9b162a034f6e2d9, type: 3}
-  m_Name: Visualize Terrain Array
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 3655.1665, y: 436.07114}
-  ports:
-    keys:
-    - Array
-    values:
-    - _fieldName: Array
-      _node: {fileID: -430153706341854338}
-      _typeQualifiedName: Terrain[], BaseTerrainScripts, Version=0.0.0.0, Culture=neutral,
-        PublicKeyToken=null
-      connections:
-      - fieldName: InputTerrain
-        node: {fileID: -2072652468645478513}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  IsError: 0
-  visualization: {fileID: 0}
-  Length: -1
-  SideLength: -1
-  SetMinMax: 0
-  Min: 0
-  Max: 0
-  Average: 0
-  Array: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -989,7 +944,6 @@ MonoBehaviour:
   - {fileID: -4146464537681388985}
   - {fileID: 272828777646435180}
   - {fileID: -5060514854832764882}
-  - {fileID: 8995905338122135501}
   - {fileID: 1194477684348487619}
   - {fileID: -636473684641528220}
   - {fileID: 2474127343672845239}
@@ -997,7 +951,6 @@ MonoBehaviour:
   - {fileID: -1700695155063907148}
   - {fileID: -6235427184926330647}
   - {fileID: -2072652468645478513}
-  - {fileID: -430153706341854338}
   - {fileID: -4811720897111631377}
   - {fileID: 0}
   PauseRecalculation: 0
@@ -1607,7 +1560,7 @@ MonoBehaviour:
   m_Name: Terrace
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 2088, y: 360}
+  position: {x: 2216, y: 344}
   ports:
     keys:
     - NumSteps
@@ -1972,42 +1925,3 @@ MonoBehaviour:
   IsError: 0
   i: 5
   o: 0
---- !u!114 &8995905338122135501
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 923da615197cc5641870e3d7c2968d59, type: 3}
-  m_Name: Visualize Float Array
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 760, y: 1336}
-  ports:
-    keys:
-    - Array
-    values:
-    - _fieldName: Array
-      _node: {fileID: 8995905338122135501}
-      _typeQualifiedName: System.Single[], mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: HeightMap
-        node: {fileID: -1835521945685905138}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  IsError: 0
-  visualization: {fileID: 0}
-  Length: 1069156
-  SideLength: 1034
-  SetMinMax: 0
-  Min: 0
-  Max: 0.91746765
-  Average: 0.4561484
-  Array: []
