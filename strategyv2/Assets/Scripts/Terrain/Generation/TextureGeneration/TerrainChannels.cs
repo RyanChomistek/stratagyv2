@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TerrainChannels
 {
-    public float[] channels = new float[(int) Terrain.Max];
+    public float[] channels = new float[(int) Terrain.Max + (int) Improvement.Max];
 
     public TerrainChannels()
     { }
@@ -12,6 +12,11 @@ public class TerrainChannels
     public void Set(Terrain terrain)
     {
         channels[(int)terrain] = 1;
+    }
+
+    public void Set(Improvement improvement)
+    {
+        channels[(int)Terrain.Max + (int)improvement] = 1;
     }
 
     public void Scale(float weight)

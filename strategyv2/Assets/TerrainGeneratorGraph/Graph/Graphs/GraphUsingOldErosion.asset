@@ -30,7 +30,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   visualization: {fileID: 0}
   Length: 1069156
@@ -96,7 +95,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   A: 0
   B: 0
@@ -141,7 +139,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   Size: 1024
   SizeSquared: 1048576
@@ -237,7 +234,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   A: 0
   B: 2
@@ -356,7 +352,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   InputMap: []
   Padding: 0
@@ -513,7 +508,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 1
-  IsError: 0
   IsDirty: 1
   SubGraph: {fileID: 11400000, guid: e7fe796779615f8458fcad52d71ca762, type: 2}
 --- !u!114 &-1835521945685905138
@@ -705,7 +699,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
   MaxNumThreads: 65535
@@ -837,7 +830,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   MaxNumThreads: 65535
   numOctaves: 7
@@ -922,7 +914,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   BeforeErosion: []
   AfterErosion: []
@@ -1149,7 +1140,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   TileHeightMap: []
   VertexHeightMap: []
@@ -1208,7 +1198,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   InputHeightMap: []
   GradientMap: []
@@ -1275,7 +1264,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   InputArray: []
   iterations: 0
@@ -1394,7 +1382,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   MaxNumThreads: 65535
   numOctaves: 7
@@ -1617,7 +1604,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   NumSteps: 10
   InputHeightMap: []
@@ -1668,7 +1654,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   Size: 0
   SizeSquared: 1069156
@@ -1715,7 +1700,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   i: 1024
   o: 0
@@ -1765,7 +1749,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   InputHeightMap: []
   GradientMap: []
@@ -1885,7 +1868,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   MaxNumThreads: 65535
   numOctaves: 64
@@ -1944,7 +1926,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  IsError: 0
   IsDirty: 1
   i: 5
   o: 0

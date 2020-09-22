@@ -63,14 +63,15 @@ public class LandMeshGenerator : MonoBehaviour
         m_MeshFilter.sharedMesh = m_Mesh;
 
         // Set texture for terrain
-        GenerateTerrainTexure(mapData, terrainTileLookup);
+        GenerateTerrainTexure(mapData, terrainTileLookup, improvementTileLookup);
         GenerateSedimentTextureBlended(mapData, terrainTileLookup);
 
         m_MeshRenderer.sharedMaterial.SetFloat("_MaxHeight", meshArgs.MeshSize.y);
     }
 
     public void GenerateTerrainTexure(MapData mapData,
-        Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
+        Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup)
     {
         int terrainTextureSize = 1024;
         int numThreads = 16;
@@ -122,6 +123,9 @@ public class LandMeshGenerator : MonoBehaviour
                         {
                             neighborAc.Set(mapData.TerrainMap[neighborTilePos]);
 
+                            if(mapData.ImprovmentMap[neighborTilePos] != Improvement.Empty)
+                                neighborAc.Set(mapData.ImprovmentMap[neighborTilePos]);
+
                             neighborAc.Scale(weight);
                             ac.Add(neighborAc);
                         }
@@ -130,7 +134,7 @@ public class LandMeshGenerator : MonoBehaviour
             }
 
             ac.Normalize();
-            terrainColors[x, y] = MixPrimarySecondaryColors(mapData, ac, terrainTileLookup, texPos);
+            terrainColors[x, y] = MixPrimarySecondaryColors(mapData, ac, terrainTileLookup, improvementTileLookup, texPos);
         }, numThreads);
 
 
@@ -250,7 +254,12 @@ public class LandMeshGenerator : MonoBehaviour
         m_MeshRenderer.sharedMaterial.SetTexture("_SedimentTex", SedimentTexture);
     }
 
-    private Color32 MixPrimarySecondaryColors(MapData mapData, TerrainChannels channels, Dictionary<Terrain, TerrainMapTile> terrainTileLookup, Vector2Int texPos)
+    private Color32 MixPrimarySecondaryColors(
+        MapData mapData, 
+        TerrainChannels channels, 
+        Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
+        Dictionary<Improvement, ImprovementMapTile> improvementTileLookup, 
+        Vector2Int texPos)
     {
         Color sum = new Color();
         for(int i = 0; i < (int)Terrain.Max; i++)
@@ -265,7 +274,21 @@ public class LandMeshGenerator : MonoBehaviour
                     colorWeight);
                 sum += color * weight;
             }
-                
+        }
+
+        for (int i = (int)Terrain.Max; i < (int)Terrain.Max + (int)Improvement.Max; i++)
+        {
+            Improvement improvement = (Improvement)(i - Terrain.Max);
+            float weight = channels.channels[i];
+            if (improvementTileLookup.ContainsKey(improvement))
+            {
+                float colorWeight = mapData.TerrainColorNoiseMap[texPos];
+                Color color = Color.Lerp(
+                    improvementTileLookup[improvement].SimpleDisplayColor,
+                    improvementTileLookup[improvement].SecondaryDisplayColor,
+                    colorWeight);
+                sum += color * weight;
+            }
         }
 
         return sum;

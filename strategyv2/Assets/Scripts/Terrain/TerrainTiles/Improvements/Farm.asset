@@ -26,6 +26,8 @@ MonoBehaviour:
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
     SimpleDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SecondaryDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SedimentColor: {r: 0, g: 0, b: 0, a: 0}
     Improvable: 0
     TerrainType: 0
     Height: 0
@@ -43,5 +45,7 @@ MonoBehaviour:
     PopulationGrowthRate: 0.001
     PopulationSpreadRate: 0.001
     SimpleDisplayColor: {r: 0, g: 1, b: 0.04815674, a: 1}
+    SecondaryDisplayColor: {r: 0, g: 0, b: 0, a: 0}
+    SedimentColor: {r: 0, g: 0, b: 0, a: 0}
     Improvable: 0
     Improvement: 2

@@ -44,8 +44,8 @@ MonoBehaviour:
     InitialPopulation: 1
     PopulationGrowthRate: 0
     PopulationSpreadRate: 0
-    SimpleDisplayColor: {r: 1, g: 0.988338, b: 0, a: 1}
+    SimpleDisplayColor: {r: 0.7264151, g: 0.3306537, b: 0.044544343, a: 1}
     SecondaryDisplayColor: {r: 0.7075472, g: 0.5182871, b: 0, a: 1}
-    SedimentColor: {r: 0.7264151, g: 0.27112982, b: 0, a: 1}
+    SedimentColor: {r: 0.4716981, g: 0.17593065, b: 0, a: 1}
     Improvable: 0
     Improvement: 5
