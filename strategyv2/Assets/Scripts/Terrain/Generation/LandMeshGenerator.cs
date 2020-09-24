@@ -63,8 +63,17 @@ public class LandMeshGenerator : MonoBehaviour
         m_MeshFilter.sharedMesh = m_Mesh;
 
         // Set texture for terrain
-        GenerateTerrainTexure(mapData, terrainTileLookup, improvementTileLookup);
-        GenerateSedimentTextureBlended(mapData, terrainTileLookup);
+        ProfilingUtilities.LogAction(() =>
+        {
+            GenerateTerrainTexure(mapData, terrainTileLookup, improvementTileLookup);
+        }, "MAP GEN: done constructing terrain texture");
+
+        ProfilingUtilities.LogAction(() =>
+        {
+            GenerateSedimentTextureBlended(mapData, terrainTileLookup);
+        }, "MAP GEN: done constructing sediment texture");
+
+        
 
         m_MeshRenderer.sharedMaterial.SetFloat("_MaxHeight", meshArgs.MeshSize.y);
     }
@@ -96,7 +105,7 @@ public class LandMeshGenerator : MonoBehaviour
 
         int tileLookDistance = 2;
         float maxDistance = TileCordToTexCordScale * tileLookDistance;
-        SquareArray<Color32> terrainColors = new SquareArray<Color32>(terrainTextureSize);
+        SquareArray<Color> terrainColors = new SquareArray<Color>(terrainTextureSize);
         
         ArrayUtilityFunctions.ForMTWithThreadID(alphaMap.SideLength, (threadId, x, y) =>
         {
@@ -141,50 +150,16 @@ public class LandMeshGenerator : MonoBehaviour
             terrainColors[x, y] = MixPrimarySecondaryColors(mapData, ac, terrainTileLookup, improvementTileLookup, texPos);
         }, numThreads);
 
-
-
         Texture2D terrainTexture = new Texture2D(terrainTextureSize, terrainTextureSize, TextureFormat.ARGB32, false);
-        terrainTexture.SetPixels32(terrainColors.Array);
-        terrainTexture.Apply(true);
+        terrainTexture.SetPixels(terrainColors.Array);
+        terrainTexture.Apply(false);
         m_MeshRenderer.sharedMaterial.mainTexture = terrainTexture;
-    }
-
-    public void GenerateSedimentTexture(MapData mapData,
-        Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
-    {
-        // Set texture for sediment
-        int sedimentTextureSize = 1024;
-        SquareArray<Color32> sedimentColors = new SquareArray<Color32>(sedimentTextureSize);
-        Texture2D SedimentTexture = new Texture2D(sedimentTextureSize, sedimentTextureSize);
-        float texCordToSedimentCordScale = (float)mapData.SedimentMap.SideLength / (float)sedimentTextureSize;
-        float sedimentCordToTileCordScale = (float)mapData.TerrainMap.SideLength / (float)mapData.SedimentMap.SideLength;
-
-        for (int x = 0; x < sedimentTextureSize; x++)
-        {
-            for (int y = 0; y < sedimentTextureSize; y++)
-            {
-                Vector2 sedimentUV = new Vector2((x * texCordToSedimentCordScale), (y * texCordToSedimentCordScale));
-                Vector2Int sedimentPos = VectorUtilityFunctions.FloorVector(sedimentUV);
-                Vector2 uv = sedimentUV * sedimentCordToTileCordScale;
-
-                Vector2Int tilePos = VectorUtilityFunctions.FloorVector(uv);
-
-                Color sedimentColor = terrainTileLookup[mapData.TerrainMap[tilePos]].SedimentColor;
-
-                sedimentColors[x, y] =
-                    new Color(sedimentColor.r, sedimentColor.g, sedimentColor.b, mapData.SedimentMap[sedimentPos]);
-            }
-        }
-
-        SedimentTexture.SetPixels32(sedimentColors.Array);
-        SedimentTexture.Apply(true);
-        m_MeshRenderer.sharedMaterial.SetTexture("_SedimentTex", SedimentTexture);
     }
 
     public void GenerateSedimentTextureBlended(MapData mapData,
     Dictionary<Terrain, TerrainMapTile> terrainTileLookup)
     {
-        int sedimentTextureSize = 1024;
+        int sedimentTextureSize = 512;
         SquareArray<Color32> sedimentColors = new SquareArray<Color32>(sedimentTextureSize);
         
         float texCordToSedimentCordScale = (float)mapData.SedimentMap.SideLength / (float)sedimentTextureSize;
@@ -258,7 +233,7 @@ public class LandMeshGenerator : MonoBehaviour
         m_MeshRenderer.sharedMaterial.SetTexture("_SedimentTex", SedimentTexture);
     }
 
-    private Color32 MixPrimarySecondaryColors(
+    private Color MixPrimarySecondaryColors(
         MapData mapData, 
         TerrainChannels channels, 
         Dictionary<Terrain, TerrainMapTile> terrainTileLookup,
