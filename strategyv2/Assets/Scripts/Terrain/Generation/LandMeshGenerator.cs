@@ -98,7 +98,7 @@ public class LandMeshGenerator : MonoBehaviour
         float maxDistance = TileCordToTexCordScale * tileLookDistance;
         SquareArray<Color32> terrainColors = new SquareArray<Color32>(terrainTextureSize);
         
-        ArrayUtilityFunctions.ForMT(alphaMap.SideLength, (threadId, x, y) =>
+        ArrayUtilityFunctions.ForMTWithThreadID(alphaMap.SideLength, (threadId, x, y) =>
         {
             Vector2Int tilePos = VectorUtilityFunctions.FloorVector(new Vector2(x, y) * texCordToTileCordScale);
             Vector2Int texPos = new Vector2Int(x, y);
@@ -121,10 +121,14 @@ public class LandMeshGenerator : MonoBehaviour
                         float weight = 1 - (distance / maxDistance);
                         if (weight > 0)
                         {
-                            neighborAc.Set(mapData.TerrainMap[neighborTilePos]);
-
                             if(mapData.ImprovmentMap[neighborTilePos] != Improvement.Empty)
+                            {
                                 neighborAc.Set(mapData.ImprovmentMap[neighborTilePos]);
+                            }
+                            else
+                            {
+                                neighborAc.Set(mapData.TerrainMap[neighborTilePos]);
+                            }
 
                             neighborAc.Scale(weight);
                             ac.Add(neighborAc);
@@ -209,7 +213,7 @@ public class LandMeshGenerator : MonoBehaviour
         int tileLookDistance = 2;
         float maxDistance = TileCordToTexCordScale * tileLookDistance;
 
-        ArrayUtilityFunctions.ForMT(alphaMap.SideLength, (threadId, x, y) =>
+        ArrayUtilityFunctions.ForMTWithThreadID(alphaMap.SideLength, (threadId, x, y) =>
         {
             Vector2Int tilePos = VectorUtilityFunctions.FloorVector(new Vector2(x, y) * texCordToTileCordScale);
             Vector2Int texPos = new Vector2Int(x, y);
@@ -280,6 +284,7 @@ public class LandMeshGenerator : MonoBehaviour
         {
             Improvement improvement = (Improvement)(i - Terrain.Max);
             float weight = channels.channels[i];
+
             if (improvementTileLookup.ContainsKey(improvement))
             {
                 float colorWeight = mapData.TerrainColorNoiseMap[texPos];

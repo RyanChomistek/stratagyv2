@@ -33,6 +33,8 @@ public class SelfPropagatingNodeEditor : NodeEditor
             GUILayout.Label("Error", style);
         }
 
+        GUILayout.Label($"Run Time(ms): {node.RunTime}");
+
         base.OnBodyGUI();
     }
 }

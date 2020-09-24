@@ -7,15 +7,19 @@ public class WindNode : TerrainNode
 {
     [Input] public float[] HeightMap = null;
     [Input] public Terrain[] TerrainMap = null;
-    [Input] public float currHeight = .75f;
+    [Input] public float startHeight = .75f;
     [Input] public int lookDistance = 5;
+    [Input] public int numSteps = 100;
     [Input] public float pushDirWeight = .1f;
+    [Input] public float windStartStrength = 3f;
+    [Input] public float pressureChangeStrength = 1f;
     [Input] public float moistureStart = .2f;
     [Input] public float waterTileMoistureWeight = .1f;
     [Input] public float moistureLoss = .01f;
     
-    [Output] public Vector2[] WindStrength = null;
+    [Output] public Vector3[] WindStrength = null;
     [Output] public float[] Moisture = null;
+    [Output] public float[] SimpleMoisture = null;
 
     public override void Flush()
     {
@@ -33,61 +37,60 @@ public class WindNode : TerrainNode
         SquareArray<float> heightMapSA = new SquareArray<float>(HeightMap);
         SquareArray<Terrain> terrainMapSA = new SquareArray<Terrain>(TerrainMap);
 
-        SquareArray<Vector2> windStrengthSA = new SquareArray<Vector2>(heightMapSA.SideLength);
+        SquareArray<Vector3> windStrengthSA = new SquareArray<Vector3>(heightMapSA.SideLength);
         SquareArray<float> moistureSA = new SquareArray<float>(heightMapSA.SideLength);
+        SquareArray<float> simpleMoistureSA = new SquareArray<float>(heightMapSA.SideLength);
 
-        Vector2[] startPoses=  { 
-            new Vector2(0,0), 
-            new Vector2(0,0), 
-            new Vector2(heightMapSA.SideLength-1,0), 
-            new Vector2(0,heightMapSA.SideLength-1), 
+        Vector3[] startPoses=  {
+            new Vector3(0, 0, 0),
+            new Vector3(0, 0, 0),
+            new Vector3(heightMapSA.SideLength-1, 0, 0),
+            new Vector3(0, 0, heightMapSA.SideLength-1),
         };
 
-        Vector2[] CountDirs = {
-            new Vector2(1,0),
-            new Vector2(0,1),
-            new Vector2(0,1),
-            new Vector2(1,0),
+        Vector3[] CountDirs = {
+            new Vector3(1, 0, 0),
+            new Vector3(0, 0, 1),
+            new Vector3(0, 0, 1),
+            new Vector3(1, 0, 0),
         };
 
-        Vector2[] StartDirs =  {
-            new Vector2(0,1),
-            new Vector2(1,0),
-            new Vector2(-1,0),
-            new Vector2(0,-1),
+        Vector3[] StartDirs =  {
+            new Vector3(0, 0, 1),
+            new Vector3(1, 0, 0),
+            new Vector3(-1, 0, 0),
+            new Vector3(0, 0, -1),
         };
 
-        for(int iStartPos = 0; iStartPos < startPoses.Length; iStartPos++)
-        {
-            for (int i = 0; i < heightMapSA.SideLength; i++)
+        int numFails = 0;
+
+        ArrayUtilityFunctions.ForMTOneDimension(startPoses.Length, (int iStartPos) => {
+            ArrayUtilityFunctions.ForMTOneDimension(heightMapSA.SideLength, (int i) =>
             {
-                Vector2 currPos = startPoses[iStartPos] + CountDirs[iStartPos] * (float)i;
-                Vector2 windDirCurr = StartDirs[iStartPos];
+                Vector3 currPos = startPoses[iStartPos] + CountDirs[iStartPos] * (float)i;
+                currPos.y = startHeight;
+                Vector3 windDirCurr = StartDirs[iStartPos] * windStartStrength;
 
-                int numSteps = 0;
-
-                float moistureCurr = moistureStart;
-
-                while (heightMapSA.InBounds(currPos) && windDirCurr.magnitude > .1f && numSteps < 100)
+                int numStepsCurr = 0;
+                float moistureCurr = this.Graph.GetRandValue(0, moistureStart);
+                while (heightMapSA.InBounds(currPos) && windDirCurr.magnitude > .1f && numStepsCurr < numSteps)
                 {
-                    if (heightMapSA[currPos] > currHeight)
+                    if (heightMapSA[currPos] > currPos.y)
                     {
+                        numFails++;
                         break;
                     }
 
-                    windStrengthSA[currPos] += windDirCurr;
-
-                    //if (terrainMapSA[currPos] != Terrain.Water)
-                    //    moistureSA[currPos] += moistureCurr;
-
-                    Vector2 pushDir = new Vector2();
+                    windStrengthSA[currPos] = Vector3.one * currPos.y; //+= windDirCurr;
+                    simpleMoistureSA[currPos] += moistureCurr;
+                    Vector3 pushDir = new Vector3();
 
                     // loop though all adjacent land and get distances to the heights
-                    for (int dx = -lookDistance; dx < lookDistance; dx++)
+                    for (int dx = -lookDistance; dx <= lookDistance; dx++)
                     {
-                        for (int dy = -lookDistance; dy < lookDistance; dy++)
+                        for (int dz = -lookDistance; dz <= lookDistance; dz++)
                         {
-                            Vector2 lookDelta = new Vector3(dx, dy);
+                            Vector3 lookDelta = new Vector3(dx, 0, dz);
 
                             // reject things that are not in the circle
                             if (lookDelta.magnitude > lookDistance)
@@ -95,16 +98,21 @@ public class WindNode : TerrainNode
                                 continue;
                             }
 
-                            Vector2 lookPos = new Vector3(currPos.x + dx, currPos.y + dy);
+                            Vector2 lookPos = new Vector2(currPos.x + dx, currPos.z + dz);
 
                             if (!heightMapSA.InBounds(lookPos))
                             {
                                 continue;
                             }
 
-                            float weight = Mathf.Abs(currHeight - heightMapSA[new Vector2(currPos.x + dx, currPos.y + dy)]);
-                            weight = 1 / weight;
-                            pushDir += weight * (-lookDelta);
+                            float heightDelta = heightMapSA[lookPos] - currPos.y;
+                            float weight = Mathf.Exp(-(1 / (float)lookDistance) * (heightDelta * heightDelta));
+
+                            if (lookDelta != Vector3.zero)
+                            {
+                                //lookDelta.y =  heightDelta * .0001f;
+                                pushDir += weight * (-lookDelta);
+                            }
 
                             if (terrainMapSA[lookPos] == Terrain.Water)
                             {
@@ -118,20 +126,32 @@ public class WindNode : TerrainNode
                         }
                     }
 
-                    
-
                     moistureCurr -= moistureLoss;
                     moistureCurr = Mathf.Clamp(moistureCurr, 0, 1);
 
                     windDirCurr += pushDir.normalized * pushDirWeight;
                     windDirCurr = windDirCurr.normalized;
-                    currPos += windDirCurr;
-                    numSteps++;
+
+                    Vector3 newPos = currPos + windDirCurr.normalized;
+                    if (heightMapSA.InBounds(newPos))
+                    {
+                        // increasing the distance to the gound should cause air pressure to go down
+
+                        float airDeltaNew = newPos.y - heightMapSA[newPos];
+                        float airDeltaOld = currPos.y - heightMapSA[currPos];
+                        float deltaAirPressure = airDeltaNew - airDeltaOld;
+                        newPos.y -= deltaAirPressure * pressureChangeStrength;
+                    }
+
+                    currPos = newPos;
+                    numStepsCurr++;
                 }
-            }
-        }
+                
+            }, startPoses.Length);
+        }, startPoses.Length);
 
         WindStrength = windStrengthSA.Array;
         Moisture = moistureSA.Array;
+        SimpleMoisture = simpleMoistureSA.Array;
     }
 }

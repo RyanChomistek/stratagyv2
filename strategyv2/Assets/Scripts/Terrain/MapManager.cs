@@ -74,6 +74,7 @@ public class MapManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         GenerateMap();
         MapGen.TerrainGraph.FlushAfterRecalc = true;
+        MapGen.TerrainGraph.IsVisualizationsEnabled = false;
         IsFinishedGeneratingMap = true;
 
         //OnTerrrainGenerationFinished?.Invoke();

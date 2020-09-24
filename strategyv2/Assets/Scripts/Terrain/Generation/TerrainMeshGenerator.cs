@@ -114,7 +114,7 @@ public class TerrainMeshGenerator : MonoBehaviour
             int tileLookDistance = 2;
             float maxDistance = alphaMapScale * tileLookDistance;
 
-            ArrayUtilityFunctions.ForMT(tData.alphamapHeight, (threadId, x, y) =>
+            ArrayUtilityFunctions.ForMTWithThreadID(tData.alphamapHeight, (threadId, x, y) =>
             {
                 Vector2Int terrainMapPos = new Vector2Int(Mathf.FloorToInt(x / alphaMapScale), Mathf.FloorToInt(y / alphaMapScale));
                 Vector2Int alphaMapPos = new Vector2Int(x, y);

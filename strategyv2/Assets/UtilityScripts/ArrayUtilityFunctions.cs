@@ -85,6 +85,99 @@ public class ArrayUtilityFunctions
         return kernel;
     }
 
+    public static void ForMTOneDimension(int length, System.Action<int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        int sizePerThread = length / numThreads;
+        int remainder = length - (sizePerThread * numThreads);
+
+        // Use the thread pool to parrellize update
+        using (CountdownEvent e = new CountdownEvent(1))
+        {
+            // TODO make these blocks instead of rows so that we get better lock perf
+            for (int i = 0; i < numThreads; i++)
+            {
+                //Vector2Int start = new Vector2Int(0, i * sizePerThread);
+                //Vector2Int end = new Vector2Int(map.SideLength, ((i + 1) * sizePerThread));
+
+                int start = i * sizePerThread;
+                int end = ((i + 1) * sizePerThread);
+                // on the last thread we need to deal with the remainder
+                if (i == numThreads - 1)
+                {
+                    end += remainder;
+                }
+
+                e.AddCount();
+                ThreadPool.QueueUserWorkItem(delegate (object state)
+                {
+                    try
+                    {
+                        for (int threadWorkingIndex = start; threadWorkingIndex < end; threadWorkingIndex++)
+                        {
+                            
+                                action(threadWorkingIndex);
+                            
+                        }
+                    }
+                    finally
+                    {
+                        e.Signal();
+                    }
+                },
+                null);
+            }
+
+            e.Signal();
+            e.Wait();
+        }
+    }
+
+    public static void ForMTTwoDimension(int sideLength, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
+    {
+        int size = sideLength / numThreads;
+        int remainder = sideLength - (size * numThreads);
+
+        // Use the thread pool to parrellize update
+        using (CountdownEvent e = new CountdownEvent(1))
+        {
+            // TODO make these blocks instead of rows so that we get better lock perf
+            for (int i = 0; i < numThreads; i++)
+            {
+                Vector2Int start = new Vector2Int(0, i * size);
+                Vector2Int end = new Vector2Int(sideLength, ((i + 1) * size));
+
+                // on the last thread we need to deal with the remainder
+                if (i == numThreads - 1)
+                {
+                    end.y += remainder;
+                }
+
+                e.AddCount();
+                ThreadPool.QueueUserWorkItem(delegate (object state)
+                {
+                    try
+                    {
+                        for (int y = start.y; y < end.y; y++)
+                        {
+                            for (int x = start.x; x < end.x; x++)
+                            {
+                                action(x, y);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        e.Signal();
+                    }
+                },
+                null);
+            }
+
+            e.Signal();
+            e.Wait();
+        }
+    }
+
     public static void ForMT<T>(SquareArray<T> map, System.Action<int, int> action, int numThreads = DefaultNumThreadsForJob)
     {
         int size = map.SideLength / numThreads;
@@ -131,7 +224,7 @@ public class ArrayUtilityFunctions
         }
     }
 
-    public static void ForMT(int sideLength, System.Action<int, int, int> action, int numThreads = DefaultNumThreadsForJob)
+    public static void ForMTWithThreadID(int sideLength, System.Action<int, int, int> action, int numThreads = DefaultNumThreadsForJob)
     {
         int size = sideLength / numThreads;
         int remainder = sideLength - (size * numThreads);

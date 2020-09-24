@@ -6,6 +6,8 @@ using UnityEngine;
 [CreateNodeMenu("")]
 public class VisualizeArrayNode : SelfPropagatingNode
 {
+    public int textureSize = 256;
+
     [HideInInspector]
     public Texture2D visualization;
     public int Length = -1;
@@ -27,24 +29,32 @@ public class VisualizeArrayNode : SelfPropagatingNode
 
     protected void GenerateVisualization<T>(T[] arr, Func<T, Color> getColor)
     {
-        SquareArray<T> TSquare = new SquareArray<T>(arr);
-        int texSize = 1024;
-        float scale = texSize / (float)TSquare.SideLength;
-        visualization = new Texture2D(texSize, texSize);
-        for (int x = 0; x < texSize; x++)
+        if(!Graph.IsVisualizationsEnabled)
         {
-            for (int y = 0; y < texSize; y++)
-            {
-                Color val = getColor(TSquare[(int)(x / scale), (int)(y / scale)]);
-                visualization.SetPixel(x, y, val);
-            }
+            return;
         }
 
+        SquareArray<T> TSquare = new SquareArray<T>(arr);
+        float scale = textureSize / (float)TSquare.SideLength;
+        visualization = new Texture2D(textureSize, textureSize);
+
+        SquareArray<Color> colors = new SquareArray<Color>(textureSize);
+        ArrayUtilityFunctions.ForMTTwoDimension(textureSize, (x, y) =>
+        {
+            colors[x, y] = getColor(TSquare[(int)(x / scale), (int)(y / scale)]);
+        });
+
+        visualization.SetPixels(colors.Array);
         visualization.Apply();
     }
 
     protected void GenerateVisualization<T>(T[] arr, Func<T, float> valueGetter)
     {
+        if (!Graph.IsVisualizationsEnabled)
+        {
+            return;
+        }
+
         SquareArray<T> TSquare = new SquareArray<T>(arr);
 
         if(!SetMinMax)
@@ -81,20 +91,19 @@ public class VisualizeArrayNode : SelfPropagatingNode
             return;
         }
 
-        int texSize = 1024;
-        float scale = texSize / (float)TSquare.SideLength;
-        visualization = new Texture2D(texSize, texSize);
         
-        for (int x = 0; x < texSize; x++)
-        {
-            for (int y = 0; y < texSize; y++)
-            {
-                float val = valueGetter(TSquare[(int)(x / scale), (int)(y / scale)]);
-                Color color = Color.Lerp(Color.red, Color.green, (val - Min) / delta);
-                visualization.SetPixel(x, y, color);
-            }
-        }
+        float scale = textureSize / (float)TSquare.SideLength;
+        visualization = new Texture2D(textureSize, textureSize);
 
+        SquareArray<Color> colors = new SquareArray<Color>(textureSize);
+
+        ArrayUtilityFunctions.ForMTTwoDimension(textureSize, (x, y) =>
+        {
+            float val = valueGetter(TSquare[(int)(x / scale), (int)(y / scale)]);
+            colors[x, y] = Color.Lerp(Color.red, Color.green, (val - Min) / delta);
+        });
+
+        visualization.SetPixels(colors.Array);
         visualization.Apply();
     }
 }

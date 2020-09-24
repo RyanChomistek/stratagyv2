@@ -12,6 +12,8 @@ public class TerrainGeneratorGraph : NodeGraph
 
     [SerializeField]
     private bool m_FlushAfterRecalc = true;
+    [SerializeField]
+    public bool IsVisualizationsEnabled = true;
 
     public bool FlushAfterRecalc { get { return m_FlushAfterRecalc; }  set { m_FlushAfterRecalc = value; } }
 
@@ -161,6 +163,7 @@ public class TerrainGeneratorGraph : NodeGraph
         }
 
         current.IsError = false;
+        System.DateTime start = System.DateTime.Now;
         try
         {
             current.Recalculate();
@@ -170,6 +173,12 @@ public class TerrainGeneratorGraph : NodeGraph
         {
             current.IsError = true;
             Debug.LogError($"{e.Message}, {e.StackTrace}");
+        }
+        finally
+        {
+            System.DateTime end = System.DateTime.Now;
+            var delta = end - start;
+            current.RunTime = delta.Milliseconds;
         }
         //Debug.Log(current);
     }
@@ -227,5 +236,15 @@ public class TerrainGeneratorGraph : NodeGraph
         }
 
         return outputs;
+    }
+
+    public float GetRandValue(float min, float max)
+    {
+        if (Rand != null)
+        {
+            return (float)((Rand.NextDouble() * max) - min);
+        }
+
+        return -1;
     }
 }

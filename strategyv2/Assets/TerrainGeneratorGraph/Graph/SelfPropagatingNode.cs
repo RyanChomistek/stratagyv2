@@ -14,6 +14,8 @@ public abstract class SelfPropagatingNode : XNode.Node
     public bool IsError = false;
     //[System.NonSerialized]
     public bool IsDirty = false;
+    [System.NonSerialized]
+    public int RunTime = 0;
 
     // should be called on the first node to set of a recalc chain
     public void StartPropogation()
